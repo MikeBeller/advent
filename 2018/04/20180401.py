@@ -1,5 +1,6 @@
 import sys
 import itertools
+import numpy as np
 
 def read_input():
     data = []
@@ -58,20 +59,33 @@ def main():
         r[-1].append(60)
         days.append(dict(gid=gr[0]['gid'], intervals=r))
 
-    # Now group by guard
+    # Now group by guard and find most sleepy guard
     gidkey = lambda d: d['gid']
-    totals = []
+    gidtb = {}
+    mx = -1
+    mxid = ''
     for k,g in itertools.groupby(sorted(days,key=gidkey), key=gidkey):
+        gidtb[k] = dict(gid=k, days=list(g))
         s = 0
-        for d in g:
-            s += sum(y-x for x,y in d['intervals'])
-        #print(k,s)
-        totals.append((k,s))
-    print("max", max(totals,key=lambda x: x[1]))
+        print(k)
+        for d in gidtb[k]['days']:
+            s += 60 - sum(y-x for x,y in d['intervals'])
+            print("adding", d['intervals'])
+        print(k,s)
+        if s > mx:
+            mx = s
+            mxid = k
+            print("new max", mx, mxid)
+    print("max", mxid, mx)
 
-
-
-
+    # Now find most popular minute for that guard to be asleep
+    a = np.zeros(60, dtype=np.int32)
+    for d in gidtb[mxid]['days']:
+        for i in d['intervals']:
+            a[np.arange(i[0],i[1])] += 1
+    print(a)
+    argmx = np.argmax(a)
+    print(int(mxid[1:]) * argmx)
 
 
 if __name__ == '__main__':
