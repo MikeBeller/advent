@@ -1,6 +1,7 @@
 import sys
 from collections import defaultdict
 import numpy as np
+import pandas as pd
 
 def read_input():
     data = []
@@ -19,22 +20,20 @@ def read_input():
             data[-1].append(t)
     if data and len(data[-1]) == 1:
         data[-1].append(60)
-    return data
+    return pd.DataFrame(data,columns=['g','s','e'])
 
 def main():
-    data = read_input()
-    naps = defaultdict(list)
-    for (g,s,e) in data:
-        naps[g].append((s,e))
-    most = [(g,sum(e-s for s,e in ns)) for (g,ns) in naps.items()]
-    max_g,max_t = max(most, key=lambda x: x[1])
+    df = read_input()
+    df['nt'] = df.e - df.s
+    tt = df.groupby('g')
+    mxg = tt['nt'].sum().idxmax()
 
-    m = np.zeros(60, dtype=np.int32)
-    for n in naps[max_g]:
-        m[n[0]:n[1]] += 1
-    max_m = np.argmax(m)
+    s = np.zeros(60, dtype=np.int32)
+    for i,r in tt.get_group(mxg).iterrows():
+        s[np.arange(r.s, r.e)] += 1
+    mxm = s.argmax()
 
-    print (max_g * max_m)
+    print(mxm * mxg)
 
 if __name__ == '__main__':
     main()
