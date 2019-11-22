@@ -1,13 +1,31 @@
 use std::io::BufRead;
 
-fn get_data() -> Vec<[i32; 4]> {
+fn get_data() -> Vec<[i32; 3]> {
     let stdin = std::io::stdin();
+    let mut r = vec![];
+    let mut g = -1;
+    let mut s = -1;
+    let mut e = -1;
     for line in stdin.lock().lines() {
         let line = line.unwrap();
         let f = line.split_whitespace().collect::<Vec<&str>>();
-        println!("{:?}", f);
+        if f[2] == "Guard" {
+            if g != -1 && s != -1 && e == -1 {
+                r.push([g, s, 60])
+            }
+            g = f[3][1..].parse::<i32>().unwrap();
+            s = -1;
+            e = -1;
+        } else if f[2] == "falls" {
+            s = f[1][3..5].parse::<i32>().unwrap();
+        } else if f[2] == "wakes" {
+            e = f[1][3..5].parse::<i32>().unwrap();
+            r.push([g, s, e]);
+            s = -1;
+            e = -1;
+        }
     }
-    vec![]
+    r
 }
 
 fn main() {
