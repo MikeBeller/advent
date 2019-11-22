@@ -34,7 +34,7 @@ def main():
         m[n[0]:n[1]] += 1
     max_m = np.argmax(m)
 
-    print (max_g * max_m)
+    print (max_g * max_m, max_g, max_m)
 
 if __name__ == '__main__':
     main()
