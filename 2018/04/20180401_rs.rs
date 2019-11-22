@@ -2,12 +2,15 @@ use std::io::BufRead;
 
 fn get_data() -> Vec<[i32; 3]> {
     let stdin = std::io::stdin();
+    let mut lines = stdin.lock().lines()
+        .filter_map(Result::ok)
+        .collect::<Vec<String>>();
+    lines.sort();
     let mut r = vec![];
     let mut g = -1;
     let mut s = -1;
     let mut e = -1;
-    for line in stdin.lock().lines() {
-        let line = line.unwrap();
+    for line in lines {
         let f = line.split_whitespace().collect::<Vec<&str>>();
         if f[2] == "Guard" {
             if g != -1 && s != -1 && e == -1 {
