@@ -48,7 +48,7 @@ fn main() {
 
     let mxg = mxs.iter().max_by_key(|(_g,t)| t).unwrap().0;
 
-    let mut a = [60; 0];
+    let mut a = [0; 60];
     for (s,e) in &naps[&mxg] {
         for i in (*s)..(*e) {
             a[i as usize] += 1;
