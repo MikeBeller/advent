@@ -36,6 +36,22 @@ def main():
 
     print (max_g * max_m, max_g, max_m)
 
+    mxmg = -1
+    mxmm = -1
+    mxmi = -1
+    for g,ns in naps.items():
+        m = np.zeros(60, dtype=np.int32)
+        for n in ns:
+            m[n[0]:n[1]] += 1
+        i = np.argmax(m)
+        if m[i] > mxmm:
+            mxmm = m[i]
+            mxmg = g
+            mxmi = i
+    print(mxmg * mxmi, mxmg, mxmi)
+
+
+
 if __name__ == '__main__':
     main()
 
