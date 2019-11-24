@@ -12,15 +12,7 @@ func cancels(x, y byte) bool {
 	return d == 32 || d == -32
 }
 
-func main() {
-	b, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if b[len(b)-1] == 10 {
-		b = b[:len(b)-1]
-	}
-
+func react(b []byte) []byte {
 	for {
 		e := len(b)
 		w := 0
@@ -51,6 +43,39 @@ func main() {
 			panic("broken")
 		}
 	}
+	return b
+}
 
-	fmt.Println(len(b))
+func main() {
+	data, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if data[len(data)-1] == 10 {
+		data = data[:len(data)-1]
+	}
+
+	// Part 1
+	r := make([]byte, len(data))
+	copy(r, data)
+	r = react(r)
+	fmt.Println(len(r))
+
+	// Part 2
+	minLen := len(data) + 1
+	minPoly := byte(0)
+	for _, p := range []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+		r = r[:0]
+		for _, b := range data {
+			if b != p && b != p+32 {
+				r = append(r, b)
+			}
+		}
+		r = react(r)
+		if len(r) < minLen {
+			minLen = len(r)
+			minPoly = p
+		}
+	}
+	fmt.Printf("%d %c\n", minLen, minPoly)
 }
