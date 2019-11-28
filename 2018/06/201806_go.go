@@ -6,36 +6,39 @@ import (
 )
 
 func readData() [][2]int {
-	var x, y int
-	r := [][2]int{}
+	var c, r int
+	ps := [][2]int{}
 	for {
-		n, err := fmt.Fscanf(os.Stdin, "%d, %d", &x, &y)
+		n, err := fmt.Fscanf(os.Stdin, "%d, %d", &c, &r)
 		if err != nil || n != 2 {
 			break
 		}
-		r = append(r, [2]int{x, y})
+		ps = append(ps, [2]int{c, r})
 	}
-	return r
+	return ps
 }
 
-func maxes(ds [][2]int) (int, int) {
-	mxx, mxy := -1, -1
-	for _, d := range ds {
-		if d[0] > mxx {
-			mxx = d[0]
+func nRowCol(ps [][2]int) (int, int) {
+	mxc, mxr := -1, -1
+	for _, d := range ps {
+		if d[0] > mxc {
+			mxc = d[0]
 		}
-		if d[1] > mxy {
-			mxy = d[1]
+		if d[1] > mxr {
+			mxr = d[1]
 		}
 	}
-	return mxx, mxy
+	return mxc + 2, mxr + 2
 }
 
-func makeMatrix(r, c int) [][]int {
-	a := make([][]int, r)
-	m := make([]int, r*c)
+func makeMatrix(nc, nr int) [][]int {
+	a := make([][]int, nr)
+	m := make([]int, nr*nc)
 	for i := range a {
-		a[i] = m[(i * c):(i*c + c)]
+		a[i] = m[(i * nc):(i*nc + nc)]
+		for j := range a[i] {
+			a[i][j] = -1
+		}
 	}
 	return a
 }
@@ -47,28 +50,36 @@ func abs(i int) int {
 	return i
 }
 
-func dist(x1, y1, x2, y2 int) int {
-	return abs(x2-x1) * abs(y2-y1)
+func dist(c1, r1, c2, r2 int) int {
+	return abs(c2-c1) + abs(r2-r1)
 }
 
 func main() {
 	d := readData()
-	mxx, mxy := maxes(d)
-	a := makeMatrix(mxx, mxy)
+	nc, nr := nRowCol(d)
+	fmt.Println(nc, nr)
+	a := makeMatrix(nc, nr)
 
-	for r := 0; r < mxy; r++ {
-		for c := 0; c < mxx; c++ {
+	for r := 0; r < nr; r++ {
+		for c := 0; c < nc; c++ {
 			mnd := 999999
 			mni := -1
 			for i := range d {
-				if dst := dist(r, c, d[i][0], d[i][1]); dst < mnd {
+				if dst := dist(c, r, d[i][0], d[i][1]); dst < mnd {
 					mnd = dst
 					mni = i
 				}
 			}
-			a[r][c] = mni
+			if a[r][c] == -1 {
+				a[r][c] = mni
+			} else {
+				a[r][c] = -9
+			}
 		}
 	}
 
-	fmt.Println("vim-go", d, mxx, mxy, a)
+	fmt.Println(d)
+	for r := 0; r < nr; r++ {
+		fmt.Println(a[r])
+	}
 }
