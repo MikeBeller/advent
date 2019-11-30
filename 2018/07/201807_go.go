@@ -9,10 +9,17 @@ import (
 	"strings"
 )
 
+const (
+	Null = iota
+	Ready
+	Working
+	Done
+)
+
 type Task struct {
 	Name           string
 	Requires       []*Task
-	Done           bool
+	State          int
 	CompletionTime int
 }
 
@@ -33,12 +40,12 @@ func partOne(tasks map[string]*Task) []string {
 	for {
 		ts := []string{}
 		for _, task := range tasks {
-			if task.Done {
+			if task.State == Done {
 				continue
 			}
 			nnd := 0
 			for _, tt := range task.Requires {
-				if !tt.Done {
+				if tt.State != Done {
 					nnd++
 				}
 			}
@@ -53,7 +60,7 @@ func partOne(tasks map[string]*Task) []string {
 		// Only add the min (could write min loop but i'm lazy)
 		sort.StringSlice(ts).Sort()
 		ans = append(ans, ts[0])
-		tasks[ts[0]].Done = true
+		tasks[ts[0]].State = Done
 	}
 
 	return ans
@@ -104,33 +111,46 @@ func NewSim(baseTime, numWorkers int, tasks map[string]*Task) *Sim {
 
 func partTwo(tasks map[string]*Task, baseTime int, numWorkers int) int {
 	tm := 0
+	for _, t := range tasks {
+		t.State = Null
+		t.CompletionTime = 0
+	}
+	ready := []string{}
+	working := []string{}
+	done := []string{}
 	for {
-		ready := []string{}
 		for _, task := range tasks {
-			if task.Done {
+			if task.State == Done || task.State == Working || task.State == Ready {
 				continue
 			}
 			nnd := 0
 			for _, tt := range task.Requires {
-				if !tt.Done {
+				if tt.State != Done {
 					nnd++
 				}
 			}
 			if nnd == 0 {
 				ready = append(ready, task.Name)
+				task.State = Ready
 			}
 		}
-		if len(ready) == 0 {
-			break
+
+		for len(ready) > 0 && len(working) < numWorkers {
+			n := ready[0]
+			tasks[n].CompletionTime = tm + taskDuration(n, baseTime)
+			working = append(working, n)
+			tasks[n].State = Working
+			ready = ready[1:]
 		}
 
-		sort.StringSlice(ready).Sort()
-		for _, n := range ready {
-			tasks[n].CompletionTime = tm + taskDuration(n, baseTime)
+		if len(working) == 0 {
+			break
 		}
-		sort.Slice(ready, func(i, j int) bool { return tasks[ready[i]].CompletionTime < tasks[ready[j]].CompletionTime })
-		tasks[ready[0]].Done = true
-		tm = tasks[ready[0]].CompletionTime
+		sort.Slice(working, func(i, j int) bool { return tasks[working[i]].CompletionTime < tasks[working[j]].CompletionTime })
+		tasks[working[0]].State = Done
+		done = append(done, working[0])
+		tm = tasks[working[0]].CompletionTime
+		working = working[1:]
 	}
 	return tm
 }
@@ -154,10 +174,6 @@ func main() {
 
 	taskOrder := partOne(tasks)
 	fmt.Println("PartOne:", strings.Join(taskOrder, ""))
-
-	for _, t := range tasks {
-		t.Done = false
-	}
 
 	baseTime := aToI(os.Args[1])
 	numWorkers := aToI(os.Args[2])
