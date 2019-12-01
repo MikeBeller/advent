@@ -46,8 +46,34 @@ func sumMeta(t *Node) int {
 	return sm
 }
 
+func partOne(t *Node) int {
+	return sumMeta(t)
+}
+
+func sumCode(t *Node) int {
+	sm := 0
+	if len(t.Children) == 0 {
+		for _, m := range t.Meta {
+			sm += m
+		}
+	} else {
+		for _, n := range t.Meta {
+			if n >= 1 && n <= len(t.Children) {
+				sm += sumCode(t.Children[n-1])
+			}
+		}
+	}
+	return sm
+}
+
+func partTwo(t *Node) int {
+	return sumCode(t)
+}
+
 func main() {
 	t := readTree()
-	m := sumMeta(t)
-	fmt.Println(m)
+	ans1 := partOne(t)
+	fmt.Println(ans1)
+	ans2 := partTwo(t)
+	fmt.Println(ans2)
 }
