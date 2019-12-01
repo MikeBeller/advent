@@ -22,18 +22,18 @@ func partOne(data []int) int {
 	return s
 }
 
+func fuelR(m int) int {
+	f := m/3 - 2
+	if f <= 0 {
+		return 0
+	}
+	return f + fuelR(f)
+}
+
 func partTwo(data []int) int {
 	s := 0
-	for _, x := range data {
-		m := x
-		for {
-			f := m/3 - 2
-			if f <= 0 {
-				break
-			}
-			s += f
-			m = f
-		}
+	for _, m := range data {
+		s += fuelR(m)
 	}
 	return s
 }
