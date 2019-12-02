@@ -3,7 +3,7 @@ from typing import Iterator,List,Any
 from dataclasses import dataclass
 
 class Node:
-    def __init__(self):
+    def __init__(self) -> None:
         self.meta: List[int] = []
         self.children: List[Node] = []
 
@@ -30,7 +30,7 @@ def sum_code(node: Node) -> int:
             else sum(sum_code(node.children[n-1])
                 for n in node.meta if n >=1 and n <= len(node.children)))
 
-def main():
+def main() -> None:
     data = (int(s) for s in sys.stdin.read().split())
     tree = read_tree(data)
 
