@@ -1,10 +1,11 @@
 import sys
-from typing import Iterator
+from typing import Iterator,List,Any
+from dataclasses import dataclass
 
 class Node:
     def __init__(self):
-        self.meta = []
-        self.children = []
+        self.meta: List[int] = []
+        self.children: List[Node] = []
 
 def read_tree(ns: Iterator[int]) -> Node:
     node = Node()
