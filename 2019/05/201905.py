@@ -79,9 +79,16 @@ assert test("big gt 8", prgbig, "9393", "1001")
 def main():
     with open(sys.argv[1]) as infile:
         prog = read_data(infile)
-    inp = sys.argv[2:]
-    outp = run_program(prog, inp)
-    print("\n".join(outp))
+
+    print("Part One")
+    prg1 = prog[:]
+    out1 = run_program(prg1, ["1"])
+    print("\n".join(out1))
+
+    print("Part Two")
+    prg2 = prog[:]
+    out2 = run_program(prg2, ["5"])
+    print("\n".join(out2))
 
 if __name__ == '__main__':
     main()
