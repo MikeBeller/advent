@@ -7,9 +7,11 @@ ns = np.c_[np.arange(136818, 685980)]
 
 ds = ns // tens % 10
 df = np.diff(ds, axis=1)
+df = ds[:,1:]-ds[:,:-1]
 nondecreasing = np.all(df > -1, axis=1)
 ns = ns[nondecreasing]
 df = df[nondecreasing]
+
 
 repeating = np.any(df == 0, axis=1)
 ns = ns[repeating]
