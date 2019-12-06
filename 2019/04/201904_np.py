@@ -5,17 +5,9 @@ tens = 10 ** np.arange(5, -1, -1)
 #ns = np.c_[[ 112233, 123444, 111122,] ]
 ns = np.c_[np.arange(136818, 685980)]
 
-#print(ns)
 ds = ns // tens % 10
-
-#print(ds)
-
 df = np.diff(ds, axis=1)
-#print(df)
-
 nondecreasing = np.all(df > -1, axis=1)
-#print(nondecreasing)
-
 ns = ns[nondecreasing]
 df = df[nondecreasing]
 
