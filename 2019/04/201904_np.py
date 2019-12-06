@@ -12,9 +12,8 @@ ds1 = ds[part1]
 df1 = df[part1]
 print("Part 1:", len(ds1))
 
-df1_d = df1[:,1:]+df1[:,:-1]
-part2 = np.all(df1_d != 0, axis=1)
+o = np.ones((len(ds1),1))
+dfm = np.hstack([o, df1, o])
+part2 = np.any((dfm[:,:-2]!=0)&(dfm[:,1:-1]==0)&(dfm[:,2:]!=0), axis=1)
 ds2 = ds1[part2]
-# incorrect -- this catches NO groups of > 2, we just need to make
-# sure there is at least ONE group of only two
-print("Part 2:", len(ds2), len(ds1))
+print("Part 2:", len(ds2))
