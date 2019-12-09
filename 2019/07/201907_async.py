@@ -29,11 +29,13 @@ async def run_program(me: int, prog: List[int], inp: asyncio.Queue, out: asyncio
             pc += 4
         elif op == 3:
             n = await inp.get()
+            #print(me, "got", n)
             i = prog[pc+1]
             prog[i] = n
             pc += 2
         elif op == 4:
             n = get_parameter(prog, prog[pc+1], m[0])
+            #print(me, "sending", n)
             await out.put(n)
             pc += 2
         elif op == 5 or op == 6:
@@ -52,7 +54,7 @@ async def run_program(me: int, prog: List[int], inp: asyncio.Queue, out: asyncio
         else:
             assert False # wtf
 
-async def chain_amps(prog: List[int], phases: List[int]) -> int:
+async def async_chain_amps(prog: List[int], phases: List[int]) -> int:
     np = len(phases)
     queues: Dict[int,asyncio.Queue] = {}
     for i,ph in enumerate(phases):
@@ -68,19 +70,18 @@ async def chain_amps(prog: List[int], phases: List[int]) -> int:
     sig = 0
     await queues[0].put(sig)
     await asyncio.gather(*tasks)
-    sig = await queues[np-1].get()
+    sig = await queues[0].get()
     return sig
 
+def chain_amps(prog: List[int], phases: List[int]) -> int:
+    return asyncio.run(async_chain_amps(prog, phases))
 
 def part_two(prog: List[int]) -> Tuple[int,List[int]]:
     mxsig = -99999999999
     mxperm : List[int] = []
     for p in itertools.permutations([5,6,7,8,9]):
         pl = list(p)
-        #loop = asyncio.get_event_loop()
-        #sig = chain_amps(prog, pl)
-        #sig = loop.run_until_complete(chain_amps(prog, pl))
-        sig = asyncio.run(chain_amps(prog, pl))
+        sig = chain_amps(prog, pl)
         if sig > mxsig:
             mxsig = sig
             mxperm = pl
@@ -89,9 +90,9 @@ def part_two(prog: List[int]) -> Tuple[int,List[int]]:
 def rc(s: str) -> List[int]:
     return [int(n) for n in s.split(",")]
 
-#assert chain_amps(rc("3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5"), [9,8,7,6,5]) == 139629729
+assert chain_amps(rc("3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5"), [9,8,7,6,5]) == 139629729
 
-def main():
+def main() -> None:
     sg,prm = part_two(rc(open("input.txt").read()))
     print(sg,prm)
 
