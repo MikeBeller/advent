@@ -163,10 +163,11 @@ class Robot:
         elif self.direction == 270:
             self.loc = Point(self.loc.x - 1, self.loc.y)
 
-def part_one(pcode: str) -> int:
+def run_robot(pcode: str, start_color: int) -> Tuple[DefaultDict[Point,int], Dict[Point,int]]:
     rob = Robot(pcode)
     field: DefaultDict[Point, int] = defaultdict(int)
     painted: Dict[Point, int] = {}
+    field[rob.loc] = start_color
 
     while True:
         o = rob.step(field[rob.loc])
@@ -181,8 +182,11 @@ def part_one(pcode: str) -> int:
             rob.turn(90)
         rob.move()
 
-    return sum(painted.values())
+    return (field, painted)
 
+def part_one(pcode: str) -> int:
+    field,painted = run_robot(pcode, 0)
+    return sum(painted.values())
 
 def main() -> None:
     run_tests()
