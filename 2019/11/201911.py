@@ -1,3 +1,4 @@
+import itertools
 from typing import List,Tuple,Callable,DefaultDict,Dict,Optional
 from collections import defaultdict, namedtuple
 
@@ -163,36 +164,59 @@ class Robot:
         elif self.direction == 270:
             self.loc = Point(self.loc.x - 1, self.loc.y)
 
-def run_robot(pcode: str, start_color: int) -> Tuple[DefaultDict[Point,int], Dict[Point,int]]:
+class Panel:
+    def __init__(self):
+        self.color: int = 0
+        self.painted: int = 0
+
+def run_robot(pcode: str, start_color: int) -> DefaultDict[Point,Panel]:
     rob = Robot(pcode)
-    field: DefaultDict[Point, int] = defaultdict(int)
-    painted: Dict[Point, int] = {}
-    field[rob.loc] = start_color
+    field: DefaultDict[Point, Panel] = defaultdict(Panel)
+    field[rob.loc].color = start_color
 
     while True:
-        o = rob.step(field[rob.loc])
+        o = rob.step(field[rob.loc].color)
         if o is None:
             break
         (color, turn) = o
-        field[rob.loc] = color
-        painted[rob.loc] = 1
+        field[rob.loc].color = color
+        field[rob.loc].painted = True
         if turn == 0:
             rob.turn(-90)
         else:
             rob.turn(90)
         rob.move()
 
-    return (field, painted)
+    return field
 
 def part_one(pcode: str) -> int:
-    field,painted = run_robot(pcode, 0)
-    return sum(painted.values())
+    field = run_robot(pcode, 0)
+    return sum(p.painted for p in field.values())
+
+def part_two(pcode: str) -> None:
+    field = run_robot(pcode, 1)
+    
+    panels = sorted(field.items(), key=lambda t: (t[0].y,t[0].x))
+    for k,g in itertools.groupby(panels, lambda p: p[0].y):
+        s = ""
+        ps = list(g)
+        i = 0
+        while ps:
+            pt,panel = ps.pop(0)
+            while i < pt.x:
+                print(' ', sep="",end="")
+                s += ' '
+                i += 1
+            print(' ' if panel.color == 0 else '@',sep="",end="")
+        print()
 
 def main() -> None:
     run_tests()
     pcode = open("input.txt").read().strip()
     r = part_one(pcode)
     print(r)
+
+    part_two(pcode)
 
 if __name__ == '__main__':
     main()
