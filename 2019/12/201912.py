@@ -50,6 +50,22 @@ def run(pos, nsteps):
         step(pos, vel)
     return energy(pos, vel)
 
+def run_to_repeat(pos):
+    vel = np.zeros(pos.shape, dtype=np.int64)
+    ns = 0
+    ps = {}
+    while True:
+        step(pos, vel)
+        pss = str(pos)
+        vls = str(vel)
+        if (pss,vls) in ps:
+            break
+        ps[(pss,vls)] = True
+        ns += 1
+        if ns % 1000 == 0:
+            print("steps:", ns)
+    return ns
+
 def test_energy():
     pos = np.array([[-1, 0, 2], [2, -10, -7], [4, -8, 8], [3, 5, -1]])
     en = run(pos, 10)
@@ -63,5 +79,20 @@ def part_one():
     ans = run(pos, 1000)
     print(ans)
 
-part_one()
+def part_two():
+    pos = read_data(open("input.txt").read())
+    ans = run_to_repeat(pos)
+    print(ans)
+
+def test_part_two():
+    pos = read_data(test1)
+    r = run_to_repeat(pos)
+    assert r == 2772
+
+def main():
+    part_one()
+    test_part_two()
+    part_two()
+
+main()
 
