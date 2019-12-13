@@ -1,14 +1,13 @@
-from typing import List,Callable,DefaultDict
+from typing import List,DefaultDict,Iterable
 from collections import defaultdict
 
 class Intcode:
-    def __init__(self, prog: List[int], rdr: Callable[[],int], wrtr: Callable[[int],None]) -> None:
-
+    def __init__(self, prog: List[int], input: Iterable[int]) -> None:
         self.memory: DefaultDict[int, int] = defaultdict(int)
         for i,v in enumerate(prog):
             self.memory[i] = v
-        self.reader = rdr
-        self.writer = wrtr
+        self.input = iter(input)
+        self.output: List[int] = []
         self.pc = 0
         self.relative_base = 0
 
@@ -45,6 +44,13 @@ class Intcode:
         while self.step() != 99:
             pass
 
+    def run_to_event(self) -> int:
+        while True:
+            ev = self.step()
+            if ev in [99, 3, 4]:
+                break
+        return ev
+
     def step(self) -> int:
         o = self.get_mem(self.pc)
         if o == 99:
@@ -62,12 +68,12 @@ class Intcode:
                 self.set_parameter(self.pc+3, m[2], a * b)
             self.pc += 4
         elif op == 3:
-            n = self.reader()
+            n = next(self.input)
             self.set_parameter(self.pc+1, m[0], n)
             self.pc += 2
         elif op == 4:
             n = self.get_parameter(self.pc+1, m[0])
-            self.writer(n)
+            self.output.append(n)
             self.pc += 2
         elif op == 5 or op == 6:
             a = self.get_parameter(self.pc+1, m[0])
@@ -95,17 +101,9 @@ class Intcode:
 
 def intcode_test(prgstr: str, inp: List[int]) -> List[int]:
     prog = [int(s) for s in prgstr.split(",")]
-
-    def reader() -> int:
-        return inp.pop(0)
-
-    out: List[int] = []
-    def writer(n: int) -> None:
-        out.append(n)
-
-    ic = Intcode(prog, reader, writer)
+    ic = Intcode(prog, inp)
     ic.run()
-    return out
+    return ic.output
 
 def run_tests() -> None:
     # day 5 base tests
