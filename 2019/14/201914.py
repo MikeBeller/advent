@@ -143,10 +143,7 @@ def main() -> None:
     data = read_data(open("input.txt").read())
     ans1 = part_one(data)
     print("PART 1", ans1)
-
     test_part_two()
-
-
 
 main()
 
