@@ -1,5 +1,5 @@
 from collections import namedtuple,defaultdict
-from typing import List,Tuple,Dict,NamedTuple,DefaultDict
+from typing import List,Tuple,Dict,NamedTuple,DefaultDict,Any
 import math
 
 class Pair(NamedTuple):
@@ -19,7 +19,8 @@ def read_data(instr: str) -> List[Tuple[Pair,List[Pair]]]:
         data.append((to, [split_pair(ps) for ps in l.split(",")]))
     return data
 
-def part_one(data: List[Tuple[Pair,List[Pair]]]) -> int:
+
+def reaction_engine(data: List[Tuple[Pair,List[Pair]]]) -> Any:
     d: Dict[str,Tuple[int,List[Pair]]] = {}
     for (to, froms) in data:
         assert to not in d
@@ -28,6 +29,7 @@ def part_one(data: List[Tuple[Pair,List[Pair]]]) -> int:
     assert d['FUEL'][0] == 1
     needs: DefaultDict[str,int] = defaultdict(int)
     needs['FUEL'] = 1
+    reactions = []
 
     while True:
         if 'ORE' in needs and needs['ORE'] > 0 and all(v <= 0 for k,v in needs.items() if k != 'ORE'):
@@ -40,18 +42,20 @@ def part_one(data: List[Tuple[Pair,List[Pair]]]) -> int:
                 del needs[ndn]
                 continue
 
-            #print("TRYING", ndn, ndq)
             mkq,kids = d[ndn]
             for k in kids:
-                #print("KID", k)
                 needs[k.nm] += k.q
             needs[ndn] -= mkq
-            #print("DECREMENTED", ndn, "to", needs[ndn])
+            reactions.append((mkq,kids))
         #print(needs)
 
     #print('DONE')
     #print(needs)
-    return needs['ORE']
+    return needs['ORE'], reactions, needs
+
+def part_one(data: List[Tuple[Pair,List[Pair]]]) -> int:
+    ore, reactions, needs = reaction_engine(data)
+    return ore
 
 def test_part_one(s: str) -> int:
     return part_one(read_data(s))
@@ -107,10 +111,30 @@ assert test_part_one("""171 ORE => 8 CNZTR
 7 XCVML => 6 RJRHP
 5 BHXH, 4 VRPVC => 5 LTCX""") == 2210736
 
+def test_part_two():
+    test1 = """10 ORE => 10 A\n1 ORE => 1 B\n7 A, 1 B => 1 C\n7 A, 1 C => 1 D\n7 A, 1 D => 1 E\n7 A, 1 E => 1 FUEL"""
+    test2 = """9 ORE => 2 A
+8 ORE => 3 B
+7 ORE => 5 C
+3 A, 4 B => 1 AB
+5 B, 7 C => 1 BC
+4 C, 1 A => 1 CA
+2 AB, 3 BC, 4 CA => 1 FUEL"""
+    data = read_data(test2)
+    ore, reactions, needs = reaction_engine(data)
+    print(ore)
+    print("\n".join(str(r) for r in reactions))
+    print(needs)
+
+
 def main() -> None:
     data = read_data(open("input.txt").read())
     ans1 = part_one(data)
     print("PART 1", ans1)
+
+    test_part_two()
+
+
 
 main()
 
