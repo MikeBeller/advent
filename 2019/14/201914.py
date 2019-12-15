@@ -32,24 +32,25 @@ def part_one(data: List[Tuple[Pair,List[Pair]]]) -> int:
     while True:
         if 'ORE' in needs and needs['ORE'] > 0 and all(v <= 0 for k,v in needs.items() if k != 'ORE'):
                 break
-        for ndn,ndq in list(needs.items()): # list so we can mod the dict
+        for ndn in list(needs.keys()): # list so we can mod the dict during the loop
+            ndq = needs[ndn]
             if ndn == 'ORE' or ndq < 0:
                 continue
             if ndq == 0:
                 del needs[ndn]
                 continue
 
-            print("TRYING", ndn, ndq)
+            #print("TRYING", ndn, ndq)
             mkq,kids = d[ndn]
             for k in kids:
-                print("KID", k)
+                #print("KID", k)
                 needs[k.nm] += k.q
             needs[ndn] -= mkq
-            print("DECREMENTED", ndn, "to", needs[ndn])
-        print(needs)
+            #print("DECREMENTED", ndn, "to", needs[ndn])
+        #print(needs)
 
-    print('DONE')
-    print(needs)
+    #print('DONE')
+    #print(needs)
     return needs['ORE']
 
 def test_part_one(s: str) -> int:
@@ -75,7 +76,7 @@ assert test_part_one("""157 ORE => 5 NZVS
 165 ORE => 2 GPVTF
 3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT""") == 13312
 
-print( test_part_one("""2 VPVL, 7 FWMGM, 2 CXFTF, 11 MNCFX => 1 STKFG
+assert test_part_one("""2 VPVL, 7 FWMGM, 2 CXFTF, 11 MNCFX => 1 STKFG
 17 NVRVD, 3 JNWZP => 8 VPVL
 53 STKFG, 6 MNCFX, 46 VJHF, 81 HVMC, 68 CXFTF, 25 GNMV => 1 FUEL
 22 VJHF, 37 MNCFX => 5 FWMGM
@@ -86,9 +87,9 @@ print( test_part_one("""2 VPVL, 7 FWMGM, 2 CXFTF, 11 MNCFX => 1 STKFG
 145 ORE => 6 MNCFX
 1 NVRVD => 8 CXFTF
 1 VJHF, 6 MNCFX => 4 RFSQX
-176 ORE => 6 VJHF"""))# == 180697
+176 ORE => 6 VJHF""") == 180697
 
-print( test_part_one("""171 ORE => 8 CNZTR
+assert test_part_one("""171 ORE => 8 CNZTR
 7 ZLQW, 3 BMBT, 9 XCVML, 26 XMNCP, 1 WPTQ, 2 MZWV, 1 RJRHP => 4 PLWSL
 114 ORE => 4 BHXH
 14 VRPVC => 6 BMBT
@@ -104,12 +105,12 @@ print( test_part_one("""171 ORE => 8 CNZTR
 3 BHXH, 2 VRPVC => 7 MZWV
 121 ORE => 7 VRPVC
 7 XCVML => 6 RJRHP
-5 BHXH, 4 VRPVC => 5 LTCX"""))
+5 BHXH, 4 VRPVC => 5 LTCX""") == 2210736
 
 def main() -> None:
     data = read_data(open("input.txt").read())
     ans1 = part_one(data)
     print("PART 1", ans1)
 
-#main()
+main()
 
