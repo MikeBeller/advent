@@ -20,7 +20,7 @@ def read_data(instr: str) -> List[Tuple[Pair,List[Pair]]]:
     return data
 
 
-def reaction_engine(data: List[Tuple[Pair,List[Pair]]]) -> Any:
+def reaction_engine(data: List[Tuple[Pair,List[Pair]]]) -> Tuple[DefaultDict[str,int],DefaultDict[str,int]]:
     d: Dict[str,Tuple[int,List[Pair]]] = {}
     for (to, froms) in data:
         assert to not in d
@@ -29,7 +29,7 @@ def reaction_engine(data: List[Tuple[Pair,List[Pair]]]) -> Any:
     assert d['FUEL'][0] == 1
     needs: DefaultDict[str,int] = defaultdict(int)
     needs['FUEL'] = 1
-    reactions = []
+    reactions: DefaultDict[str,int] = defaultdict(int)
 
     while True:
         if 'ORE' in needs and needs['ORE'] > 0 and all(v <= 0 for k,v in needs.items() if k != 'ORE'):
@@ -46,16 +46,16 @@ def reaction_engine(data: List[Tuple[Pair,List[Pair]]]) -> Any:
             for k in kids:
                 needs[k.nm] += k.q
             needs[ndn] -= mkq
-            reactions.append((mkq,kids))
+            reactions[ndn] += 1
         #print(needs)
 
     #print('DONE')
     #print(needs)
-    return needs['ORE'], reactions, needs
+    return needs, reactions
 
 def part_one(data: List[Tuple[Pair,List[Pair]]]) -> int:
-    ore, reactions, needs = reaction_engine(data)
-    return ore
+    needs,reactions = reaction_engine(data)
+    return needs['ORE']
 
 def test_part_one(s: str) -> int:
     return part_one(read_data(s))
@@ -111,7 +111,7 @@ assert test_part_one("""171 ORE => 8 CNZTR
 7 XCVML => 6 RJRHP
 5 BHXH, 4 VRPVC => 5 LTCX""") == 2210736
 
-def test_part_two():
+def test_part_two() -> None:
     test1 = """10 ORE => 10 A\n1 ORE => 1 B\n7 A, 1 B => 1 C\n7 A, 1 C => 1 D\n7 A, 1 D => 1 E\n7 A, 1 E => 1 FUEL"""
     test2 = """9 ORE => 2 A
 8 ORE => 3 B
@@ -120,10 +120,22 @@ def test_part_two():
 5 B, 7 C => 1 BC
 4 C, 1 A => 1 CA
 2 AB, 3 BC, 4 CA => 1 FUEL"""
-    data = read_data(test2)
-    ore, reactions, needs = reaction_engine(data)
+
+    test3 = """157 ORE => 5 NZVS
+165 ORE => 6 DCFZ
+44 XJWVT, 5 KHKGT, 1 QDVJ, 29 NZVS, 9 GPVTF, 48 HKGWZ => 1 FUEL
+12 HKGWZ, 1 GPVTF, 8 PSHF => 9 QDVJ
+179 ORE => 7 PSHF
+177 ORE => 5 HKGWZ
+7 DCFZ, 7 PSHF => 2 XJWVT
+165 ORE => 2 GPVTF
+3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT"""  # 13312
+
+    data = read_data(test3)
+    needs,reactions = reaction_engine(data)
+    ore = needs['ORE']
     print(ore)
-    print("\n".join(str(r) for r in reactions))
+    print(reactions)
     print(needs)
 
 
