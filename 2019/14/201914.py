@@ -1,61 +1,49 @@
-from collections import namedtuple,defaultdict
-from typing import List,Tuple,Dict,NamedTuple,DefaultDict,Any
+from typing import List,Tuple,Dict,NamedTuple
 import math
 
 class Pair(NamedTuple):
     nm: str
     q: int
 
+class Formula(NamedTuple):
+    out: Pair
+    kids: List[Pair]
+
 def split_pair(s: str) -> Pair:
     l,r = s.strip().split(" ")
     return Pair(r.strip(), int(l.strip()))
 
-def read_data(instr: str) -> List[Tuple[Pair,List[Pair]]]:
-    #data: List[Tuple[Pair,List[Pair]]] = []
-    data = []
+def read_data(instr: str) -> Dict[str,Formula]:
+    formulas: Dict[str,Formula] = {}
     for line in instr.splitlines():
         l,r = line.strip().split("=>")
-        to = split_pair(r)
-        data.append((to, [split_pair(ps) for ps in l.split(",")]))
-    return data
+        out = split_pair(r)
+        formulas[out.nm] = Formula(out, [split_pair(ps) for ps in l.split(",")])
+    return formulas
 
+def reaction_engine(formulas: Dict[str,Formula], chamber: Dict[str,int]) -> None:
+    """One pass of reaction engine"""
+    for needed_chem in list(chamber.keys()): # list so we can mod the dict during the loop
+        quantity = chamber[needed_chem]
+        if needed_chem == 'ORE' or quantity > 0:
+            continue
+        if quantity == 0:
+            del chamber[needed_chem]
+            continue
 
-def reaction_engine(data: List[Tuple[Pair,List[Pair]]]) -> Tuple[DefaultDict[str,int],DefaultDict[str,int]]:
-    d: Dict[str,Tuple[int,List[Pair]]] = {}
-    for (to, froms) in data:
-        assert to not in d
-        d[to.nm] = (to.q, froms)
+        f = formulas[needed_chem]
+        for k in f.kids:
+            chamber[k.nm] = chamber.get(k.nm, 0) - k.q
+        chamber[needed_chem] += f.out.q
+    return
 
-    assert d['FUEL'][0] == 1
-    needs: DefaultDict[str,int] = defaultdict(int)
-    needs['FUEL'] = 1
-    reactions: DefaultDict[str,int] = defaultdict(int)
-
+def part_one(formulas: Dict[str,Formula]) -> int:
+    chamber: Dict[str,int] = {'FUEL': -1}
     while True:
-        if 'ORE' in needs and needs['ORE'] > 0 and all(v <= 0 for k,v in needs.items() if k != 'ORE'):
-                break
-        for ndn in list(needs.keys()): # list so we can mod the dict during the loop
-            ndq = needs[ndn]
-            if ndn == 'ORE' or ndq < 0:
-                continue
-            if ndq == 0:
-                del needs[ndn]
-                continue
-
-            mkq,kids = d[ndn]
-            for k in kids:
-                needs[k.nm] += k.q
-            needs[ndn] -= mkq
-            reactions[ndn] += 1
-        #print(needs)
-
-    #print('DONE')
-    #print(needs)
-    return needs, reactions
-
-def part_one(data: List[Tuple[Pair,List[Pair]]]) -> int:
-    needs,reactions = reaction_engine(data)
-    return needs['ORE']
+        reaction_engine(formulas, chamber)
+        if 'ORE' in chamber and chamber['ORE'] < 0 and all(v >= 0 for k,v in chamber.items() if k != 'ORE'):
+            break
+    return -chamber['ORE']
 
 def test_part_one(s: str) -> int:
     return part_one(read_data(s))
@@ -131,12 +119,50 @@ def test_part_two() -> None:
 165 ORE => 2 GPVTF
 3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT"""  # 13312
 
-    data = read_data(test3)
-    needs,reactions = reaction_engine(data)
-    ore = needs['ORE']
-    print(ore)
-    print(reactions)
-    print(needs)
+    test5 = """171 ORE => 8 CNZTR
+7 ZLQW, 3 BMBT, 9 XCVML, 26 XMNCP, 1 WPTQ, 2 MZWV, 1 RJRHP => 4 PLWSL
+114 ORE => 4 BHXH
+14 VRPVC => 6 BMBT
+6 BHXH, 18 KTJDG, 12 WPTQ, 7 PLWSL, 31 FHTLT, 37 ZDVW => 1 FUEL
+6 WPTQ, 2 BMBT, 8 ZLQW, 18 KTJDG, 1 XMNCP, 6 MZWV, 1 RJRHP => 6 FHTLT
+15 XDBXC, 2 LTCX, 1 VRPVC => 6 ZLQW
+13 WPTQ, 10 LTCX, 3 RJRHP, 14 XMNCP, 2 MZWV, 1 ZLQW => 1 ZDVW
+5 BMBT => 4 WPTQ
+189 ORE => 9 KTJDG
+1 MZWV, 17 XDBXC, 3 XCVML => 2 XMNCP
+12 VRPVC, 27 CNZTR => 2 XDBXC
+15 KTJDG, 12 BHXH => 5 XCVML
+3 BHXH, 2 VRPVC => 7 MZWV
+121 ORE => 7 VRPVC
+7 XCVML => 6 RJRHP
+5 BHXH, 4 VRPVC => 5 LTCX""" # 460664
+
+    formulas = read_data(test3)
+    chamber: Dict[str,int] = {'FUEL': -1}
+    while True:
+        reaction_engine(formulas, chamber)
+        if 'ORE' in chamber and chamber['ORE'] < 0 and all(v >= 0 for k,v in chamber.items() if k != 'ORE'):
+            break
+
+    mpy = int(1000000000000 // -chamber['ORE'] * 0.9999)
+    for k in chamber.keys():
+        chamber[k] *= mpy
+    fuel = mpy
+    print("Starting with fuel =", mpy)
+
+    print(chamber)
+    while chamber['ORE'] > -1000000000000:
+        oldfuel = fuel; oldore = chamber['ORE']
+        if fuel % 1000 == 0:
+            print(chamber['ORE'], fuel)
+        chamber['FUEL'] = -1
+        while True:
+            reaction_engine(formulas, chamber)
+            if all(v >= 0 for k,v in chamber.items() if k != 'ORE'):
+                break
+        fuel += 1
+
+    print(fuel, chamber, "OLD", oldfuel, oldore)
 
 
 def main() -> None:
