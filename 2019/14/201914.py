@@ -32,9 +32,10 @@ def reaction_engine(formulas: Dict[str,Formula], chamber: Dict[str,int]) -> None
             continue
 
         f = formulas[needed_chem]
+        mpy = int(math.ceil(-quantity / f.out.q))
         for k in f.kids:
-            chamber[k.nm] = chamber.get(k.nm, 0) - k.q
-        chamber[needed_chem] += f.out.q
+            chamber[k.nm] = chamber.get(k.nm, 0) - k.q * mpy
+        chamber[needed_chem] += (f.out.q * mpy)
     return
 
 def part_one(formulas: Dict[str,Formula]) -> int:
@@ -99,16 +100,35 @@ assert test_part_one("""171 ORE => 8 CNZTR
 7 XCVML => 6 RJRHP
 5 BHXH, 4 VRPVC => 5 LTCX""") == 2210736
 
-def test_part_two() -> None:
-    test1 = """10 ORE => 10 A\n1 ORE => 1 B\n7 A, 1 B => 1 C\n7 A, 1 C => 1 D\n7 A, 1 D => 1 E\n7 A, 1 E => 1 FUEL"""
-    test2 = """9 ORE => 2 A
-8 ORE => 3 B
-7 ORE => 5 C
-3 A, 4 B => 1 AB
-5 B, 7 C => 1 BC
-4 C, 1 A => 1 CA
-2 AB, 3 BC, 4 CA => 1 FUEL"""
+def part_two(formulas: Dict[str,Formula]) -> int:
+    # Run the same thing as part one but with chunks of
+    # "bump" fuels per run.  Decrease bump size as you get
+    # close to 1 trillion ore
+    chamber: Dict[str,int] = {'FUEL': -1000000, 'ORE': 0}
+    fuel = 0
+    bump = 10000
+    while chamber['ORE'] > -1000000000000:
+        oldfuel = fuel; oldore = chamber['ORE']
+        #if fuel % 1 == 0:
+        #    print(chamber['ORE'], fuel, bump)
+        chamber['FUEL'] = -bump
+        while True:
+            reaction_engine(formulas, chamber)
+            if all(v >= 0 for k,v in chamber.items() if k != 'ORE'):
+                break
+        fuel += bump
+        diff = chamber['ORE'] - oldore
+        ore_per_fuel = diff / bump
+        remaining_ore = -1000000000000 - chamber['ORE']
+        bump = int(0.1 * remaining_ore / ore_per_fuel)
+        if bump < 1:
+            bump = 1
 
+    #print(fuel, chamber, "OLD", oldfuel, oldore)
+    return oldfuel
+
+
+def test_part_two() -> None:
     test3 = """157 ORE => 5 NZVS
 165 ORE => 6 DCFZ
 44 XJWVT, 5 KHKGT, 1 QDVJ, 29 NZVS, 9 GPVTF, 48 HKGWZ => 1 FUEL
@@ -118,6 +138,7 @@ def test_part_two() -> None:
 7 DCFZ, 7 PSHF => 2 XJWVT
 165 ORE => 2 GPVTF
 3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT"""  # 13312
+
 
     test5 = """171 ORE => 8 CNZTR
 7 ZLQW, 3 BMBT, 9 XCVML, 26 XMNCP, 1 WPTQ, 2 MZWV, 1 RJRHP => 4 PLWSL
@@ -138,38 +159,19 @@ def test_part_two() -> None:
 5 BHXH, 4 VRPVC => 5 LTCX""" # 460664
 
     formulas = read_data(test3)
-    chamber: Dict[str,int] = {'FUEL': -1}
-    while True:
-        reaction_engine(formulas, chamber)
-        if 'ORE' in chamber and chamber['ORE'] < 0 and all(v >= 0 for k,v in chamber.items() if k != 'ORE'):
-            break
+    assert part_two(formulas) == 82892753
 
-    mpy = int(1000000000000 // -chamber['ORE'] * 0.9999)
-    for k in chamber.keys():
-        chamber[k] *= mpy
-    fuel = mpy
-    print("Starting with fuel =", mpy)
-
-    print(chamber)
-    while chamber['ORE'] > -1000000000000:
-        oldfuel = fuel; oldore = chamber['ORE']
-        if fuel % 1000 == 0:
-            print(chamber['ORE'], fuel)
-        chamber['FUEL'] = -1
-        while True:
-            reaction_engine(formulas, chamber)
-            if all(v >= 0 for k,v in chamber.items() if k != 'ORE'):
-                break
-        fuel += 1
-
-    print(fuel, chamber, "OLD", oldfuel, oldore)
-
+    formulas = read_data(test5)
+    assert part_two(formulas) == 460664
 
 def main() -> None:
     data = read_data(open("input.txt").read())
     ans1 = part_one(data)
     print("PART 1", ans1)
     test_part_two()
+
+    ans2 = part_two(data)
+    print("PART 2", ans2)
 
 main()
 
