@@ -1,46 +1,39 @@
-from typing import List, Tuple, Iterator
-from curses import wrapper
+from typing import List, Tuple, Dict, NamedTuple
 from intcode import Intcode
 
-def update_dir(x: int, y: int, dr: int) -> Tuple[int,int]:
-    nx = x
-    ny = y
-    if dr == 1:
-        ny = y - 1
-    elif dr == 2:
-        ny = y + 1
-    elif dr == 3:
-        nx = x - 1
-    else:
-        nx = x + 1
-    return nx, ny
+class Point(NamedTuple):
+    x: int
+    y: int
 
-def show(scr, prog: List[int]) -> int:
-    direction = 1
-    def thunk() -> Iterator[int]:
+class Robot:
+    def __init__(self, prog: List[int]):
+        self.field: Dict[Point,str] = {}
+        self.pos = Point(0, 0)
+        self.ic = Intcode(prog)
+        self.dir = 1
+        self.upper_left = Point(0,0)
+        self.lower_right = Point(0,0)
+
+    def update_dir(x: int, y: int, dr: int) -> Tuple[int,int]:
+        nx = x
+        ny = y
+        if dr == 1:
+            ny = y - 1
+        elif dr == 2:
+            ny = y + 1
+        elif dr == 3:
+            nx = x - 1
+        else:
+            nx = x + 1
+        return nx, ny
+
+    def run(self):
         while True:
-            yield direction
-
-    ic = Intcode(prog, thunk())
-    x = 20
-    y = 20
-    while True:
-        scr.addstr(x, y, "@")
-        op = ic.run_to_event()
-        if op == 99:
-            break
-        elif op == 4:
-            nx,ny = update_dir(x, y, direction)
-            out = ic.output.pop(0)
-            if out == 0:
-                scr.addstr(nx, ny, "#")
-                direction = ((direction-1) + 1) % 4 + 1
-            elif out == 1:
-                scr.addstr(nx, ny, '.')
-                x = nx; y = ny
-            else:
-                scr.addstr(nx, ny, 'x')
-                x = nx; y = ny
+            ev = self.ic.step()
+            if ev == 99:
+                break
+            elif ev == 3:
+                self.update_dir()
 
 
 
@@ -48,8 +41,8 @@ def show(scr, prog: List[int]) -> int:
 
 def main() -> None:
     prog = [int(s) for s in open("input.txt").read().strip().split(",")]
-    wrapper(show, prog)
-
+    robot = Robot(prog)
+    robot.run()
 
 main()
 

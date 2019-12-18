@@ -6,10 +6,11 @@ class Intcode:
         self.memory: DefaultDict[int, int] = defaultdict(int)
         for i,v in enumerate(prog):
             self.memory[i] = v
-        self.input = iter(input)
+        self.input = list(input)
         self.output: List[int] = []
         self.pc = 0
         self.relative_base = 0
+        self.awaiting_input = False
 
     def get_mem(self, addr: int) -> int:
         assert addr >= 0
@@ -27,17 +28,14 @@ class Intcode:
             r = self.get_mem(param) 
         else: # relative
             r = self.get_mem(param + self.relative_base)
-        #print("GET", addr, param, mode, "GOT", r)
         return r
 
     def set_parameter(self, addr: int, mode: int, val: int) -> None:
         assert mode != 1, "Can't store to immediate address"
         param = self.get_mem(addr)
         if mode == 0:
-            #print("setting", param, "to", val)
             self.set_mem(param, val)
         else:
-            #print("setting", self.relative_base + param, "to", val)
             self.set_mem(self.relative_base + param, val)
 
     def run(self) -> None:
@@ -68,9 +66,13 @@ class Intcode:
                 self.set_parameter(self.pc+3, m[2], a * b)
             self.pc += 4
         elif op == 3:
-            n = next(self.input)
-            self.set_parameter(self.pc+1, m[0], n)
-            self.pc += 2
+            if not self.awaiting_input:
+                self.awaiting_input = True
+            else:
+                self.awaiting_input = False
+                n = self.input.pop(0)
+                self.set_parameter(self.pc+1, m[0], n)
+                self.pc += 2
         elif op == 4:
             n = self.get_parameter(self.pc+1, m[0])
             self.output.append(n)
