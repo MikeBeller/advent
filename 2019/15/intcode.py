@@ -73,6 +73,7 @@ class Intcode:
                 n = self.input.pop(0)
                 self.set_parameter(self.pc+1, m[0], n)
                 self.pc += 2
+                return -3 # second half of type 3 instruction
         elif op == 4:
             n = self.get_parameter(self.pc+1, m[0])
             self.output.append(n)
