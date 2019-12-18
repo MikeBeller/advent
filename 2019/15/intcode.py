@@ -2,7 +2,7 @@ from typing import List,DefaultDict,Iterable
 from collections import defaultdict
 
 class Intcode:
-    def __init__(self, prog: List[int], input: Iterable[int]) -> None:
+    def __init__(self, prog: List[int], input: Iterable[int]=[]) -> None:
         self.memory: DefaultDict[int, int] = defaultdict(int)
         for i,v in enumerate(prog):
             self.memory[i] = v
