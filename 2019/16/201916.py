@@ -20,24 +20,6 @@ def fft_mat(digstr, nphase):
         ds = ds % 10
     return ds
 
-def fft_pwr(digstr, nphase):
-    ds = digs(digstr)
-    n = len(ds)
-    a = np.zeros((n,n), dtype=np.int32)
-    for i in range(1,n+1):
-        ln = (4 * i) - 1
-        mpy = int(math.ceil(n/ln))
-        a[i-1,:] = np.tile(np.repeat([0,1,0,-1], [i,i,i,i]), mpy)[1:n+1]
-    ap = np.linalg.matrix_power(a, nphase)
-    ap = np.abs(ap)
-    ap = ap % 10
-    print(ap)
-    ds = np.dot(ap, ds)
-    ds = np.abs(ds)
-    ds = ds % 10
-    print(ds)
-    return ds
-
 def fft_vec(digstr, nphase):
     ds = digs(digstr)
     n = len(ds)
@@ -54,7 +36,12 @@ def fft_vec(digstr, nphase):
         ds[:] = ds2
     return ds
 
-
+def fft_sub(digstr, reps, nphase):
+    ds = digs(digstr)
+    n = len(ds)
+    for ph in range(nphase):
+        for di in range(digstr):
+            lcm = np.lcm(n, di)
 
 fft = fft_mat
 assert np.all(fft(b'12345678', 4) == digs(b'01029498'))
