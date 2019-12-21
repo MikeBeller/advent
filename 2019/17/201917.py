@@ -1,5 +1,5 @@
 from intcode import Intcode
-from typing import Dict, NamedTuple, List, Iterator, MutableMapping
+from typing import Dict, NamedTuple, List, Iterator, MutableMapping, Set
 #from collections.abc import MutableMapping
 from io import StringIO
 
@@ -32,10 +32,6 @@ class Map(MutableMapping[Point,str]):
 
     def __len__(self) -> int:
         return len(self.m)
-
-
-def char_to_dir(c: str) -> int:
-    return {'^': 0, '>': 1, 'v': 2, '<': 3}[c]
 
 class Robot:
     robot_dirs = {'^': 0, '>': 1, 'v': 2, '<': 3, 'X': -1}
@@ -74,18 +70,80 @@ class Robot:
                 c = self.m.get(loc, '.')
                 if loc == self.loc:
                     c = self.robot_chars[self.dir]
-                print(self.m.get(Point(x,y),'.'), sep="", end="")
+                print(c, sep="", end="")
             print(sep="")
 
-    def follow_path(self) -> None:
-        pass
+    def next_step(self, p: Point, dr: int) -> Point:
+        nx = p.x
+        ny = p.y
+        if dr == 0:
+            ny = p.y - 1
+        elif dr == 1:
+            nx = p.x + 1
+        elif dr == 2:
+            ny = p.y + 1
+        elif dr == 3:
+            nx = p.x - 1
+        else:
+            assert False, "Tried to move in invalid direction"
+        return Point(nx, ny)
 
+    def step_along_path(self) -> bool:
+        nxs = self.next_step(self.loc, self.dir)
+        if self.m[nxs] != '#':
+            return False
+        self.loc = nxs
+        return True
+
+    def left_of(self, dr: int) -> int:
+        assert dr != -1
+        return (dr - 1) % 4
+
+    def right_of(self, dr: int) -> int:
+        assert dr != -1
+        return (dr + 1) % 4
+
+    def at_crossroads(self) -> bool:
+        nxs = self.next_step(self.loc, self.dir)
+        if self.m[nxs] != '#':
+            return False
+        lft = self.next_step(self.loc, self.left_of(self.dir))
+        rgt = self.next_step(self.loc, self.right_of(self.dir))
+        if self.m[lft] == '#' and self.m[rgt] == '#':
+            return True
+        return False
+
+    def turn_to_path(self) -> None:
+        lft = self.next_step(self.loc, self.left_of(self.dir))
+        if self.m[lft] == '#':
+            self.dir = self.left_of(self.dir)
+        rgt = self.next_step(self.loc, self.right_of(self.dir))
+        if self.m[rgt] == '#':
+            self.dir = self.right_of(self.dir)
+
+    def find_crosses(self) -> Set[Point]:
+        cross: Set[Point] = set()
+        self.turn_to_path()
+        while self.step_along_path():
+            if self.at_crossroads():
+                cross.add(self.loc)
+            nxs = self.next_step(self.loc, self.dir)
+            if self.m[nxs] != '#':
+                self.turn_to_path()
+        return cross
+
+def part_one(prog: List[int]) -> int:
+    r = Robot(prog)
+    r.read_map()
+    #r.print_map()
+    cr = r.find_crosses()
+    #print(cr)
+    return sum(p.x * p.y for p in cr)
 
 def main() -> None:
     prog = [int(s) for s in open("input.txt").read().strip().split(",")]
-    r = Robot(prog)
-    r.read_map()
-    r.print_map()
+    ans1 = part_one(prog)
+    print("Part 1:", ans1)
 
 main()
 
