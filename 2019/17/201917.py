@@ -2,6 +2,7 @@ from intcode import Intcode
 from typing import Dict, NamedTuple, List, Iterator, MutableMapping, Set, Tuple, Union, DefaultDict
 from collections import defaultdict
 from io import StringIO
+import itertools
 
 class Point(NamedTuple):
     x: int
@@ -124,26 +125,7 @@ class Robot:
             return "R"
         return ""
 
-    def simplify_path(self, path: List[str]) -> List[Union[str,int]]:
-        p2: List[Union[str,int]] = []
-        in_run = False
-        ln = 0
-        for c in path:
-            if c == 'L' or c == 'R':
-                if in_run:
-                    p2.append(ln)
-                    ln = 0
-                    in_run = False
-                p2.append(c)
-            elif c == 'F':
-                if in_run:
-                    ln += 1
-                else:
-                    in_run = True
-                    ln = 0
-        return p2
-
-    def trace_path(self) -> Tuple[List[Union[str,int]],Set[Point]]:
+    def trace_path(self) -> Tuple[List[str],Set[Point]]:
         cross: Set[Point] = set()
         path: List[str] = []
         dr = self.turn_to_path()
@@ -157,7 +139,7 @@ class Robot:
             if self.m[nxs] != '#':
                 dr = self.turn_to_path()
                 path.append(dr)
-        return self.simplify_path(path), cross
+        return path, cross
 
 def part_one(prog: List[int]) -> int:
     r = Robot(prog)
@@ -165,36 +147,115 @@ def part_one(prog: List[int]) -> int:
     _,cr = r.trace_path()
     return sum(p.x * p.y for p in cr)
 
-def part_two(prog: List[int]) -> None:
+def simplify_path(path: List[str]) -> bytes:
+    p = bytearray()
+    in_run = False
+    ln = 0
+    for c in path:
+        if c == 'L' or c == 'R':
+            if in_run:
+                p.append(ln)
+                ln = 0
+                in_run = False
+            p.append(254 if c == 'L' else 255)
+        elif c == 'F':
+            if in_run:
+                ln += 1
+            else:
+                in_run = True
+                ln = 1
+    if in_run:
+        p.append(ln)
+    return memoryview(bytes(p))
+
+def pathstr(ps: bytes) -> str:
+    pp: List[str] = []
+    for b in ps:
+        if b == 254:
+            pp.append('L')
+        elif b == 255:
+            pp.append('R')
+        else:
+            pp.append(str(b))
+    return ",".join(pp)
+
+def psplit(ps: List[str], d: str, nm: str) -> List[str]:
+    p2: List[str] = []
+    for p in ps:
+        rest = p
+        while d in rest:
+            l,rest = rest.split(d,1)
+            p2.append(l)
+            p2.append(nm)
+        if rest:
+            p2.append(rest)
+
+    return [s for s in p2 if s not in [',',', ', ' ,']]
+            
+def print_best_substrings(ps: bytes) -> None:
+    # brute force substrings:
+    mn = 5
+    mx = 20
+    subs: DefaultDict[bytes,int] = defaultdict(int)
+    for i in range(len(ps) - mn):
+        for j in range(i+mn, min(i+mx, len(ps))):
+                subs[ps[i:j]] += 1
+
+    ssubs = list(sorted(subs.items(), key=lambda t: t[1]*len(t[0])))
+    ssubs = list(sorted(subs.items(), key=lambda t: t[1]))
+    for p,c in ssubs[-10:]:
+        print(c, len(p), pathstr(p))
+    print(len(ps))
+
+def part_two(prog: List[int]) -> int:
     r = Robot(prog)
     r.read_map()
+    #r.print_map()
     path,cr = r.trace_path()
-    pstr = "".join(str(s) for s in path)
-    print(pstr)
+    ps = simplify_path(path)
 
-    def getsubs(s: str, loc: int) -> Iterator[str]:
-        substr = s[loc:]
-        i = -1
-        while substr:
-            yield substr
-            substr = s[loc:i]
-            i -= 1
+    # Use this to eyeball some candidate substrings
+    print_best_substrings(ps)
 
-    # brute force substrings:
-    subs: DefaultDict[str,int] = defaultdict(int)
-    for i in range(len(pstr)):
-        for sub in getsubs(pstr, i):
-            subs[sub] += 1
+    # Take a look at the path break down into programs
+    pps = pathstr(ps)
+    print(pps)
+    progs = {'A': "L,10,L,12,R,6", 'B': "L,10,R,10,R,6,L,4", 'C': "R,10,L,4,L,4,L,12"}
+    print(progs)
+    ss = [pps]
+    for k,v in progs.items():
+        ss = psplit(ss, v, k)
+    print(ss)
 
-    ssubs = list(sorted(subs.items(), key=lambda t: t[1]))
-    print(ssubs[:10])
+    # Convert the program to the format required by the robot
+    inp = bytearray()
+    inp.extend(bytearray(",".join(ss), 'utf-8'))
+    inp.append(10)
+    for k in "ABC":
+        pr = progs[k]
+        inp.extend(bytearray(pr, 'utf-8'))
+        inp.append(10)
+    inp.append(ord('n'))
+    inp.append(10)
+    print(inp)
+
+    # Run the robot with this input
+    assert prog[0] == 1
+    prog[0] = 2
+    ic = Intcode(prog, inp)
+    ic.run()
+    ans = ic.output.pop()
+    print(str(bytes(ic.output),'utf-8'))
+
+    return ans
 
 def main() -> None:
     prog = [int(s) for s in open("input.txt").read().strip().split(",")]
     ans1 = part_one(prog)
     print("Part 1:", ans1)
 
-    part_two(prog)
+    ans2 = part_two(prog)
+    print("part 2:", ans2)
 
 main()
 
