@@ -1,6 +1,6 @@
 from intcode import Intcode
-from typing import Dict, NamedTuple, List, Iterator, MutableMapping, Set
-#from collections.abc import MutableMapping
+from typing import Dict, NamedTuple, List, Iterator, MutableMapping, Set, Tuple, Union, DefaultDict
+from collections import defaultdict
 from io import StringIO
 
 class Point(NamedTuple):
@@ -113,37 +113,88 @@ class Robot:
             return True
         return False
 
-    def turn_to_path(self) -> None:
+    def turn_to_path(self) -> str:
         lft = self.next_step(self.loc, self.left_of(self.dir))
         if self.m[lft] == '#':
             self.dir = self.left_of(self.dir)
+            return "L"
         rgt = self.next_step(self.loc, self.right_of(self.dir))
         if self.m[rgt] == '#':
             self.dir = self.right_of(self.dir)
+            return "R"
+        return ""
 
-    def find_crosses(self) -> Set[Point]:
+    def simplify_path(self, path: List[str]) -> List[Union[str,int]]:
+        p2: List[Union[str,int]] = []
+        in_run = False
+        ln = 0
+        for c in path:
+            if c == 'L' or c == 'R':
+                if in_run:
+                    p2.append(ln)
+                    ln = 0
+                    in_run = False
+                p2.append(c)
+            elif c == 'F':
+                if in_run:
+                    ln += 1
+                else:
+                    in_run = True
+                    ln = 0
+        return p2
+
+    def trace_path(self) -> Tuple[List[Union[str,int]],Set[Point]]:
         cross: Set[Point] = set()
-        self.turn_to_path()
+        path: List[str] = []
+        dr = self.turn_to_path()
+        if dr != "":
+            path.append(dr)
         while self.step_along_path():
+            path.append('F')
             if self.at_crossroads():
                 cross.add(self.loc)
             nxs = self.next_step(self.loc, self.dir)
             if self.m[nxs] != '#':
-                self.turn_to_path()
-        return cross
+                dr = self.turn_to_path()
+                path.append(dr)
+        return self.simplify_path(path), cross
 
 def part_one(prog: List[int]) -> int:
     r = Robot(prog)
     r.read_map()
-    #r.print_map()
-    cr = r.find_crosses()
-    #print(cr)
+    _,cr = r.trace_path()
     return sum(p.x * p.y for p in cr)
+
+def part_two(prog: List[int]) -> None:
+    r = Robot(prog)
+    r.read_map()
+    path,cr = r.trace_path()
+    pstr = "".join(str(s) for s in path)
+    print(pstr)
+
+    def getsubs(s: str, loc: int) -> Iterator[str]:
+        substr = s[loc:]
+        i = -1
+        while substr:
+            yield substr
+            substr = s[loc:i]
+            i -= 1
+
+    # brute force substrings:
+    subs: DefaultDict[str,int] = defaultdict(int)
+    for i in range(len(pstr)):
+        for sub in getsubs(pstr, i):
+            subs[sub] += 1
+
+    ssubs = list(sorted(subs.items(), key=lambda t: t[1]))
+    print(ssubs[:10])
 
 def main() -> None:
     prog = [int(s) for s in open("input.txt").read().strip().split(",")]
     ans1 = part_one(prog)
     print("Part 1:", ans1)
+
+    part_two(prog)
 
 main()
 
