@@ -36,12 +36,15 @@ def fft_vec(digstr, nphase):
         ds[:] = ds2
     return ds
 
-def fft_sub(digstr, reps, nphase):
-    ds = digs(digstr)
-    n = len(ds)
+def part_two(digstr, nphase):
+    n = len(digstr)
+    offs = int(digstr[:7])
+    assert offs > n/2, "Method assumes offset > len/2"
+    ds = digs(digstr[offs:])
+    ds2 = np.zeros(n, dtype=np.int32)
     for ph in range(nphase):
-        for di in range(digstr):
-            lcm = np.lcm(n, di)
+        ds = np.abs(np.flip(np.cumsum(np.flip(ds)))) % 10
+    return ds[:8]
 
 fft = fft_mat
 assert np.all(fft(b'12345678', 4) == digs(b'01029498'))
@@ -54,9 +57,8 @@ def main():
     ans1 = fft(instr, 100)
     print(ans1[:8])
 
-    #ans2 = fft(instr*10000, 100)
-    #with open("ans2.out","w") as outfile:
-    #    print(ans2, file=outfile)
+    ans2 = part_two(instr*10000, 100)
+    print(ans2)
 
 main()
 
