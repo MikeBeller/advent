@@ -1,4 +1,4 @@
-from typing import Dict,NamedTuple, List, Set
+from typing import Dict, NamedTuple, List, Set, Tuple
 
 class Point(NamedTuple):
     x: int
@@ -33,23 +33,30 @@ def move(p: Point, d: int) -> Point:
     else:
         assert False, "Invalid direction"
 
-def read_data(s: str) -> Dict[Point,Node]:
-    r: Dict[Point,Node] = {}
+def read_data(s: str) -> Tuple[Dict[Point,Node], Dict[str,Point]]:
+    gr: Dict[Point,Node] = {}
+    loc: Dict[str,Point] = {}
     for y,line in enumerate(s.splitlines()):
         for x,c in enumerate(line.strip()):
             if c != '#':
-                r[Point(x,y)] = Node(x, y, c)
+                p = Point(x,y)
+                gr[p] = Node(x, y, c)
+                if c != '.':
+                    loc[c] = p
 
-    for p in r.keys():
+    for p in gr.keys():
         for i in range(4):
             q = move(p, i)
-            if q in r:
-                r[p].conns.add(r[q])
-                r[q].conns.add(r[p])
-    return r
+            if q in gr:
+                gr[p].conns.add(gr[q])
+                gr[q].conns.add(gr[p])
+    return gr, loc
 
-d = read_data(test1)
-print(d)
+def part_one(dstr: str) -> None:
+    gr,loc = read_data(dstr)
+    print(gr)
+    print(loc)
 
+part_one(test1)
 
 
