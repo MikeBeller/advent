@@ -174,3 +174,12 @@ test4 = """########################
 ########################"""
 
 print("TEST4:", part_one(test4))
+
+def main() -> None:
+    inp = open("input.txt").read().strip()
+    ans1 = part_one(inp)
+    print(ans1)
+
+main()
+
+
