@@ -83,7 +83,8 @@ def part_one(dstr: str) -> int:
 
     s = State(pos=loc['@'], total_dist=0, unlocked=frozenset(), have_keys=frozenset())
     q = deque([s])
-    paths: List[State] = []
+    #paths: List[State] = []
+    min_dist = 9999999999
     count = 0
     while q:
         # find candidate moves
@@ -101,7 +102,7 @@ def part_one(dstr: str) -> int:
         candidates.sort(key=lambda p: p[1])  # sort ascending by distance to favor close choices
         #print("CANDIDATES:", candidates)
         # pursue each move until we have all keys
-        for name,dist in candidates[:3]:
+        for name,dist in candidates:
             if is_door(name):
                 assert name.lower() in s.have_keys
                 #print("OPEN DOOR", name)
@@ -109,8 +110,9 @@ def part_one(dstr: str) -> int:
                     total_dist=s.total_dist + dist,
                     unlocked=s.unlocked | frozenset([name]),
                     have_keys=s.have_keys)
-                q.append(s2)      #BFS
-                #q.appendleft(s2)  #DFS
+                if s2.total_dist < min_dist:
+                    #q.append(s2)      #BFS
+                    q.appendleft(s2)  #DFS
             elif is_key(name):
                 #print("PICK KEY", name)
                 s2 = State(pos=loc[name],
@@ -119,21 +121,24 @@ def part_one(dstr: str) -> int:
                         have_keys=s.have_keys | frozenset(name))
                 if s2.have_keys == all_keys:
                     #print("ADDING PATH", s2)
-                    paths.append(s2)
+                    #paths.append(s2)
+                    if s2.total_dist < min_dist:
+                        min_dist = s2.total_dist
                 else:
-                    q.append(s2)     # BFS
-                    #q.appendleft(s2)  # DFS
+                    if s2.total_dist < min_dist:
+                        #q.append(s2)     # BFS
+                        q.appendleft(s2)  # DFS
         #print("Q:", q)
         count += 1
-        if count > 1000000: break
+        if count > 10000000: break
 
-    print(len(q))
-    if len(q) > 1:
-        print(q[-1])
-    ms = min(paths, key=lambda s: s.total_dist)
+    #print(len(q))
+    #if len(q) > 1:
+    #    print(q[-1])
+    #ms = min(paths, key=lambda s: s.total_dist)
     print(count)
-    print("MIN:", ms)
-    return ms.total_dist
+    print("MIN:", min_dist)
+    return min_dist
 
 test1 = """#########
 #b.A.@.a#
@@ -147,7 +152,7 @@ test2 = """########################
 #d.....................#
 ########################"""
 
-print(part_one(test2))
+print("TEST2:", part_one(test2))
 
 test3 = """#################
 #i.G..c...e..H.p#
@@ -159,7 +164,7 @@ test3 = """#################
 #l.F..d...h..C.m#
 #################"""
 
-print(part_one(test3))
+#print("TEST3:", part_one(test3))
 
 test4 = """########################
 #@..............ac.GI.b#
@@ -168,4 +173,4 @@ test4 = """########################
 ###g#h#i################
 ########################"""
 
-print(part_one(test4))
+print("TEST4:", part_one(test4))
