@@ -105,10 +105,12 @@ def part_one(dstr: str) -> int:
             if is_door(name):
                 assert name.lower() in s.have_keys
                 #print("OPEN DOOR", name)
-                q.append(State(pos=loc[name],
+                s2 = State(pos=loc[name],
                     total_dist=s.total_dist + dist,
                     unlocked=s.unlocked | frozenset([name]),
-                    have_keys=s.have_keys))
+                    have_keys=s.have_keys)
+                q.append(s2)      #BFS
+                #q.appendleft(s2)  #DFS
             elif is_key(name):
                 #print("PICK KEY", name)
                 s2 = State(pos=loc[name],
@@ -119,10 +121,11 @@ def part_one(dstr: str) -> int:
                     #print("ADDING PATH", s2)
                     paths.append(s2)
                 else:
-                    q.append(s2)
+                    q.append(s2)     # BFS
+                    #q.appendleft(s2)  # DFS
         #print("Q:", q)
         count += 1
-        if count > 9999999: break
+        if count > 1000000: break
 
     print(len(q))
     if len(q) > 1:
@@ -136,7 +139,7 @@ test1 = """#########
 #b.A.@.a#
 #########"""
 
-#assert part_one(test1) == 8
+assert part_one(test1) == 8
 
 test2 = """########################
 #f.D.E.e.C.b.A.@.a.B.c.#
@@ -144,7 +147,7 @@ test2 = """########################
 #d.....................#
 ########################"""
 
-#print(part_one(test2))
+print(part_one(test2))
 
 test3 = """#################
 #i.G..c...e..H.p#
@@ -165,4 +168,4 @@ test4 = """########################
 ###g#h#i################
 ########################"""
 
-#print(part_one(test4))
+print(part_one(test4))
