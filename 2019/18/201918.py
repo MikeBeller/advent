@@ -55,8 +55,7 @@ def is_door(s: str) -> bool:
 class State(NamedTuple):
     pos: Point
     total_dist: int
-    unlocked: FrozenSet[str]
-    have_keys: FrozenSet[str]
+    keys: FrozenSet[str]
 
 def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
     ds: Dict[str,int] = {}
@@ -66,10 +65,9 @@ def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
         if nd in vs:  # stop because you already visited this node
             return
         vs[nd] = True
-        if is_door(nd.mark) and nd.mark not in s.unlocked:
-            ds[nd.mark] = depth
+        if is_door(nd.mark) and nd.mark.lower() not in s.keys:
             return  # stop this path because you hit a closed door
-        if is_key(nd.mark) and nd.mark not in s.have_keys:
+        if is_key(nd.mark) and nd.mark not in s.keys:
             ds[nd.mark] = depth
         for cn in nd.conns:
             bfs(cn, depth+1)
@@ -78,35 +76,18 @@ def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
     return ds
 
 def find_candidates(dists: Dict[str,int], s: State) -> List[str]:
-    candidates: List[str] = []
-    for name,dist in dists.items():
-        if dist == 0: continue
-        if is_key(name) and name not in s.have_keys:
-            candidates.append(name)
-        if is_door(name) and name not in s.unlocked and name.lower() in s.have_keys:
-            candidates.append(name)
-    return candidates
+    return [k for k in dists.keys() if k not in s.keys]
 
-def apply_move(name: str, dist: int, pos: Point, s: State) -> State:
-    if is_door(name):
-        assert name.lower() in s.have_keys
-        return State(pos=pos,
+def get_key(name: str, dist: int, pos: Point, s: State) -> State:
+    return State(pos=pos,
             total_dist=s.total_dist + dist,
-            unlocked=s.unlocked | frozenset([name]),
-            have_keys=s.have_keys)
-    elif is_key(name):
-        return State(pos=pos,
-                total_dist=s.total_dist + dist,
-                unlocked=s.unlocked,
-                have_keys=s.have_keys | frozenset(name))
-    else:
-        assert False, "WtF?"
+            keys=s.keys | frozenset(name))
 
 def part_one(dstr: str) -> int:
     gr,loc = read_data(dstr)
     all_keys = frozenset(s for s in loc.keys() if is_key(s))
 
-    s = State(pos=loc['@'], total_dist=0, unlocked=frozenset(), have_keys=frozenset())
+    s = State(pos=loc['@'], total_dist=0, keys=frozenset())
     q = deque([s])
     min_dist = 9999999999
     count = 0
@@ -114,14 +95,14 @@ def part_one(dstr: str) -> int:
         # find candidate moves
         s = q.popleft()
         dists = dist_to_stuff_from(gr, s)
-        moves = find_candidates(dists, s)
+        keys = find_candidates(dists, s)
 
-        moves.sort(key=lambda n: dists[n])  # sort ascending by distance to favor close choices
+        keys.sort(key=lambda n: dists[n])  # sort ascending by distance to favor close choices
 
         # pursue each move until we have all keys
-        for name in moves:
-            s2 = apply_move(name, dists[name], loc[name], s)
-            if s2.have_keys == all_keys:
+        for key in keys:
+            s2 = get_key(key, dists[key], loc[key], s)
+            if s2.keys == all_keys:
                 if s2.total_dist < min_dist:
                     min_dist = s2.total_dist
             else:
@@ -146,7 +127,7 @@ test2 = """########################
 #d.....................#
 ########################"""
 
-print("TEST2:", part_one(test2))
+assert part_one(test2) == 86
 
 test3 = """#################
 #i.G..c...e..H.p#
@@ -167,7 +148,7 @@ test4 = """########################
 ###g#h#i################
 ########################"""
 
-print("TEST4:", part_one(test4))
+assert part_one(test4) == 81
 
 def main() -> None:
     inp = open("input.txt").read().strip()
