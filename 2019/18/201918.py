@@ -77,66 +77,60 @@ def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
     bfs(gr[s.pos], 0)
     return ds
 
+def find_candidates(dists: Dict[str,int], s: State) -> List[str]:
+    candidates: List[str] = []
+    for name,dist in dists.items():
+        if dist == 0: continue
+        if is_key(name) and name not in s.have_keys:
+            candidates.append(name)
+        if is_door(name) and name not in s.unlocked and name.lower() in s.have_keys:
+            candidates.append(name)
+    return candidates
+
+def apply_move(name: str, dist: int, pos: Point, s: State) -> State:
+    if is_door(name):
+        assert name.lower() in s.have_keys
+        return State(pos=pos,
+            total_dist=s.total_dist + dist,
+            unlocked=s.unlocked | frozenset([name]),
+            have_keys=s.have_keys)
+    elif is_key(name):
+        return State(pos=pos,
+                total_dist=s.total_dist + dist,
+                unlocked=s.unlocked,
+                have_keys=s.have_keys | frozenset(name))
+    else:
+        assert False, "WtF?"
+
 def part_one(dstr: str) -> int:
     gr,loc = read_data(dstr)
     all_keys = frozenset(s for s in loc.keys() if is_key(s))
 
     s = State(pos=loc['@'], total_dist=0, unlocked=frozenset(), have_keys=frozenset())
     q = deque([s])
-    #paths: List[State] = []
     min_dist = 9999999999
     count = 0
     while q:
         # find candidate moves
         s = q.popleft()
-        #print("STATE", s)
-        ds = dist_to_stuff_from(gr, s)
-        candidates: List[Tuple[str,int]] = []
-        for name,dist in ds.items():
-            if dist == 0: continue  # skip self
-            if is_key(name) and name not in s.have_keys:
-                candidates.append((name,dist))
-            if is_door(name) and name not in s.unlocked and name.lower() in s.have_keys:
-                candidates.append((name,dist))
+        dists = dist_to_stuff_from(gr, s)
+        moves = find_candidates(dists, s)
 
-        candidates.sort(key=lambda p: p[1])  # sort ascending by distance to favor close choices
-        #print("CANDIDATES:", candidates)
+        moves.sort(key=lambda n: dists[n])  # sort ascending by distance to favor close choices
+
         # pursue each move until we have all keys
-        for name,dist in candidates:
-            if is_door(name):
-                assert name.lower() in s.have_keys
-                #print("OPEN DOOR", name)
-                s2 = State(pos=loc[name],
-                    total_dist=s.total_dist + dist,
-                    unlocked=s.unlocked | frozenset([name]),
-                    have_keys=s.have_keys)
+        for name in moves:
+            s2 = apply_move(name, dists[name], loc[name], s)
+            if s2.have_keys == all_keys:
                 if s2.total_dist < min_dist:
-                    #q.append(s2)      #BFS
-                    q.appendleft(s2)  #DFS
-            elif is_key(name):
-                #print("PICK KEY", name)
-                s2 = State(pos=loc[name],
-                        total_dist=s.total_dist + dist,
-                        unlocked=s.unlocked,
-                        have_keys=s.have_keys | frozenset(name))
-                if s2.have_keys == all_keys:
-                    #print("ADDING PATH", s2)
-                    #paths.append(s2)
-                    if s2.total_dist < min_dist:
-                        min_dist = s2.total_dist
-                else:
-                    if s2.total_dist < min_dist:
-                        #q.append(s2)     # BFS
-                        q.appendleft(s2)  # DFS
-        #print("Q:", q)
+                    min_dist = s2.total_dist
+            else:
+                #q.append(s2)      #BFS
+                q.appendleft(s2)  #DFS
+
         count += 1
         if count > 10000000: break
 
-    #print(len(q))
-    #if len(q) > 1:
-    #    print(q[-1])
-    #ms = min(paths, key=lambda s: s.total_dist)
-    print(count)
     print("MIN:", min_dist)
     return min_dist
 
@@ -180,6 +174,6 @@ def main() -> None:
     ans1 = part_one(inp)
     print(ans1)
 
-main()
+#main()
 
 
