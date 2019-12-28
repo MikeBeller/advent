@@ -95,12 +95,12 @@ def part_one(dstr: str) -> int:
         # find candidate moves
         s = q.popleft()
         dists = dist_to_stuff_from(gr, s)
-        keys = find_candidates(dists, s)
+        candidates = find_candidates(dists, s)
 
-        keys.sort(key=lambda n: dists[n])  # sort ascending by distance to favor close choices
+        candidates.sort(key=lambda n: dists[n])  # sort ascending by distance to favor close choices
 
         # pursue each move until we have all keys
-        for key in keys:
+        for key in candidates:
             s2 = get_key(key, dists[key], loc[key], s)
             if s2.keys == all_keys:
                 if s2.total_dist < min_dist:
