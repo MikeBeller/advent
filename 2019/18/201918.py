@@ -56,6 +56,7 @@ class State(NamedTuple):
     pos: Point
     total_dist: int
     keys: FrozenSet[str]
+    depth: int
 
 def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
     ds: Dict[str,int] = {}
@@ -81,13 +82,13 @@ def find_candidates(dists: Dict[str,int], s: State) -> List[str]:
 def get_key(name: str, dist: int, pos: Point, s: State) -> State:
     return State(pos=pos,
             total_dist=s.total_dist + dist,
-            keys=s.keys | frozenset(name))
+            keys=s.keys | frozenset(name), depth=s.depth+1)
 
 def part_one(dstr: str) -> int:
     gr,loc = read_data(dstr)
     all_keys = frozenset(s for s in loc.keys() if is_key(s))
 
-    s = State(pos=loc['@'], total_dist=0, keys=frozenset())
+    s = State(pos=loc['@'], total_dist=0, keys=frozenset(), depth=1)
     q = deque([s])
     min_dist = 9999999999
     count = 0
@@ -95,19 +96,27 @@ def part_one(dstr: str) -> int:
         # find candidate moves
         s = q.popleft()
         dists = dist_to_stuff_from(gr, s)
-        candidates = find_candidates(dists, s)
+        candidate_keys = find_candidates(dists, s)
 
-        candidates.sort(key=lambda n: dists[n])  # sort ascending by distance to favor close choices
+        # sort candidates by distance
+        ranked_candidates = list(sorted(candidate_keys, key=lambda n: dists[n]))
 
         # pursue each move until we have all keys
-        for key in candidates:
+        for key in ranked_candidates[:4]:
             s2 = get_key(key, dists[key], loc[key], s)
             if s2.keys == all_keys:
                 if s2.total_dist < min_dist:
                     min_dist = s2.total_dist
             else:
-                #q.append(s2)      #BFS
-                q.appendleft(s2)  #DFS
+                #q.appendleft(s2)  #DFS
+                q.append(s2)      #BFS
+
+        # heuristic -- if end of a generation, prune queue to max_branch
+        if len(q) > 16 and s.depth > 3 and q[0].depth > s.depth:
+            dd = q[0].depth
+            max_q = 2 ** (s.depth+3)
+            q = deque(list(sorted(q, key=lambda s: s.total_dist))[:max_q])
+            print("GEN:", dd, "New Q Len", len(q))
 
         count += 1
         if count > 10000000: break
@@ -119,7 +128,8 @@ test1 = """#########
 #b.A.@.a#
 #########"""
 
-assert part_one(test1) == 8
+#assert part_one(test1) == 8
+print("TEST1:", part_one(test1))
 
 test2 = """########################
 #f.D.E.e.C.b.A.@.a.B.c.#
@@ -127,7 +137,8 @@ test2 = """########################
 #d.....................#
 ########################"""
 
-assert part_one(test2) == 86
+#assert part_one(test2) == 86
+print("TEST2:", part_one(test2))
 
 test3 = """#################
 #i.G..c...e..H.p#
@@ -139,7 +150,7 @@ test3 = """#################
 #l.F..d...h..C.m#
 #################"""
 
-#print("TEST3:", part_one(test3))
+print("TEST3:", part_one(test3))
 
 test4 = """########################
 #@..............ac.GI.b#
@@ -148,13 +159,14 @@ test4 = """########################
 ###g#h#i################
 ########################"""
 
-assert part_one(test4) == 81
+#assert part_one(test4) == 81
+print("TEST 4:", part_one(test4))
 
 def main() -> None:
     inp = open("input.txt").read().strip()
     ans1 = part_one(inp)
     print(ans1)
 
-#main()
+main()
 
 
