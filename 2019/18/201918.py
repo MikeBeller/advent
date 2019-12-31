@@ -56,7 +56,6 @@ class State(NamedTuple):
     pos: Point
     total_dist: int
     keys: FrozenSet[str]
-    depth: int
 
 def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
     ds: Dict[str,int] = {}
@@ -82,48 +81,43 @@ def find_candidates(dists: Dict[str,int], s: State) -> List[str]:
 def get_key(name: str, dist: int, pos: Point, s: State) -> State:
     return State(pos=pos,
             total_dist=s.total_dist + dist,
-            keys=s.keys | frozenset(name), depth=s.depth+1)
+            keys=s.keys | frozenset(name))
 
 def part_one(dstr: str) -> int:
     gr,loc = read_data(dstr)
     all_keys = frozenset(s for s in loc.keys() if is_key(s))
-    print("NUM KEYS:", len(all_keys))
-    memo: Dict[State, Dict[str,int]] = {}
 
-    s = State(pos=loc['@'], total_dist=0, keys=frozenset(), depth=1)
-    q = deque([s])
-    min_dist = 9999999999
-    while q:
-        # find candidate moves
-        s = q.popleft()
-        if s not in memo:
-            memo[s] = dist_to_stuff_from(gr, s)
-        dists = memo[s]
+    s = State(pos=loc['@'], total_dist=0, keys=frozenset())
+    q = [s]
+    for depth in range(len(all_keys)):
+        print("GEN", depth, "QLEN", len(q))
 
-        candidate_keys = find_candidates(dists, s)
-
-        # sort candidates by distance
-        ranked_candidates = list(sorted(candidate_keys, key=lambda n: dists[n]))
-
-        # pursue each move until we have all keys
-        for key in ranked_candidates:
-            s2 = get_key(key, dists[key], loc[key], s)
-            if s2.keys == all_keys:
-                if s2.total_dist < min_dist:
-                    min_dist = s2.total_dist
+        # organize the queue -- if two candidates have same keys and same position,
+        # keep only the one with the shortest total_path
+        moves: Dict[Tuple[FrozenSet[str],Point],State] = {}
+        for s in q:
+            k = (s.keys,s.pos)
+            if k not in moves:
+                moves[k] = s
             else:
-                #q.appendleft(s2)  #DFS
-                q.append(s2)      #BFS
+                if s.total_dist < moves[k].total_dist:
+                    moves[k] = s
 
-        # heuristic -- if end of a generation, prune queue to max_branch
-        if len(q) > 0 and s.depth > 2 and q[0].depth > s.depth:
-            dd = q[0].depth
-            max_q = 2 ** (s.depth + 2)
-            q = deque(list(sorted(q, key=lambda s: s.total_dist))[:max_q])
-            print("GEN:", dd, "New Q Len", len(q))
+        q = []
+        for s in moves.values():
+            dists = dist_to_stuff_from(gr, s)
 
-    print("MIN:", min_dist)
-    return min_dist
+            candidate_keys = find_candidates(dists, s)
+
+            # pursue each move until we have all keys
+            for key in candidate_keys:
+                s2 = get_key(key, dists[key], loc[key], s)
+                q.append(s2)
+
+    print(len(all_keys), len(q))
+    #print(q)
+    ms = min(q, key=lambda s: s.total_dist)
+    return ms.total_dist
 
 test1 = """#########
 #b.A.@.a#
@@ -151,7 +145,7 @@ test3 = """#################
 #l.F..d...h..C.m#
 #################"""
 
-#print("TEST3:", part_one(test3))
+print("TEST3:", part_one(test3))
 
 test4 = """########################
 #@..............ac.GI.b#
@@ -168,6 +162,6 @@ def main() -> None:
     ans1 = part_one(inp)
     print(ans1)
 
-main()
+#main()
 
 
