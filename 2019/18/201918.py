@@ -87,22 +87,26 @@ def get_key(name: str, dist: int, pos: Point, s: State) -> State:
 def part_one(dstr: str) -> int:
     gr,loc = read_data(dstr)
     all_keys = frozenset(s for s in loc.keys() if is_key(s))
+    print("NUM KEYS:", len(all_keys))
+    memo: Dict[State, Dict[str,int]] = {}
 
     s = State(pos=loc['@'], total_dist=0, keys=frozenset(), depth=1)
     q = deque([s])
     min_dist = 9999999999
-    count = 0
     while q:
         # find candidate moves
         s = q.popleft()
-        dists = dist_to_stuff_from(gr, s)
+        if s not in memo:
+            memo[s] = dist_to_stuff_from(gr, s)
+        dists = memo[s]
+
         candidate_keys = find_candidates(dists, s)
 
         # sort candidates by distance
         ranked_candidates = list(sorted(candidate_keys, key=lambda n: dists[n]))
 
         # pursue each move until we have all keys
-        for key in ranked_candidates[:4]:
+        for key in ranked_candidates:
             s2 = get_key(key, dists[key], loc[key], s)
             if s2.keys == all_keys:
                 if s2.total_dist < min_dist:
@@ -112,14 +116,11 @@ def part_one(dstr: str) -> int:
                 q.append(s2)      #BFS
 
         # heuristic -- if end of a generation, prune queue to max_branch
-        if len(q) > 16 and s.depth > 3 and q[0].depth > s.depth:
+        if len(q) > 0 and s.depth > 2 and q[0].depth > s.depth:
             dd = q[0].depth
-            max_q = 2 ** (s.depth+3)
+            max_q = 2 ** (s.depth + 2)
             q = deque(list(sorted(q, key=lambda s: s.total_dist))[:max_q])
             print("GEN:", dd, "New Q Len", len(q))
-
-        count += 1
-        if count > 10000000: break
 
     print("MIN:", min_dist)
     return min_dist
@@ -150,7 +151,7 @@ test3 = """#################
 #l.F..d...h..C.m#
 #################"""
 
-print("TEST3:", part_one(test3))
+#print("TEST3:", part_one(test3))
 
 test4 = """########################
 #@..............ac.GI.b#
