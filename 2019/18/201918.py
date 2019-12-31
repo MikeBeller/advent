@@ -89,7 +89,7 @@ def part_one(dstr: str) -> int:
 
     s = State(pos=loc['@'], total_dist=0, keys=frozenset())
     q = [s]
-    for depth in range(len(all_keys)):
+    for depth in range(len(all_keys) + 1):
         print("GEN", depth, "QLEN", len(q))
 
         # organize the queue -- if two candidates have same keys and same position,
@@ -102,6 +102,10 @@ def part_one(dstr: str) -> int:
             else:
                 if s.total_dist < moves[k].total_dist:
                     moves[k] = s
+
+        if depth == len(all_keys):
+            q = list(moves.values())
+            break
 
         q = []
         for s in moves.values():
@@ -162,6 +166,6 @@ def main() -> None:
     ans1 = part_one(inp)
     print(ans1)
 
-#main()
+main()
 
 
