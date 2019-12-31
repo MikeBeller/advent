@@ -86,10 +86,11 @@ def get_key(name: str, dist: int, pos: Point, s: State) -> State:
 def part_one(dstr: str) -> int:
     gr,loc = read_data(dstr)
     all_keys = frozenset(s for s in loc.keys() if is_key(s))
+    nkeys = len(all_keys)
 
     s = State(pos=loc['@'], total_dist=0, keys=frozenset())
-    q = [s]
-    for depth in range(len(all_keys) + 1):
+    q = set([s])
+    for depth in range(nkeys):
         print("GEN", depth, "QLEN", len(q))
 
         # organize the queue -- if two candidates have same keys and same position,
@@ -103,11 +104,7 @@ def part_one(dstr: str) -> int:
                 if s.total_dist < moves[k].total_dist:
                     moves[k] = s
 
-        if depth == len(all_keys):
-            q = list(moves.values())
-            break
-
-        q = []
+        q = set([])
         for s in moves.values():
             dists = dist_to_stuff_from(gr, s)
 
@@ -116,10 +113,12 @@ def part_one(dstr: str) -> int:
             # pursue each move until we have all keys
             for key in candidate_keys:
                 s2 = get_key(key, dists[key], loc[key], s)
-                q.append(s2)
+                q.add(s2)
 
-    print(len(all_keys), len(q))
+    print(nkeys, len(q))
     #print(q)
+    assert all(len(s.keys) == nkeys for s in q)
+    print(list(sorted((s.total_dist,"{0.x},{0.y}".format(s.pos)) for s in q)))
     ms = min(q, key=lambda s: s.total_dist)
     return ms.total_dist
 
@@ -127,8 +126,8 @@ test1 = """#########
 #b.A.@.a#
 #########"""
 
-#assert part_one(test1) == 8
-print("TEST1:", part_one(test1))
+assert part_one(test1) == 8
+#print("TEST1:", part_one(test1))
 
 test2 = """########################
 #f.D.E.e.C.b.A.@.a.B.c.#
@@ -136,10 +135,20 @@ test2 = """########################
 #d.....................#
 ########################"""
 
-#assert part_one(test2) == 86
-print("TEST2:", part_one(test2))
+assert part_one(test2) == 86
+#print("TEST2:", part_one(test2))
 
-test3 = """#################
+test3 = """########################
+#...............b.C.D.f#
+#.######################
+#.....@.a.B.c.d.A.e.F.g#
+########################
+"""
+
+assert part_one(test3) == 132
+#print("TEST3:", part_one(test3))
+
+test4 = """#################
 #i.G..c...e..H.p#
 ########.########
 #j.A..b...f..D.o#
@@ -149,17 +158,18 @@ test3 = """#################
 #l.F..d...h..C.m#
 #################"""
 
-print("TEST3:", part_one(test3))
+assert part_one(test4) == 136
+#print("TEST4:", part_one(test4))
 
-test4 = """########################
+test5 = """########################
 #@..............ac.GI.b#
 ###d#e#f################
 ###A#B#C################
 ###g#h#i################
 ########################"""
 
-#assert part_one(test4) == 81
-print("TEST 4:", part_one(test4))
+assert part_one(test5) == 81
+#print("TEST 5:", part_one(test5))
 
 def main() -> None:
     inp = open("input.txt").read().strip()
