@@ -56,6 +56,7 @@ class State(NamedTuple):
     pos: Point
     total_dist: int
     keys: FrozenSet[str]
+    path: str
 
 def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
     ds: Dict[str,int] = {}
@@ -81,14 +82,16 @@ def find_candidates(dists: Dict[str,int], s: State) -> List[str]:
 def get_key(name: str, dist: int, pos: Point, s: State) -> State:
     return State(pos=pos,
             total_dist=s.total_dist + dist,
-            keys=s.keys | frozenset(name))
+            keys=s.keys | frozenset(name),
+            path=s.path + name,
+            )
 
 def part_one(dstr: str) -> int:
     gr,loc = read_data(dstr)
     all_keys = frozenset(s for s in loc.keys() if is_key(s))
     nkeys = len(all_keys)
 
-    s = State(pos=loc['@'], total_dist=0, keys=frozenset())
+    s = State(pos=loc['@'], total_dist=0, keys=frozenset(), path="")
     q = set([s])
     for depth in range(nkeys):
         print("GEN", depth, "QLEN", len(q))
@@ -120,6 +123,7 @@ def part_one(dstr: str) -> int:
     assert all(len(s.keys) == nkeys for s in q)
     print(list(sorted((s.total_dist,"{0.x},{0.y}".format(s.pos)) for s in q)))
     ms = min(q, key=lambda s: s.total_dist)
+    print("PATH", ms.path)
     return ms.total_dist
 
 test1 = """#########
