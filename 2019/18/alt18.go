@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"math"
 )
 
 type Point struct {
@@ -14,6 +16,7 @@ type State struct {
 	pos       Point
 	totalDist int
 	keys      KeySet
+	path      string
 }
 
 type KeySet int32
@@ -30,10 +33,10 @@ func (k KeySet) Add(b byte) KeySet {
 	if !isKey(b) {
 		panic("invalid key")
 	}
-	return k + (1 << (b - 'a'))
+	return k | (1 << (b - 'a'))
 }
 
-func (k KeySet) Test(b byte) bool {
+func (k KeySet) Has(b byte) bool {
 	if !isKey(b) {
 		panic("invalid key")
 	}
@@ -45,6 +48,9 @@ func read_data(inp []byte) ([][]byte, map[byte]Point, int) {
 	loc := make(map[byte]Point)
 	nKeys := 0
 	for y, row := range bytes.Split(inp, []byte("\n")) {
+		if len(row) == 0 {
+			break
+		}
 		gr = append(gr, row)
 		if len(row) != len(gr[0]) {
 			panic("Invalid input")
@@ -81,34 +87,47 @@ func move(gr [][]byte, from Point, dr int) (Point, byte) {
 	return to, gr[to.y][to.x]
 }
 
-func keyDistances(gr [][]byte, s State) map[byte]int {
+func keyForDoor(c byte) byte {
+	if !isDoor(c) {
+		panic("invalid door")
+	}
+	return c + 32
+}
+
+func keyDistances(gr [][]byte, st State) map[byte]int {
 	dst := make(map[byte]int)
 	vs := make(map[Point]bool)
 
-	var bfs func(Point, int)
-	bfs = func(pos Point, depth int) {
-		if vs[pos] {
-			return
-		}
-		vs[pos] = true
-		c := gr[pos.y][pos.x]
-		if isKey(c) {
-			dst[c] = depth
-		}
-		for dr := 0; dr < 4; dr++ {
-			p, c := move(gr, pos, dr)
-			if c != '#' && !(isDoor(c) && !s.keys.Test(c+32)) {
-				bfs(p, depth+1)
+	type PD struct {
+		pos  Point
+		dist int
+	}
+	q := []PD{PD{st.pos, 0}}
+
+	for len(q) != 0 {
+		var pd PD
+		pd, q = q[0], q[1:]
+		if !vs[pd.pos] {
+			vs[pd.pos] = true
+			c := gr[pd.pos.y][pd.pos.x]
+			if isKey(c) && !st.keys.Has(c) {
+				dst[c] = pd.dist
+			}
+			for dr := 0; dr < 4; dr++ {
+				p, cc := move(gr, pd.pos, dr)
+				if cc == '#' || (isDoor(cc) && !st.keys.Has(keyForDoor(cc))) {
+					continue
+				}
+				q = append(q, PD{p, pd.dist + 1})
 			}
 		}
 	}
-	bfs(s.pos, 0)
 
 	return dst
 }
 
 func minState(q []State) State {
-	minDist := 999999999999
+	minDist := math.MaxInt64
 	var minState State
 	for _, s := range q {
 		if s.totalDist < minDist {
@@ -120,22 +139,45 @@ func minState(q []State) State {
 }
 
 func getKey(k byte, p Point, dist int, s State) State {
-	return State{p, s.totalDist + dist, s.keys.Add(k)}
+	return State{p, s.totalDist + dist, s.keys.Add(k), s.path + string(k)}
+}
+
+func bestStatesByPosAndKeys(q []State) []State {
+	type PK struct {
+		p  Point
+		ks KeySet
+	}
+	uq := make(map[PK]State)
+	for _, s := range q {
+		pk := PK{s.pos, s.keys}
+		if _, ok := uq[pk]; !ok {
+			uq[pk] = s
+		}
+		if s.totalDist < uq[pk].totalDist {
+			uq[pk] = s
+		}
+	}
+	r := []State{}
+	for _, s := range uq {
+		r = append(r, s)
+	}
+	return r
 }
 
 func part1(instr []byte) int {
 	gr, loc, nKeys := read_data(instr)
-	q := []State{State{loc['@'], 0, KeySet(0)}}
+	q := []State{State{loc['@'], 0, KeySet(0), ""}}
 	for depth := 0; depth < nKeys; depth++ {
-		fmt.Println(q)
-		q2 := []State{}
-		for _, s := range q {
+		fmt.Println("GEN", depth, "SIZE", len(q))
+		bestStates := bestStatesByPosAndKeys(q)
+
+		q = q[:0]
+		for _, s := range bestStates {
 			kds := keyDistances(gr, s)
 			for k, dist := range kds {
-				q2 = append(q2, getKey(k, loc[k], dist, s))
+				q = append(q, getKey(k, loc[k], dist, s))
 			}
 		}
-		q = q2
 	}
 
 	sMin := minState(q)
@@ -143,13 +185,48 @@ func part1(instr []byte) int {
 	return sMin.totalDist
 }
 
-func main() {
-	test1 := []byte(`########################
+func runTests() {
+	test2 := []byte(`########################
 #f.D.E.e.C.b.A.@.a.B.c.#
 ######################.#
 #d.....................#
 ########################`)
-	fmt.Println("TEST1", part1(test1))
+	fmt.Println("TEST2", part1(test2))
 
-	fmt.Println("vim-go")
+	test3 := []byte(`########################
+#...............b.C.D.f#
+#.######################
+#.....@.a.B.c.d.A.e.F.g#
+########################`)
+	fmt.Println("TEST3", part1(test3))
+
+	test4 := []byte(`#################
+#i.G..c...e..H.p#
+########.########
+#j.A..b...f..D.o#
+########@########
+#k.E..a...g..B.n#
+########.########
+#l.F..d...h..C.m#
+#################`)
+	fmt.Println("TEST4", part1(test4))
+
+	test5 := []byte(`########################
+#@..............ac.GI.b#
+###d#e#f################
+###A#B#C################
+###g#h#i################
+########################`)
+	fmt.Println("TEST5", part1(test5))
+}
+
+func main() {
+	runTests()
+
+	inBytes, err := ioutil.ReadFile("input.txt")
+	if err != nil {
+		panic("input")
+	}
+	ans1 := part1(inBytes)
+	fmt.Println("PART1", ans1)
 }
