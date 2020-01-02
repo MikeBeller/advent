@@ -58,7 +58,7 @@ class State(NamedTuple):
     keys: FrozenSet[str]
     path: str
 
-def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
+def dist_to_keys_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
     ds: Dict[str,int] = {}
     vs: Dict[Node,bool] = {}
 
@@ -76,10 +76,6 @@ def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
     bfs(gr[s.pos], 0)
     return ds
 
-def find_candidates(dists: Dict[str,int], s: State) -> List[str]:
-    #return [k for k in dists.keys() if k not in s.keys]
-    return list(dists.keys())
-
 def get_key(name: str, dist: int, pos: Point, s: State) -> State:
     return State(pos=pos,
             total_dist=s.total_dist + dist,
@@ -93,7 +89,7 @@ def part_one(dstr: str) -> int:
     nkeys = len(all_keys)
 
     s = State(pos=loc['@'], total_dist=0, keys=frozenset(), path="")
-    q = set([s])
+    q = [s]
     for depth in range(nkeys):
         print("GEN", depth, "QLEN", len(q))
 
@@ -108,16 +104,14 @@ def part_one(dstr: str) -> int:
                 if s.total_dist < moves[k].total_dist:
                     moves[k] = s
 
-        q = set([])
+        q = []
         for s in moves.values():
-            dists = dist_to_stuff_from(gr, s)
-
-            candidate_keys = find_candidates(dists, s)
+            dists = dist_to_keys_from(gr, s)
 
             # pursue each move until we have all keys
-            for key in candidate_keys:
+            for key in dists.keys():
                 s2 = get_key(key, dists[key], loc[key], s)
-                q.add(s2)
+                q.append(s2)
 
     print(nkeys, len(q))
     #print(q)
@@ -131,8 +125,9 @@ test1 = """#########
 #b.A.@.a#
 #########"""
 
-assert part_one(test1) == 8
-#print("TEST1:", part_one(test1))
+t1ans = part_one(test1)
+assert t1ans == 8
+print("TEST1:", t1ans)
 
 test2 = """########################
 #f.D.E.e.C.b.A.@.a.B.c.#
@@ -140,8 +135,9 @@ test2 = """########################
 #d.....................#
 ########################"""
 
-assert part_one(test2) == 86
-#print("TEST2:", part_one(test2))
+t2ans = part_one(test2)
+assert t2ans == 86
+print("TEST2:", t2ans)
 
 test3 = """########################
 #...............b.C.D.f#
@@ -150,8 +146,9 @@ test3 = """########################
 ########################
 """
 
-assert part_one(test3) == 132
-#print("TEST3:", part_one(test3))
+t3ans = part_one(test3)
+assert t3ans == 132
+print("TEST3:", t3ans)
 
 test4 = """#################
 #i.G..c...e..H.p#
@@ -163,8 +160,9 @@ test4 = """#################
 #l.F..d...h..C.m#
 #################"""
 
-assert part_one(test4) == 136
-#print("TEST4:", part_one(test4))
+t4ans = part_one(test4)
+assert t4ans == 136
+print("TEST4:", t4ans)
 
 test5 = """########################
 #@..............ac.GI.b#
@@ -173,8 +171,9 @@ test5 = """########################
 ###g#h#i################
 ########################"""
 
-assert part_one(test5) == 81
-#print("TEST 5:", part_one(test5))
+t5ans = part_one(test5)
+assert t5ans == 81
+print("TEST5:", t5ans)
 
 def main() -> None:
     inp = open("input.txt").read().strip()
