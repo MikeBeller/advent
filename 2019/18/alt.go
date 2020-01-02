@@ -30,34 +30,55 @@ func (k KeySet) Add(b byte) KeySet {
 	if !isKey(b) {
 		panic("invalid key")
 	}
-	return k + (1<<k - 'a')
+	return k + (1 << (b - 'a'))
 }
 
 func (k KeySet) Test(b byte) bool {
 	if !isKey(b) {
 		panic("invalid key")
 	}
-	return (k & (1<<k - 'a')) != 0
+	return (k & (1 << (b - 'a'))) != 0
 }
 
-func read_data(inp []byte) ([][]byte, map[byte]Point, KeySet, int) {
+func read_data(inp []byte) ([][]byte, map[byte]Point, int) {
 	gr := [][]byte{}
 	loc := make(map[byte]Point)
-	ks := KeySet(0)
 	nKeys := 0
 	for y, row := range bytes.Split(inp, []byte("\n")) {
 		gr = append(gr, row)
+		if len(row) != len(gr[0]) {
+			panic("Invalid input")
+		}
 		for x, c := range row {
 			if c != '.' && c != '#' {
 				loc[c] = Point{x, y}
 				if isKey(c) {
-					ks = ks.Add(c)
 					nKeys++
 				}
 			}
 		}
 	}
-	return gr, loc, ks, nKeys
+	return gr, loc, nKeys
+}
+
+func move(gr [][]byte, from Point, dr int) (Point, byte) {
+	var to Point
+	switch dr {
+	case 0:
+		to = Point{from.x, from.y - 1}
+	case 1:
+		to = Point{from.x + 1, from.y}
+	case 2:
+		to = Point{from.x, from.y + 1}
+	case 3:
+		to = Point{from.x - 1, from.y}
+	default:
+		panic("invalid direction")
+	}
+	if to.x < 0 || to.x >= len(gr[0]) || to.y < 0 || to.y >= len(gr) {
+		return to, '#'
+	}
+	return to, gr[to.y][to.x]
 }
 
 func keyDistances(gr [][]byte, s State) map[byte]int {
@@ -75,37 +96,51 @@ func keyDistances(gr [][]byte, s State) map[byte]int {
 			dst[c] = depth
 		}
 		for dr := 0; dr < 4; dr++ {
-			p, c := move(pos, dr)
+			p, c := move(gr, pos, dr)
 			if c != '#' && !(isDoor(c) && !s.keys.Test(c+32)) {
 				bfs(p, depth+1)
 			}
 		}
 	}
+	bfs(s.pos, 0)
 
 	return dst
 }
 
-func part1(instr []byte) int {
-	gr, loc, allKeys, nKeys := read_data(instr)
-	q := []State{State{loc['@'], 0, KeySet(0)}}
-	/*
-		for depth := 0; depth < nKeys; depth++ {
-			q2 := []State{}
-			for _, s := range q {
-				kds := keyDistances(gr, s)
-				for k, dist := range kds {
-					q2 = append(q2, getKey(k, dist, s))
-				}
-			}
-			q = q2
+func minState(q []State) State {
+	minDist := 999999999999
+	var minState State
+	for _, s := range q {
+		if s.totalDist < minDist {
+			minState = s
+			minDist = s.totalDist
 		}
+	}
+	return minState
+}
 
-		sMin = minState(q)
-		return sMin.totalDist
-	*/
-	dst := keyDistances(gr, q[0])
-	fmt.Println(dst)
-	return 9
+func getKey(k byte, p Point, dist int, s State) State {
+	return State{p, s.totalDist + dist, s.keys.Add(k)}
+}
+
+func part1(instr []byte) int {
+	gr, loc, nKeys := read_data(instr)
+	q := []State{State{loc['@'], 0, KeySet(0)}}
+	for depth := 0; depth < nKeys; depth++ {
+		fmt.Println(q)
+		q2 := []State{}
+		for _, s := range q {
+			kds := keyDistances(gr, s)
+			for k, dist := range kds {
+				q2 = append(q2, getKey(k, loc[k], dist, s))
+			}
+		}
+		q = q2
+	}
+
+	sMin := minState(q)
+	fmt.Println(sMin)
+	return sMin.totalDist
 }
 
 func main() {
