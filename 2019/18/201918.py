@@ -77,7 +77,8 @@ def dist_to_stuff_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
     return ds
 
 def find_candidates(dists: Dict[str,int], s: State) -> List[str]:
-    return [k for k in dists.keys() if k not in s.keys]
+    #return [k for k in dists.keys() if k not in s.keys]
+    return list(dists.keys())
 
 def get_key(name: str, dist: int, pos: Point, s: State) -> State:
     return State(pos=pos,
