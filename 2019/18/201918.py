@@ -58,22 +58,22 @@ class State(NamedTuple):
     keys: FrozenSet[str]
     path: str
 
-def dist_to_keys_from(gr: Dict[Point,Node], s: State) -> Dict[str,int]:
+def dist_to_keys_from(gr: Dict[Point,Node], st: State) -> Dict[str,int]:
     ds: Dict[str,int] = {}
     vs: Dict[Node,bool] = {}
+    q = deque([(gr[st.pos], 0)])
 
-    def bfs(nd: Node, depth: int) -> None:
-        if nd in vs:  # stop because you already visited this node
-            return
-        vs[nd] = True
-        if is_door(nd.mark) and nd.mark.lower() not in s.keys:
-            return  # stop this path because you hit a closed door
-        if is_key(nd.mark) and nd.mark not in s.keys:
-            ds[nd.mark] = depth
-        for cn in nd.conns:
-            bfs(cn, depth+1)
+    while len(q) > 0:
+        nd,dist = q.popleft()
+        if nd not in vs:
+            vs[nd] = True
+            if is_door(nd.mark) and nd.mark.lower() not in st.keys:
+                continue # hit a locked door
+            if is_key(nd.mark) and nd.mark not in st.keys:
+                ds[nd.mark] = dist
+            for cn in nd.conns:
+                q.append((cn,dist+1))
 
-    bfs(gr[s.pos], 0)
     return ds
 
 def get_key(name: str, dist: int, pos: Point, s: State) -> State:
@@ -113,10 +113,8 @@ def part_one(dstr: str) -> int:
                 s2 = get_key(key, dists[key], loc[key], s)
                 q.append(s2)
 
-    print(nkeys, len(q))
-    #print(q)
     assert all(len(s.keys) == nkeys for s in q)
-    print(list(sorted((s.total_dist,"{0.x},{0.y}".format(s.pos)) for s in q)))
+    #print(list(sorted((s.total_dist,"{0.x},{0.y}".format(s.pos)) for s in q)))
     ms = min(q, key=lambda s: s.total_dist)
     print("PATH", ms.path)
     return ms.total_dist
