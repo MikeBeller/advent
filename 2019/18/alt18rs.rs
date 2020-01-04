@@ -8,13 +8,13 @@ fn is_door(c: u8) -> bool {
     c >= b'A' && c <= b'Z'
 }
 
-#[derive(Debug,Copy,Clone)]
+#[derive(Debug,Copy,Clone,Hash,Eq)]
 struct Point {
     x: i32,
     y: i32,
 }
 
-#[derive(Debug,Copy,Clone)]
+#[derive(Debug,Copy,Clone,Hash,Eq)]
 struct KeySet {
     d: i32,
 }
@@ -44,11 +44,11 @@ impl Grid {
         Grid{nr: nr as i32, nc: nc as i32, data: vec![0u8; (nr * nc) as usize]}
     }
 
-    fn get(self, x: i32, y: i32) -> u8 {
+    fn get(&self, x: i32, y: i32) -> u8 {
         if x < 0 || x >= self.nc || y < 0 || y >= self.nr {
             b'#'
         } else {
-            self.data[(y * self.nc + x) as usize].clone()
+            self.data[(y * self.nc + x) as usize]
         }
     }
 
@@ -92,7 +92,7 @@ fn try_move(gr: &Grid, f: Point, dr: i32) -> (Point, u8) {
         3 => Point{x: f.x - 1, y: f.y},
         _ => panic!("invalid direction"),
     };
-    (t, (*gr).get(t.x, t.y))
+    (t, gr.get(t.x, t.y))
 }
 
 fn key_for_door(c: u8) -> u8 {
@@ -108,7 +108,7 @@ fn key_distances(gr: &Grid, st: State) -> HashMap<u8, i32> {
     while let Some((pos,dist)) = q.pop_front() {
         if vs.get(pos.x, pos.y) == 0 {
             vs.set(pos.x, pos.y, 1);
-            let c = (*gr).get(pos.x, pos.y);
+            let c = gr.get(pos.x, pos.y);
             if is_key(c) && !st.keys.contains(c) {
                 dst.insert(c, dist);
             }
@@ -128,6 +128,22 @@ struct State {
     pos: Point,
     total_dist: i32,
     keys: KeySet,
+}
+
+fn get_key(k: u8, p: Point, dist: i32, s: State) -> State {
+    State{pos: p, total_dist: s.total_dist + dist, keys: s.keys.insert(k)}
+}
+
+fn best_states_by_pos_and_keys(q: Vec<State>) -> Vec<State> {
+    let mut uq = HashMap::new();
+    for s in q {
+        if let Some(ms) = uq.entry((s.pos,s.keys)) {
+            if s.total_dist < (*ms).total_dist {
+                *ms = s
+            }
+        }
+    }
+    uq.values().collect::<Vec<State>>()
 }
 
 fn main() {
