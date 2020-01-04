@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	_ "github.com/pkg/profile"
 	"io/ioutil"
 	"math"
 )
@@ -96,19 +97,23 @@ func keyForDoor(c byte) byte {
 
 func keyDistances(gr [][]byte, st State) map[byte]int {
 	dst := make(map[byte]int)
-	vs := make(map[Point]bool)
+	vs := make([][]bool, len(gr))
+	for i := 0; i < len(gr); i++ {
+		vs[i] = make([]bool, len(gr[0]))
+	}
 
 	type PD struct {
 		pos  Point
 		dist int
 	}
-	q := []PD{PD{st.pos, 0}}
+	var q = make([]PD, 1, 10000)
+	q[0] = PD{st.pos, 0}
 
 	for len(q) != 0 {
 		var pd PD
 		pd, q = q[0], q[1:]
-		if !vs[pd.pos] {
-			vs[pd.pos] = true
+		if !vs[pd.pos.y][pd.pos.x] {
+			vs[pd.pos.y][pd.pos.x] = true
 			c := gr[pd.pos.y][pd.pos.x]
 			if isKey(c) && !st.keys.Has(c) {
 				dst[c] = pd.dist
@@ -221,6 +226,7 @@ func runTests() {
 }
 
 func main() {
+	//defer profile.Start().Stop()
 	runTests()
 
 	inBytes, err := ioutil.ReadFile("input.txt")
