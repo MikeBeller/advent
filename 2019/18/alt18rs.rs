@@ -1,7 +1,11 @@
-use std::collections::HashMap;
+use std::collections::{HashMap,VecDeque};
 
 fn is_key(c: u8) -> bool {
     c >= b'a' && c <= b'z'
+}
+
+fn is_door(c: u8) -> bool {
+    c >= b'A' && c <= b'Z'
 }
 
 #[derive(Debug,Copy,Clone)]
@@ -16,6 +20,10 @@ struct KeySet {
 }
 
 impl KeySet {
+    fn new() -> KeySet {
+        KeySet{d: 0}
+    }
+
     fn insert(self, b: u8) -> KeySet {
         KeySet{d: self.d | (1 << (b - b'a'))}
     }
@@ -40,7 +48,7 @@ impl Grid {
         if x < 0 || x >= self.nc || y < 0 || y >= self.nr {
             b'#'
         } else {
-            self.data[(y * self.nc + x) as usize]
+            self.data[(y * self.nc + x) as usize].clone()
         }
     }
 
@@ -76,6 +84,46 @@ fn read_data(inp: &str) -> (Grid, HashMap<u8,Point>, i32) {
     (gr, loc, n_keys)
 }
 
+fn try_move(gr: &Grid, f: Point, dr: i32) -> (Point, u8) {
+    let t = match dr {
+        0 => Point{x: f.x, y: f.y - 1},
+        1 => Point{x: f.x + 1, y: f.y},
+        2 => Point{x: f.x, y: f.y + 1},
+        3 => Point{x: f.x - 1, y: f.y},
+        _ => panic!("invalid direction"),
+    };
+    (t, (*gr).get(t.x, t.y))
+}
+
+fn key_for_door(c: u8) -> u8 {
+    c + 32
+}
+
+fn key_distances(gr: &Grid, st: State) -> HashMap<u8, i32> {
+    let mut dst = HashMap::new();
+    let mut vs = Grid::new(gr.nr as usize, gr.nc as usize);
+    let mut q: VecDeque<(Point,i32)> = VecDeque::with_capacity(10000);
+    q.push_back((st.pos, 0i32));
+
+    while let Some((pos,dist)) = q.pop_front() {
+        if vs.get(pos.x, pos.y) == 0 {
+            vs.set(pos.x, pos.y, 1);
+            let c = (*gr).get(pos.x, pos.y);
+            if is_key(c) && !st.keys.contains(c) {
+                dst.insert(c, dist);
+            }
+            for dr in 0..4 {
+                let (p, cc) = try_move(&gr, pos, dr);
+                if cc == b'#' || (is_door(cc) && !st.keys.contains(key_for_door(cc))) {
+                    continue;
+                }
+                q.push_back((p, dist + 1));
+            }
+        }
+    }
+    dst
+}
+
 struct State {
     pos: Point,
     total_dist: i32,
@@ -97,6 +145,10 @@ fn main() {
     println!("{:?}", gr);
     println!("{:?}", loc);
     println!("{}", n_keys);
+
+    let st = State{pos: loc[&b'@'], total_dist: 0, keys: KeySet::new()};
+    let dst = key_distances(&gr, st);
+    println!("{:?}", dst);
 
 }
 
