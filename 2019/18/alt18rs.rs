@@ -1,4 +1,5 @@
 use std::collections::{HashMap,VecDeque};
+use std::fs;
 
 fn is_key(c: u8) -> bool {
     c >= b'a' && c <= b'z'
@@ -8,13 +9,13 @@ fn is_door(c: u8) -> bool {
     c >= b'A' && c <= b'Z'
 }
 
-#[derive(Debug,Copy,Clone,Hash,Eq)]
+#[derive(Debug,Copy,Clone,Hash,PartialEq,Eq)]
 struct Point {
     x: i32,
     y: i32,
 }
 
-#[derive(Debug,Copy,Clone,Hash,Eq)]
+#[derive(Debug,Copy,Clone,Hash,PartialEq,Eq)]
 struct KeySet {
     d: i32,
 }
@@ -124,6 +125,7 @@ fn key_distances(gr: &Grid, st: State) -> HashMap<u8, i32> {
     dst
 }
 
+#[derive(Debug,Clone,Copy)]
 struct State {
     pos: Point,
     total_dist: i32,
@@ -134,37 +136,74 @@ fn get_key(k: u8, p: Point, dist: i32, s: State) -> State {
     State{pos: p, total_dist: s.total_dist + dist, keys: s.keys.insert(k)}
 }
 
-fn best_states_by_pos_and_keys(q: Vec<State>) -> Vec<State> {
+fn best_states_by_pos_and_keys(q: &Vec<State>) -> Vec<State> {
     let mut uq = HashMap::new();
     for s in q {
-        if let Some(ms) = uq.entry((s.pos,s.keys)) {
-            if s.total_dist < (*ms).total_dist {
-                *ms = s
+        let ms = uq.entry((s.pos,s.keys)).or_insert(*s);
+        if s.total_dist < (*ms).total_dist {
+            *ms = *s
+        }
+    }
+    uq.values().copied().collect::<Vec<State>>()
+}
+
+fn part1(instr: &str) -> i32 {
+    let (gr, loc, n_keys) = read_data(instr);
+    let mut q = vec![State{pos: loc[&b'@'], total_dist: 0, keys: KeySet::new()}];
+    for depth in 0..n_keys {
+        println!("GEN {} SIZE {}", depth, q.len());
+        let best_states = best_states_by_pos_and_keys(&q);
+        q.clear();
+        for s in best_states {
+            let kds = key_distances(&gr, s);
+            for (k,dist) in kds {
+                q.push(get_key(k, loc[&k], dist, s));
             }
         }
     }
-    uq.values().collect::<Vec<State>>()
+
+    let s_min = q.iter().min_by_key(|s| s.total_dist).unwrap();
+    println!("SMIN: {:?}", s_min);
+    s_min.total_dist
 }
 
 fn main() {
-    let mut k = KeySet{d: 0};
-    k = k.insert(b'a');
-    assert!( k.contains(b'a'));
-
     let test2 = "########################
 #f.D.E.e.C.b.A.@.a.B.c.#
 ######################.#
 #d.....................#
 ########################";
+    println!("{}", part1(test2));
 
-    let (gr, loc, n_keys) = read_data(test2);
-    println!("{:?}", gr);
-    println!("{:?}", loc);
-    println!("{}", n_keys);
+	let test3 = "########################
+#...............b.C.D.f#
+#.######################
+#.....@.a.B.c.d.A.e.F.g#
+########################";
+    println!("{}", part1(test3));
 
-    let st = State{pos: loc[&b'@'], total_dist: 0, keys: KeySet::new()};
-    let dst = key_distances(&gr, st);
-    println!("{:?}", dst);
+	let test4 = "#################
+#i.G..c...e..H.p#
+########.########
+#j.A..b...f..D.o#
+########@########
+#k.E..a...g..B.n#
+########.########
+#l.F..d...h..C.m#
+#################";
+    println!("{}", part1(test4));
 
+
+	let test5 = "########################
+#@..............ac.GI.b#
+###d#e#f################
+###A#B#C################
+###g#h#i################
+########################";
+    println!("{}", part1(test5));
+
+    let inp = fs::read_to_string("input.txt").unwrap();
+    let ans1 = part1(&inp);
+    println!("PART1: {}", ans1);
 }
 
