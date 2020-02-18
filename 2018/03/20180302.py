@@ -3,7 +3,7 @@ import numpy as np
 
 def get_data():
     r = []
-    for line in sys.stdin:
+    for line in open("input.txt"):
         f = line.strip().split()
         iid = int(f[0][1:])
         l,t = [int(x) for x in f[2].replace(':','').split(",")]
