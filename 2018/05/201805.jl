@@ -34,8 +34,13 @@ end
 @assert react("aBbAyz") == "yz"
 
 function part2(data)
+    r = []
     for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        new = filter(ch -> ch!=c&&ch!=(c+32), data)
+        len = length(react(new))
+        push!(r, (len, c))
     end
+    minimum(r)
 end
 
 function main()
