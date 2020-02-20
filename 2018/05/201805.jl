@@ -49,7 +49,7 @@ function main()
     ans1 = length(r)
     println("PART1: ", ans1)
 
-    ans2 = part2(data)
+    ans2 = @time part2(data)
     println("PART2: ", ans2)
 end
 
