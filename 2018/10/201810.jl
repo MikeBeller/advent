@@ -21,36 +21,64 @@ function counts(vs::Vector{Int})::Dict{Int,Int}
 end
 
 function metric(pos::Array{Int,2})::Int
-    xc = counts(pos[:,1])
-    #yc = counts(pos[:,2])
-    #count(x > 3 for x in values(xc)) * count(y > 3 for y in values(yc))
-    count(x > 6 for x in values(xc))
+    THRESH = 4
+    score = 0
+    ps = sortslices(pos; dims=1)
+    i = 1
+    lstx = -1
+    lsty = -1
+    rl = 1
+    while i <= size(ps)[1]
+        x,y = ps[i, 1], ps[i, 2]
+        if x == lstx
+            if y == lsty+1
+                rl += 1
+            else
+                rl = 1
+            end
+            lsty = y
+        else
+            lstx = x
+            lsty = -1
+            if rl > THRESH
+                score += 1
+            end
+        end
+        i += 1
+    end
+    #println("returning ", score)
+    score
 end
 
-function sim(pos::Array{Int,2}, vel::Array{Int,2}, n::Int)::Vector{Int}
-    m = Vector{Int}()
+# minimum spread
+function metric2(pos::Array{Int,2})::Int
+    (mnx,mxx) = extrema(pos[:,1])
+    (mny,mxy) = extrema(pos[:,2])
+    -(mxx-mnx) * (mxy-mny)
+end
+
+function sim(pos::Array{Int,2}, vel::Array{Int,2}, n::Int)::Int
+    lastmt = typemin(Int)
     for i = 1:n
         pos .+= vel
-        #push!(m, metric(pos))
-        mt = metric(pos)
-        if mt != 0
+        mt = metric2(pos)
+        println(i, " ", mt)
+        #if mt <= lastmt
+        if i >= 10000 && i % 1 == 0
+            writedlm("snap/snap.$i.csv", pos, ",")
             println(i, " ", mt)
         end
-        if i == 10118
-            @assert mt == 27
-            writedlm("snap.csv", pos, ",")
-        end
+        i == 10400 && break
+        lastmt = mt
     end
-    m
+    lastmt
 end
 
 function main()
     #(pos,vel) = read_data("tinput.txt")
-    #println(pos)
-    #println(vel)
     (pos,vel) = read_data("input.txt")
-    res = sim(pos, vel, 100000)
-    println(res)
+    res = sim(pos, vel, 20000)
+    println("PART1: ", res)
 end
 
 main()
