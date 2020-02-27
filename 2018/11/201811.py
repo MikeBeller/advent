@@ -15,15 +15,15 @@ def power_level(sn: int) -> np.ndarray:
 assert power_level(8)[4,2] == 4
 assert power_level(57)[78,121] == -5
 
-num_ops = 0
+#num_ops = 0
 
 def filter_pl(m: np.ndarray, sq: int) -> np.ndarray:
-    global num_ops
+    #global num_ops
     a = np.zeros((SIZE-sq + 1, SIZE-sq + 1), dtype=np.int64)
     for r in range(SIZE - sq + 1):
         for c in range(SIZE - sq + 1):
             a[c,r] = np.sum(m[c:c+sq,r:r+sq])
-            num_ops += sq * sq
+            #num_ops += sq * sq
     return a
 
 def part1(sn: int):
@@ -56,7 +56,7 @@ def main():
     ans2 = part2(3999)
     #ans2 = part2(18)
     print("PART2:", ans2)
-    print("NUM OPS:", num_ops)
+    #print("NUM OPS:", num_ops)
 
 if __name__ == '__main__':
     main()
