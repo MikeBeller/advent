@@ -12,14 +12,6 @@ function read_data(inpath::String)::Tuple{Array{Int,2},Array{Int,2}}
     (pos, vel)
 end
 
-function counts(vs::Vector{Int})::Dict{Int,Int}
-    d = Dict{Int,Int}()
-    for v in vs
-        d[v] = get(d, v, 0) + 1
-    end
-    d
-end
-
 # minimum spread
 function metric(pos::Array{Int,2})::Int
     (mnx,mxx) = extrema(pos[:,1])
