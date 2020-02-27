@@ -1,6 +1,6 @@
 import numpy as np
 
-SIZE = 300
+SIZE = 300  # size of the total playing field
 
 def power_level(sn: int) -> np.ndarray:
     rid = np.arange(1,SIZE+1).reshape(1,SIZE) + 10
@@ -15,9 +15,9 @@ assert power_level(8)[4,2] == 4
 assert power_level(57)[78,121] == -5
 
 def filter_pl(m: np.ndarray, sq: int) -> np.ndarray:
-    a = np.zeros((SIZE-3, SIZE-3), dtype=np.int64)
-    for r in range(SIZE - 3):
-        for c in range(SIZE - 3):
+    a = np.zeros((SIZE-sq, SIZE-sq), dtype=np.int64)
+    for r in range(SIZE - sq):
+        for c in range(SIZE - sq):
             a[c,r] = np.sum(m[c:c+sq,r:r+sq])
     return a
 
