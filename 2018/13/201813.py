@@ -28,19 +28,17 @@ def read_data(instr: str) -> Tuple[List[bytearray], List[Cart]]:
             dr = DIRS.find(c)
             if dr >= 0:
                 carts.append(Cart(dr, Point(x, y)))
-            if dr in {EAST, WEST}:
-                row[x] = ord('-')
-            else:
-                row[x] = ord('|')
+                if dr in {EAST, WEST}:
+                    row[x] = ord('-')
+                else:
+                    row[x] = ord('|')
     return (track, carts)
 
 def run(instr: str) -> Point:
     track, carts = read_data(instr)
-    print(carts)
-    assert(len(carts) == 2)
     tick = 0
     while True:
-        print(tick, carts)
+        #print(tick, carts)
         for c in carts:
             x,y = c.loc.x, c.loc.y
             if c.dr == NORTH:
@@ -57,7 +55,6 @@ def run(instr: str) -> Point:
 
             nloc = Point(x, y)
             if nloc in [cc.loc for cc in carts]:
-                print("Collision")
                 return nloc
             c.loc = nloc
 
@@ -79,12 +76,17 @@ def run(instr: str) -> Point:
         tick += 1
 
 
-ins = open("tinput.txt").read()
-d,cs = read_data(ins)
-assert cs == [Cart(dr=1, loc=Point(2, 0), state=-1), Cart(dr=2, loc=Point(9, 3), state=-1)]
+def test1():
+    ins = open("tinput.txt").read()
+    d,cs = read_data(ins)
+    assert cs == [Cart(dr=1, loc=Point(2, 0), state=-1), Cart(dr=2, loc=Point(9, 3), state=-1)]
+
+    assert run(ins) == Point(7, 3)
+
+test1()
 
 def main() -> None:
-    ins = open("tinput.txt").read()
+    ins = open("input.txt").read()
     ans1 = run(ins)
     print("PART1", ans1)
 
