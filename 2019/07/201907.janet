@@ -25,11 +25,11 @@
   (var v 0)
   (while (fiber/can-resume? (amps 0))
     (each amp amps
-      (print v)
-      (set v (resume amp v))))
+      (set v (resume amp v))
+      (resume amp)))
   v)
 
-(pp (run-feedback [3 26 1001 26 -4 26 3 27 1002 27 2 27 1 27 26 27 4 27 1001 28 -1 28 1005 28 6 99 0 0 5] [9 8 7 6 5]))
+(assert (= 139629729 (run-feedback [3 26 1001 26 -4 26 3 27 1002 27 2 27 1 27 26 27 4 27 1001 28 -1 28 1005 28 6 99 0 0 5] [9 8 7 6 5])))
 
 (defn swap [a i j]
   (def t (a j))
@@ -68,5 +68,9 @@
 
 (defn part-two [prog]
   (max
-    ;(seq [phases :in (permutations @[0 1 2 3 4])]
+    ;(seq [phases :in (permutations @[5 6 7 8 9])]
       (tuple (run-feedback prog phases) phases))))
+
+(printf "PART2: %q" (part-two prog))
+
+
