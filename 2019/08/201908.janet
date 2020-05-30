@@ -12,18 +12,26 @@
       (seq [c :range [0 nc]]
         (digit (s (+ (* l ll) (* r nc) c)))))))
 
-(assert (deep= (parse-data "012120121001" 2 3)
-               @[@[@[0 1 2] @[1 2 0]] @[@[1 2 1] @[0 0 1]]]))
+(assert (deep= (parse-data "012120121201" 2 3)
+               @[@[@[0 1 2] @[1 2 0]] @[@[1 2 1] @[2 0 1]]]))
 
 (defn part-one [s nr nc]
-  (def d (parse-data s nr nc))
+  (def data (parse-data s nr nc))
+  (def nl (length data))
   (def fr
-    (seq [l :in d]
+    (seq [l :in data]
       (frequencies (flatten l))))
-  # change so it returns the index of the layer by converging the above lines
-  # with this one
-  (def mxl (extreme (fn [a b] (> (a 0) (b 0))) fr))
-  (pp mxl))
+  (def mxli (extreme (fn [i j] (< ((fr i) 0) ((fr j) 0))) (range nl)))
+  (def mxff (fr mxli))
+  (* (mxff 1) (mxff 2)))
 
-(pp (part-one "012120121001" 2 3))
+(assert (= 4 (part-one "012120121001" 2 3)))
+
+(def [nr nc] [6 25])
+(def datastr
+  (string/trimr
+    (with [f (file/open "input.txt")]
+      (file/read f :all))))
+(printf "PART1: %d" (part-one datastr nr nc))
+
 
