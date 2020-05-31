@@ -34,4 +34,25 @@
       (file/read f :all))))
 (printf "PART1: %d" (part-one datastr nr nc))
 
+(defn part-two [s nr nc]
+  (def data (parse-data s nr nc))
+  (def nl (length data))
+  (def g (seq [r :range [0 nr]] (array/new nc)))
+  (loop [r :range [0 nr]
+         c :range [0 nc]]
+    (loop [l :range [0 nl]]
+      (def v (get-in data [l r c]))
+      (when (not= v 2)
+        (put-in g [r c] v)
+        (break))))
+  g)
+
+(defn print-grid [g]
+  (each row g
+    (print
+      (string/join (map |(if (= $ 0) " " "#") row)))))
+
+(def ans2 (part-two datastr nr nc))
+(print "PART2:")
+(print-grid ans2)
 
