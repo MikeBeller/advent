@@ -14,13 +14,18 @@
   (get arr (extract longind) (int/s64 0)))
 
 (defn put-long [arr longind val]
-  (put arr (extract longind) val))
+  (put arr (extract longind) (int/s64 val)))
 
 (defn- get-param [prog opind mode base]
   (case mode
     (int/s64 0) (get-long prog (get-long prog opind))            # indirect
     (int/s64 1) (get-long prog opind)                            # immediate
     (int/s64 2) (get-long prog (+ base (get-long prog opind))))) # relative indirect
+
+(defn- put-param [prog param mode base val]
+  (case mode
+    (int/s64 0) (put-long prog param val)
+    (int/s64 2) (put-long prog (+ base param) val)))
 
 (defn l= [a b]
   (= (int/s64 a) (int/s64 b)))
@@ -43,15 +48,15 @@
                 b (get-param prog (+ pc 2) (m 1) base)
                 ci (get-long prog (+ pc 3))]
             (if (l= op 1)
-              (put-long prog ci (+ a b))
-              (put-long prog ci (* a b)))
+              (put-param prog ci (m 2) base (+ a b))
+              (put-param prog ci (m 2) base (* a b)))
             (+= pc 4))
          (l= op 3)
           (do 
             (def inp (yield nil)) # get input
             #(print "INPUT: " inp)
             (def i (get-long prog (+ pc 1)))
-            (put-long prog i (int/s64 inp))
+            (put-param prog i (m 0) base (int/s64 inp))
             (+= pc 2))
          (l= op 4)
           (do 
@@ -69,7 +74,7 @@
           (let [a (get-param prog (+ pc 1) (m 0) base)
                 b (get-param prog (+ pc 2) (m 1) base)
                 ci (get-long prog (+ pc 3))]
-            (put-long prog ci
+            (put-param prog ci (m 2) base
                  (if (or
                        (and (l= op 7) (< a b))
                        (and (l= op 8) (= a b)))
@@ -146,4 +151,6 @@
   (test (= 16 (length (string/format "%V" (r 0)))) "16 digit number"))
 (let [r (run-with-input [104 1125899906842624 99] [])]
   (test (= "1125899906842624" (string/format "%V" (r 0))) "large number in middle"))
+
+# need tests for relative stores &&&
 
