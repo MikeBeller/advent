@@ -24,6 +24,7 @@ def move(p: Point, d: int) -> Point:
         assert False, "Invalid direction"
 
 def read_data(s: str) -> Tuple[Dict[Point,Node], Dict[str,Point]]:
+    s = s.replace(' ','')
     gr: Dict[Point,Node] = {}
     loc: Dict[str,Point] = {}
     for y,line in enumerate(s.splitlines()):
@@ -119,65 +120,66 @@ def part_one(dstr: str) -> int:
     print("PATH", ms.path)
     return ms.total_dist
 
-test1 = """#########
-#b.A.@.a#
-#########"""
+def tests():
+    test1 = """#########
+    #b.A.@.a#
+    #########"""
 
-t1ans = part_one(test1)
-assert t1ans == 8
-print("TEST1:", t1ans)
+    t1ans = part_one(test1)
+    assert t1ans == 8
+    print("TEST1:", t1ans)
 
-test2 = """########################
-#f.D.E.e.C.b.A.@.a.B.c.#
-######################.#
-#d.....................#
-########################"""
+    test2 = """########################
+    #f.D.E.e.C.b.A.@.a.B.c.#
+    ######################.#
+    #d.....................#
+    ########################"""
 
-t2ans = part_one(test2)
-assert t2ans == 86
-print("TEST2:", t2ans)
+    t2ans = part_one(test2)
+    assert t2ans == 86
+    print("TEST2:", t2ans)
 
-test3 = """########################
-#...............b.C.D.f#
-#.######################
-#.....@.a.B.c.d.A.e.F.g#
-########################
-"""
+    test3 = """########################
+    #...............b.C.D.f#
+    #.######################
+    #.....@.a.B.c.d.A.e.F.g#
+    ########################
+    """
 
-t3ans = part_one(test3)
-assert t3ans == 132
-print("TEST3:", t3ans)
+    t3ans = part_one(test3)
+    assert t3ans == 132
+    print("TEST3:", t3ans)
 
-test4 = """#################
-#i.G..c...e..H.p#
-########.########
-#j.A..b...f..D.o#
-########@########
-#k.E..a...g..B.n#
-########.########
-#l.F..d...h..C.m#
-#################"""
+    test4 = """#################
+    #i.G..c...e..H.p#
+    ########.########
+    #j.A..b...f..D.o#
+    ########@########
+    #k.E..a...g..B.n#
+    ########.########
+    #l.F..d...h..C.m#
+    #################"""
 
-t4ans = part_one(test4)
-assert t4ans == 136
-print("TEST4:", t4ans)
+    t4ans = part_one(test4)
+    assert t4ans == 136
+    print("TEST4:", t4ans)
 
-test5 = """########################
-#@..............ac.GI.b#
-###d#e#f################
-###A#B#C################
-###g#h#i################
-########################"""
+    test5 = """########################
+    #@..............ac.GI.b#
+    ###d#e#f################
+    ###A#B#C################
+    ###g#h#i################
+    ########################"""
 
-t5ans = part_one(test5)
-assert t5ans == 81
-print("TEST5:", t5ans)
+    t5ans = part_one(test5)
+    assert t5ans == 81
+    print("TEST5:", t5ans)
 
 def main() -> None:
     inp = open("input.txt").read().strip()
     ans1 = part_one(inp)
     print(ans1)
 
+#tests()
 main()
-
 

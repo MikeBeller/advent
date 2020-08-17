@@ -5,9 +5,6 @@ from collections import deque
 from numba import jit
 from numba.typed import Dict as NumbaDict
 
-# Try to speed up the pypy version using integer lists instead of
-# an articulated graph of nodes.  Did not help!
-
 class Point(NamedTuple):
     x: int
     y: int
@@ -33,6 +30,7 @@ def move(gr: Grid, p: Point, d: int) -> Tuple[Point, int]:
         return p, gr[p.y, p.x]
 
 def read_data(s: str) -> Tuple[Grid, Dict[int,Point]]:
+    s = s.replace(' ','')
     lines = s.splitlines()
     nr = len(lines)
     nc = len(lines[0])
@@ -52,8 +50,12 @@ def key_num(c: int) -> int:
     return c - ord('a') if c >= ord('a') and c <= ord('z') else -1
 
 @jit(nopython=True)
+def key_code_from_key_num(c: int) -> int:
+    return c + ord('a')
+
+@jit(nopython=True)
 def door_num(c: int) -> bool:
-    return c - ord('A') if c >= ord('Z') and c <= ord('Z') else -1
+    return c - ord('A') if c >= ord('A') and c <= ord('Z') else -1
 
 class State(NamedTuple):
     pos: Point
@@ -64,7 +66,8 @@ class State(NamedTuple):
 @jit(nopython=True)
 def dist_to_keys_from(gr: Grid, st: State) -> NDArray[(Any,), int]:
     nr,nc = gr.shape
-    ds = np.zeros(128, dtype=np.int32)
+    nkeys = len(st.keys)
+    ds = np.full(nkeys, -1, dtype=np.int32)
     vs = np.zeros((nr, nc), dtype=np.int8)
     q = [(st.pos, 0)]
     i = 0
@@ -75,23 +78,24 @@ def dist_to_keys_from(gr: Grid, st: State) -> NDArray[(Any,), int]:
         if vs[pos.y, pos.x] == 0:
             vs[pos.y, pos.x] = 1
             c = gr[pos.y, pos.x]
-            n = key_num(c)
-            if n != -1 and st.keys[n] != 1:
-                ds[c] = dist
+            nk = key_num(c)
+            if nk != -1 and st.keys[nk] == 0:
+                ds[nk] = dist
             for dr in range(4):
                 p,c = move(gr, pos, dr)
                 if c == ord('#'):
                     continue
-                n = door_num(c)
-                if (n != -1 and not st.keys[n]):
-                    continue
+                nd = door_num(c)
+                if nd != -1 and st.keys[nd] == 0:
+                    if st.keys[nd] == 0:
+                        continue
                 q.append((p,dist+1))
     return ds
 
-def get_key(code: int, dist: int, pos: Point, s: State) -> State:
-    n = key_num(code)
+def get_key(key_num: int, dist: int, pos: Point, s: State) -> State:
     kk = s.keys.copy()
-    kk[n] = 1
+    kk[key_num] = 1
+    code = key_code_from_key_num(key_num)
     return State(pos=pos,
             total_dist=s.total_dist + dist,
             keys=kk,
@@ -102,18 +106,20 @@ def part_one(dstr: str) -> int:
     gr,loc = read_data(dstr)
     all_keys = frozenset(s for s in loc.keys() if key_num(s) != -1)
     nkeys = len(all_keys)
+    # just make sure that all keys are named like abcde.. with no gaps
+    assert "".join(sorted(chr(k) for k in all_keys)) == "abcdefghijklmnopqrstuvwxyz"[:nkeys]
 
     s = State(pos=loc[ord('@')], total_dist=0,
-            keys=np.zeros(len(all_keys), dtype=np.int8), path="")
+            keys=np.zeros(nkeys, dtype=np.int8), path="")
     q = [s]
     for depth in range(nkeys):
-        print("GEN", depth, "QLEN", q)
+        print("GEN", depth, "QLEN", len(q))
 
         # organize the queue -- if two candidates have same keys and same position,
         # keep only the one with the shortest total_path
-        moves: Dict[Tuple[FrozenSet[int],Point],State] = {}
+        moves: Dict[Tuple[bytes,Point],State] = {}
         for s in q:
-            keys = frozenset(i for (i,x) in enumerate(s.keys) if x)
+            keys = s.keys.tobytes()
             k = (keys,s.pos)
             if k not in moves:
                 moves[k] = s
@@ -123,12 +129,13 @@ def part_one(dstr: str) -> int:
 
         q = []
         for s in moves.values():
-            ds = dist_to_keys_from(gr, s)
-            dists = [(k,v) for (k,v) in enumerate(ds) if v != 0]
+            dists = dist_to_keys_from(gr, s)
 
             # pursue each move until we have all keys
-            for (key,d) in dists:
-                s2 = get_key(key, d, loc[key], s)
+            for (nk,d) in enumerate(dists):
+                if d == -1: continue
+                key = key_code_from_key_num(nk)
+                s2 = get_key(nk, d, loc[key], s)
                 q.append(s2)
 
     assert all(len(s.keys) == nkeys for s in q)
@@ -136,65 +143,66 @@ def part_one(dstr: str) -> int:
     print("PATH", ms.path)
     return ms.total_dist
 
-test1 = """#########
-#b.A.@.a#
-#########"""
+def tests():
+    test1 = """#########
+    #b.A.@.a#
+    #########"""
 
-t1ans = part_one(test1)
-assert t1ans == 8
-print("TEST1:", t1ans)
+    t1ans = part_one(test1)
+    assert t1ans == 8
+    print("TEST1:", t1ans)
 
-test2 = """########################
-#f.D.E.e.C.b.A.@.a.B.c.#
-######################.#
-#d.....................#
-########################"""
+    test2 = """########################
+    #f.D.E.e.C.b.A.@.a.B.c.#
+    ######################.#
+    #d.....................#
+    ########################"""
 
-t2ans = part_one(test2)
-assert t2ans == 86
-print("TEST2:", t2ans)
+    t2ans = part_one(test2)
+    assert t2ans == 86
+    print("TEST2:", t2ans)
 
-test3 = """########################
-#...............b.C.D.f#
-#.######################
-#.....@.a.B.c.d.A.e.F.g#
-########################
-"""
+    test3 = """########################
+    #...............b.C.D.f#
+    #.######################
+    #.....@.a.B.c.d.A.e.F.g#
+    ########################
+    """
 
-t3ans = part_one(test3)
-assert t3ans == 132
-print("TEST3:", t3ans)
+    t3ans = part_one(test3)
+    assert t3ans == 132
+    print("TEST3:", t3ans)
 
-test4 = """#################
-#i.G..c...e..H.p#
-########.########
-#j.A..b...f..D.o#
-########@########
-#k.E..a...g..B.n#
-########.########
-#l.F..d...h..C.m#
-#################"""
+    test4 = """#################
+    #i.G..c...e..H.p#
+    ########.########
+    #j.A..b...f..D.o#
+    ########@########
+    #k.E..a...g..B.n#
+    ########.########
+    #l.F..d...h..C.m#
+    #################"""
 
-t4ans = part_one(test4)
-assert t4ans == 136
-print("TEST4:", t4ans)
+    t4ans = part_one(test4)
+    assert t4ans == 136
+    print("TEST4:", t4ans)
 
-test5 = """########################
-#@..............ac.GI.b#
-###d#e#f################
-###A#B#C################
-###g#h#i################
-########################"""
+    test5 = """########################
+    #@..............ac.GI.b#
+    ###d#e#f################
+    ###A#B#C################
+    ###g#h#i################
+    ########################"""
 
-t5ans = part_one(test5)
-assert t5ans == 81
-print("TEST5:", t5ans)
+    t5ans = part_one(test5)
+    assert t5ans == 81
+    print("TEST5:", t5ans)
 
 def main() -> None:
     inp = open("input.txt").read().strip()
     ans1 = part_one(inp)
     print(ans1)
 
+#tests()
 main()
-
 
