@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	_ "github.com/pkg/profile"
 	"io/ioutil"
 	"math"
 )
