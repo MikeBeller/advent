@@ -153,40 +153,42 @@ function print_gr(gr)
     end
 end
 
-test2 = """
-########################
-#f.D.E.e.C.b.A.@.a.B.c.#
-######################.#
-#d.....................#
-########################"""
+function tests()
+    test2 = """
+    ########################
+    #f.D.E.e.C.b.A.@.a.B.c.#
+    ######################.#
+    #d.....................#
+    ########################"""
 
-t2ans = part_one(test2)
-@assert t2ans == 86
+    t2ans = part_one(test2)
+    @assert t2ans == 86
 
-test3 = """
-########################
-#...............b.C.D.f#
-#.######################
-#.....@.a.B.c.d.A.e.F.g#
-########################"""
+    test3 = """
+    ########################
+    #...............b.C.D.f#
+    #.######################
+    #.....@.a.B.c.d.A.e.F.g#
+    ########################"""
 
-t3ans = part_one(test3)
-println(t3ans)
+    t3ans = part_one(test3)
+    println(t3ans)
 
-test4 = """
-#################
-#i.G..c...e..H.p#
-########.########
-#j.A..b...f..D.o#
-########@########
-#k.E..a...g..B.n#
-########.########
-#l.F..d...h..C.m#
-#################"""
+    test4 = """
+    #################
+    #i.G..c...e..H.p#
+    ########.########
+    #j.A..b...f..D.o#
+    ########@########
+    #k.E..a...g..B.n#
+    ########.########
+    #l.F..d...h..C.m#
+    #################"""
 
-t4ans = part_one(test4)
-println(t4ans)
-@assert t4ans == 136
+    t4ans = part_one(test4)
+    println(t4ans)
+    @assert t4ans == 136
+end
 
 function main()
     instr = open("input.txt") do f
@@ -196,6 +198,7 @@ function main()
     println("PART ONE ", ans)
 end
 
-main()
+tests()
+@time main()
 
 

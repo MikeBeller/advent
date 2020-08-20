@@ -4,6 +4,9 @@ from nptyping import NDArray
 from collections import deque
 from numba import jit, njit
 from numba.typed import Dict as NumbaDict
+import time
+
+CACHE = False
 
 class Point(NamedTuple):
     x: int
@@ -11,7 +14,7 @@ class Point(NamedTuple):
 
 Grid = NDArray[(Any,Any), np.int8]
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def move(gr: Grid, p: Point, d: int) -> Tuple[Point, int]:
     if d == 0:
         p = Point(p.x, p.y-1)
@@ -29,7 +32,7 @@ def move(gr: Grid, p: Point, d: int) -> Tuple[Point, int]:
     else:
         return p, gr[p.y, p.x]
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def read_data(s: str) -> Tuple[Grid, Dict[int,Point]]:
     s = s.replace(' ','')
     lines = s.splitlines()
@@ -46,15 +49,15 @@ def read_data(s: str) -> Tuple[Grid, Dict[int,Point]]:
 
     return gr, loc
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def key_num(c: int) -> int:
     return c - ord('a') if c >= ord('a') and c <= ord('z') else -1
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def key_code_from_key_num(c: int) -> int:
     return c + ord('a')
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def door_num(c: int) -> bool:
     return c - ord('A') if c >= ord('A') and c <= ord('Z') else -1
 
@@ -64,15 +67,15 @@ class State(NamedTuple):
     keys: int
     path: str
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def get_bit(n: int, i: int) -> int:
     return n & (1 << i)
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def set_bit(n: int, i: int) -> int:
     return n | (1 << i)
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def dist_to_keys_from(gr: Grid, st: State, nkeys: int) -> NDArray[(Any,), int]:
     nr,nc = gr.shape
     ds = np.full(nkeys, -1, dtype=np.int32)
@@ -99,7 +102,7 @@ def dist_to_keys_from(gr: Grid, st: State, nkeys: int) -> NDArray[(Any,), int]:
                 q.append((p,dist+1))
     return ds
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def get_key(key_num: int, dist: int, pos: Point, s: State) -> State:
     code = key_code_from_key_num(key_num)
     return State(pos=pos,
@@ -108,7 +111,7 @@ def get_key(key_num: int, dist: int, pos: Point, s: State) -> State:
             path=s.path + chr(code),
             )
 
-@njit(cache=True)
+@njit(cache=CACHE)
 def part_one(dstr: str) -> int:
     gr,loc = read_data(dstr)
     nkeys = 0
@@ -214,6 +217,8 @@ def main() -> None:
     ans1 = part_one(inp)
     print(ans1)
 
-#tests()
+tests()
+pt = time.process_time()
 main()
+print("TIME:", time.process_time() - pt)
 

@@ -17,9 +17,10 @@ On aws m5.large with stock anaconda python 3.8:
 
     Python      120s   Anaconda python 3.8
     Numba        22s   Anaconda python 3.8 numba 0.50
-    Numba/cache  15s   Anaconda python 3.8 numba 0.50
-    Go           13s   Go 1.15
-    Julia        11s   Julia 1.5.0
+    Numba/cache  15s   Numba 0.50 but cache the compilation
+    Numba/nocomp 15s   Numba 0.50 but don't measure comp time
+    Go           11s/15.5s user   Go 1.15
+    Julia        10s   Julia 1.5.0 (plus 1 s compile & test time)
 
 ## To optimize pypy3
 
