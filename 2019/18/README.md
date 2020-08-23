@@ -1,11 +1,14 @@
 # Speed Comparisons for Advent 2019 Problem 18 Part 1
 
-On Hal:
+On Hal, anaconda python 3.8:
 
-    Python    160s
-    Pypy3      58s  # also the 201918pypy3.py -- same performance
-    Go         15s
-    Rust        6s
+    Python     201918.py            92s
+    Pypy3      201918pypy3.py       29s
+    Pypy3      201918.py            24s
+    Numba      201918numba.py       18s (cached or ignoring tests)
+    Numba      201918numba_bits.py  13s (cached or ignoring tests)
+    Go         alt18.go             9.3 real 13.7 user
+    Rust       alt18rs.rs           5s (rustc -O o alt18rs alt18rs.rs)
 
 To optimize, the function taking all the time was key_distances
 In go if you make the "visited" (vs) data structure an array

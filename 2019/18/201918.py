@@ -120,7 +120,7 @@ def part_one(dstr: str) -> int:
     print("PATH", ms.path)
     return ms.total_dist
 
-def tests():
+def tests() -> None:
     test1 = """#########
     #b.A.@.a#
     #########"""

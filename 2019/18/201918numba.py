@@ -1,5 +1,6 @@
 from typing import Dict, NamedTuple, List, FrozenSet, Set, Tuple, Deque, Any
 import numpy as np
+import time
 from nptyping import NDArray
 from collections import deque
 from numba import jit
@@ -203,6 +204,8 @@ def main() -> None:
     ans1 = part_one(inp)
     print(ans1)
 
-#tests()
+tests()
+pt = time.process_time()
 main()
+print("TIME:", time.process_time() - pt)
 
