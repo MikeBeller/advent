@@ -8,6 +8,7 @@ On Hal, anaconda python 3.8:
     Numba      201918numba.py       18s (cached or ignoring tests)
     Numba      201918numba_bits.py  13s (cached or ignoring tests)
     Go         alt18.go             9.3 real 13.7 user
+    Julia      alt18.jl             8.7s (7.8s without tests)
     Rust       alt18rs.rs           5s (rustc -O o alt18rs alt18rs.rs)
 
 To optimize, the function taking all the time was key_distances
