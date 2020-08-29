@@ -25,13 +25,26 @@ function key_for_door(c::Byte)::Byte
     c + 32
 end
 
-function read_data(inp::String)::Tuple{Array{Byte,2}, Dict{Byte,Point}, Int}
+function key_locations(gr::Array{Byte,2}) ::Dict{Byte,Point}
+    nr,nc = size(gr)
+    loc = Dict{Byte,Point}()
+    for y = 1:nr
+        for x = 1:nc
+            c = gr[y, x]
+            if c != Byte('.') && c != Byte('#')
+                loc[c] = Point(x, y)
+            end
+        end
+    end
+    loc
+end
+
+function read_data(inp::String)::Tuple{Array{Byte,2}, Dict{Byte,Point}}
     rows = split(inp, "\n")
     nr = length(rows)
     nc = length(rows[1])
     gr = zeros(Byte, nr, nc)
     loc = Dict{Byte, Point}()
-    n_keys = 0
 
     for y = 1:nr
         if length(rows[y]) != nc
@@ -40,16 +53,11 @@ function read_data(inp::String)::Tuple{Array{Byte,2}, Dict{Byte,Point}, Int}
         for x = 1:nc
             c::Byte = Byte(rows[y][x])
             gr[y,x] = c
-            if c != Byte('.') && c != Byte('#')
-                loc[c] = Point(x, y)
-                if is_key(c)
-                    n_keys += 1
-                end
-            end
         end
     end
+    loc = key_locations(gr)
 
-    gr, loc, n_keys
+    gr, loc
 end
 
 function move(gr::Array{Byte,2}, f::Point, dr::Int)::Tuple{Point,Byte}
@@ -120,8 +128,13 @@ function best_states_by_pos_and_keys(q::Vector{State})::Vector{State}
     collect(values(uq))
 end
 
+function num_keys(loc::Dict{Byte,Point}) ::Int
+    sum(is_key(c) for c in keys(loc))
+end
+
 function part_one(instr::String)::Int
-    gr, loc, n_keys = read_data(instr)
+    gr, loc = read_data(instr)
+    n_keys = num_keys(loc)
     q = Vector{State}([State(loc[Byte('@')], 0, BitSet())])
     for depth = 1:n_keys
         println("GEN ", depth, " SIZE ", length(q))
@@ -142,6 +155,32 @@ function part_one(instr::String)::Int
     min_dist
 end
 
+function partition_graph(gr1::Array{Byte,2}, loc1::Dict{Byte,Point}) ::Tuple{Vector{Array{Byte,2}},Vector{Dict{Byte,Point}}}
+    p = loc1[Byte('@')]
+    nr,nc = size(gr1)
+    gr1[p.y-1:p.y+1,p.x-1:p.x+1] = [b"@#@"; b"###"; b"@#@"]
+    gr = [
+          gr1[1:p.y,1:p.x],
+          gr1[1:p.y,p.x:nc],
+          gr1[p.y:nr,1:p.x],
+          gr1[p.y:nr,p.x:nc],
+         ]
+    loc = [key_locations(g) for g in gr]
+    gr, loc
+end
+
+# Like part_one but partitioned into 4 quadrants, so
+# gr, loc, n_keys become Vectors of length 4
+function part_two(instr::String)::Int
+    gr1, loc1 = read_data(instr)
+    n_keys = num_keys(loc1)
+    grs, locs = partition_graph(gr1, loc1)
+    for (i,g) in enumerate(grs)
+        println(i,":")
+        print_gr(g)
+    end
+    0
+end
 
 function print_gr(gr)
     nr,nc = size(gr)
@@ -153,7 +192,7 @@ function print_gr(gr)
     end
 end
 
-function tests()
+function part_one_tests()
     test2 = """
     ########################
     #f.D.E.e.C.b.A.@.a.B.c.#
@@ -190,6 +229,21 @@ function tests()
     @assert t4ans == 136
 end
 
+function part_two_tests()
+    test21 = """
+    #######
+    #a.#Cd#
+    ##...##
+    ##.@.##
+    ##...##
+    #cB#Ab#
+    #######"""
+
+    ans = part_two(test21)
+    @assert ans == 0
+
+end
+
 function main()
     instr = open("input.txt") do f
         read(f, String)
@@ -198,7 +252,8 @@ function main()
     println("PART ONE ", ans)
 end
 
-tests()
-@time main()
+#part_one_tests()
+part_two_tests()
+#@time main()
 
 
