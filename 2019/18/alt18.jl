@@ -117,17 +117,6 @@ function get_key(k::Byte, p::Point, dist::Int, s::State)::State
     State(p, s.total_dist + dist, union(s.keys,[k]))
 end
 
-function best_states_by_pos_and_keys(q::Vector{State})::Vector{State}
-    uq = Dict{Tuple{Point,BitSet},State}()
-    for s in q
-        t = (s.pos, s.keys)
-        if !haskey(uq, t) || s.total_dist < uq[t].total_dist
-            uq[t] = s
-        end
-    end
-    collect(values(uq))
-end
-
 function num_keys(loc::Dict{Byte,Point}) ::Int
     sum(is_key(c) for c in keys(loc))
 end
@@ -135,21 +124,30 @@ end
 function part_one(instr::String)::Int
     gr, loc = read_data(instr)
     n_keys = num_keys(loc)
-    q = Vector{State}([State(loc[Byte('@')], 0, BitSet())])
+    state_table = Dict{Tuple{Point,BitSet}, State}()
     for depth = 1:n_keys
-        println("GEN ", depth, " SIZE ", length(q))
-        best_states = best_states_by_pos_and_keys(q)
+        println("GEN ", depth, " SIZE ", length(state_table))
 
-        q = Vector{State}()
+        best_states = if depth == 1
+            [State(loc[Byte('@')], 0, BitSet())] # starting state
+        else
+            collect(values(state_table))
+        end
+
+        state_table = Dict{Tuple{Point,BitSet}, State}()
         for s in best_states
             kds = key_distances(gr, s)
             for (k,dist) in kds
-                push!(q, get_key(k, loc[k], dist, s))
+                new_s = get_key(k, loc[k], dist, s)
+                t = (new_s.pos, new_s.keys)
+                if !haskey(state_table, t) || new_s.total_dist < state_table[t].total_dist
+                    state_table[t] = new_s
+                end
             end
         end
     end
 
-    min_dist = minimum(q) do s
+    min_dist = minimum(values(state_table)) do s
         s.total_dist
     end
     min_dist
@@ -253,7 +251,7 @@ function main()
 end
 
 #part_one_tests()
-part_two_tests()
-#@time main()
+#part_two_tests()
+@time main()
 
 
