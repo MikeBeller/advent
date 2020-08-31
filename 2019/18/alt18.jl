@@ -6,12 +6,6 @@ struct Point
     y::Int
 end
 
-struct State
-    pos::Point
-    total_dist::Int
-    keys::BitSet
-end
-
 function is_key(c::Byte)::Bool
     c >= Byte('a') && c <= Byte('z')
 end
@@ -88,22 +82,22 @@ function key_for_door(c::Byte)::Byte
     c + 32
 end
 
-function key_distances(gr::Array{Byte,2}, st::State)::Dict{Byte,Int}
+function key_distances(gr::Array{Byte,2}, from_pos::Point, keys::BitSet)::Dict{Byte,Int}
     dst = Dict{Byte,Int}()
     vs = falses(size(gr)...)
-    q = [(st.pos, 0)]
+    q = [(from_pos, 0)]
 
     while length(q) != 0
         pos,dist = popfirst!(q)
         if !vs[pos.y,pos.x]
             vs[pos.y,pos.x] = true
             c = gr[pos.y,pos.x]
-            if is_key(c) && !(c in st.keys)
+            if is_key(c) && !(c in keys)
                 dst[c] = dist
             end
             for dr = 0:3
                 p,cc = move(gr, pos, dr)
-                if cc == Byte('#') || (is_door(cc) && !(key_for_door(cc) in st.keys))
+                if cc == Byte('#') || (is_door(cc) && !(key_for_door(cc) in keys))
                     continue
                 end
                 push!(q, (p, dist + 1))
@@ -113,10 +107,6 @@ function key_distances(gr::Array{Byte,2}, st::State)::Dict{Byte,Int}
     dst
 end
 
-function get_key(k::Byte, p::Point, dist::Int, s::State)::State
-    State(p, s.total_dist + dist, union(s.keys,[k]))
-end
-
 function num_keys(loc::Dict{Byte,Point}) ::Int
     sum(is_key(c) for c in keys(loc))
 end
@@ -124,33 +114,27 @@ end
 function part_one(instr::String)::Int
     gr, loc = read_data(instr)
     n_keys = num_keys(loc)
-    state_table = Dict{Tuple{Point,BitSet}, State}()
+    dists = Dict{Tuple{Point,BitSet}, Int}( [((loc[Byte('@')], BitSet()), 0)])
     for depth = 1:n_keys
-        println("GEN ", depth, " SIZE ", length(state_table))
+        println("GEN ", depth, " SIZE ", length(dists))
 
-        best_states = if depth == 1
-            [State(loc[Byte('@')], 0, BitSet())] # starting state
-        else
-            collect(values(state_table))
-        end
-
-        state_table = Dict{Tuple{Point,BitSet}, State}()
-        for s in best_states
-            kds = key_distances(gr, s)
+        dist_list = collect(dists)
+        dists = Dict{Tuple{Point,BitSet}, Int}()
+        for ((pos,keys),total_dist) in dist_list
+            kds = key_distances(gr, pos, keys)
             for (k,dist) in kds
-                new_s = get_key(k, loc[k], dist, s)
-                t = (new_s.pos, new_s.keys)
-                if !haskey(state_table, t) || new_s.total_dist < state_table[t].total_dist
-                    state_table[t] = new_s
+                new_pos = loc[k]
+                new_keys = union(keys, [k])
+                new_total_dist = total_dist + dist
+                t = (new_pos, new_keys)
+                if !haskey(dists, t) || new_total_dist < dists[t]
+                    dists[t] = new_total_dist
                 end
             end
         end
     end
 
-    min_dist = minimum(values(state_table)) do s
-        s.total_dist
-    end
-    min_dist
+    minimum(values(dists))
 end
 
 function partition_graph(gr1::Array{Byte,2}, loc1::Dict{Byte,Point}) ::Tuple{Vector{Array{Byte,2}},Vector{Dict{Byte,Point}}}
@@ -253,5 +237,4 @@ end
 #part_one_tests()
 #part_two_tests()
 @time main()
-
 
