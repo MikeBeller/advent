@@ -114,27 +114,27 @@ end
 function part_one(instr::String)::Int
     gr, loc = read_data(instr)
     n_keys = num_keys(loc)
-    dists = Dict{Tuple{Point,BitSet}, Int}( [((loc[Byte('@')], BitSet()), 0)])
+    path_lengths = Dict{Tuple{Point,BitSet}, Int}( [((loc[Byte('@')], BitSet()), 0)])
     for depth = 1:n_keys
-        println("GEN ", depth, " SIZE ", length(dists))
+        println("GEN ", depth, " SIZE ", length(path_lengths))
 
-        dist_list = collect(dists)
-        dists = Dict{Tuple{Point,BitSet}, Int}()
-        for ((pos,keys),total_dist) in dist_list
+        path_length_list = collect(path_lengths)
+        path_lengths = Dict{Tuple{Point,BitSet}, Int}()
+        for ((pos,keys),total_dist) in path_length_list
             kds = key_distances(gr, pos, keys)
             for (k,dist) in kds
                 new_pos = loc[k]
                 new_keys = union(keys, [k])
                 new_total_dist = total_dist + dist
                 t = (new_pos, new_keys)
-                if !haskey(dists, t) || new_total_dist < dists[t]
-                    dists[t] = new_total_dist
+                if !haskey(path_lengths, t) || new_total_dist < path_lengths[t]
+                    path_lengths[t] = new_total_dist
                 end
             end
         end
     end
 
-    minimum(values(dists))
+    minimum(values(path_lengths))
 end
 
 function partition_graph(gr1::Array{Byte,2}, loc1::Dict{Byte,Point}) ::Tuple{Vector{Array{Byte,2}},Vector{Dict{Byte,Point}}}
@@ -157,11 +157,33 @@ function part_two(instr::String)::Int
     gr1, loc1 = read_data(instr)
     n_keys = num_keys(loc1)
     grs, locs = partition_graph(gr1, loc1)
-    for (i,g) in enumerate(grs)
-        println(i,":")
-        print_gr(g)
+    path_lengths::Dict{Tuple{Point,Point,Point,Point,BitSet}, Int} =
+        Dict(( locs[1][Byte('@')], locs[2][Byte('@')], locs[3][Byte('@')], locs[4][Byte('@')], BitSet()) => 0)
+
+    for depth = 1:n_keys
+        println("GEN ", depth, " SIZE ", length(path_lengths))
+        path_length_list = collect(path_lengths)
+        path_lengths = Dict{Tuple{Point,Point,Point,Point,BitSet}, Int}()
+
+        for ((pos1,pos2,pos3,pos4,keys),total_dist) in path_length_list
+            kdss = [key_distances(gr, pos, keys)
+                    for (gr,loc, pos) in zip(grs, locs,[pos1,pos2,pos3,pos4])]
+            for (i,kds) in enumerate(kdss)
+                for (k,dist) in kds
+                    new_pos = locs[i][k]
+                    new_keys = union(keys, [k])
+                    new_total_dist = total_dist + dist
+                    ta = [pos1,pos2,pos3,pos4,new_keys]
+                    ta[i] = new_pos
+                    t = tuple(ta...)
+                    if !haskey(path_lengths, t) || new_total_dist < path_lengths[t]
+                        path_lengths[t] = new_total_dist
+                    end
+                end
+            end
+        end
     end
-    0
+    minimum(values(path_lengths))
 end
 
 function print_gr(gr)
@@ -222,7 +244,45 @@ function part_two_tests()
     #######"""
 
     ans = part_two(test21)
-    @assert ans == 0
+    @assert ans == 8
+
+    test22 = """
+    ###############
+    #d.ABC.#.....a#
+    ######...######
+    ######.@.######
+    ######...######
+    #b.....#.....c#
+    ###############"""
+
+    ans = part_two(test22)
+    @assert ans == 24
+
+    test23 = """
+    #############
+    #DcBa.#.GhKl#
+    #.###...#I###
+    #e#d#.@.#j#k#
+    ###C#...###J#
+    #fEbA.#.FgHi#
+    #############"""
+
+    ans = part_two(test23)
+    @assert ans == 32
+    
+    test24 = """
+    #############
+    #g#f.D#..h#l#
+    #F###e#E###.#
+    #dCba...BcIJ#
+    #####.@.#####
+    #nK.L...G...#
+    #M###N#H###.#
+    #o#m..#i#jk.#
+    #############"""
+
+    ans = part_two(test24)
+    @assert ans == 72
 
 end
 
@@ -230,8 +290,12 @@ function main()
     instr = open("input.txt") do f
         read(f, String)
     end
+
     ans = part_one(instr)
     println("PART ONE ", ans)
+
+    ans = part_two(instr)
+    println("PART TWO ", ans)
 end
 
 #part_one_tests()
