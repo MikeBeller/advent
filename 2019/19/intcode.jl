@@ -10,6 +10,7 @@ end
 
 Intcode(prog::Vector{Int}, input::Vector{Int}) = 
     Intcode( Dict(((i-1)=>v) for (i,v) in enumerate(prog)), input, [], 0, 0, false)
+Intcode(prog::Vector{Int}) = Intcode(prog, Vector{Int}())
 
 get_mem(ic::Intcode, addr::Int) = get(ic.mem, addr, 0)
 set_mem(ic::Intcode, addr::Int, val::Int) = ic.mem[addr] = val
@@ -97,7 +98,7 @@ function step(ic::Intcode)
     (op == 3 && !ic.awaiting_input) ? -3 : op
 end
 
-function intcode_test(prgstr::String, inp::Vector{Int})
+function intcode_test(prgstr::String, inp::Vector{Int}=Vector{Int}())
     prog = [parse(Int, s) for s in split(prgstr, ",")]
     ic = Intcode(prog, inp)
     run(ic)
@@ -112,10 +113,10 @@ function intcode_tests()
     @assert intcode_test("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", [9]) == [1001]
 
     # day 9 tests
-    @assert intcode_test("1102,34915192,34915192,7,4,7,99,0",Vector{Int}()) == [1219070632396864]
-    @assert intcode_test("104,1125899906842624,99", Vector{Int}()) == [1125899906842624]
-    @assert intcode_test("109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99", Vector{Int}()) == [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
-    println("All tests passed")
+    @assert intcode_test("1102,34915192,34915192,7,4,7,99,0") == [1219070632396864]
+    @assert intcode_test("104,1125899906842624,99") == [1125899906842624]
+    @assert intcode_test("109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99") == [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
+    println("All intcode tests passed")
 end
 
 intcode_tests()
