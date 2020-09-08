@@ -20,7 +20,6 @@ function read_data(inp::String)::Tuple{Array{Byte,2}, Dict{String,Vector{Point}}
 
     for y in 1:nr
         for x in 1:nc
-            p = Point(0,0)
             c = rows[y][x]
             # if it's upper case we will visit the top or left character first
             # (since we scan l/r top to bottom
@@ -41,7 +40,7 @@ function read_data(inp::String)::Tuple{Array{Byte,2}, Dict{String,Vector{Point}}
                 elseif x+1 <= nc && isuppercase(rows[y][x+1])
                     c2 = rows[y][x+1]
                     # stacked left to right
-                    if x+2 <= nr && rows[y][x+2] == '.'
+                    if x+2 <= nc && rows[y][x+2] == '.'
                         # portal point is to right
                         p = Point(x+2-2,y-2)
                     elseif x-1 >= 1 && rows[y][x-1] == '.'
@@ -59,6 +58,8 @@ function read_data(inp::String)::Tuple{Array{Byte,2}, Dict{String,Vector{Point}}
             end
         end
     end
+
+    @assert haskey(port,"AA") && haskey(port,"ZZ") && length(port["AA"]) == 1 && length(port["ZZ"]) == 1
 
     gr, port
 end
@@ -86,6 +87,31 @@ function move(gr::Array{Byte,2}, f::Point, dr::Int)::Tuple{Point,Byte}
     t,c
 end
 
+function find_zz(gr::Array{Byte,2}, from_pos::Point, keys::BitSet)::Dict{Byte,Int}
+    dst = Dict{Byte,Int}()
+    vs = falses(size(gr)...)
+    q = [(from_pos, 0)]
+
+    while length(q) != 0
+        pos,dist = popfirst!(q)
+        if !vs[pos.y,pos.x]
+            vs[pos.y,pos.x] = true
+            c = gr[pos.y,pos.x]
+            if is_key(c) && !(c in keys)
+                dst[c] = dist
+            end
+            for dr = 0:3
+                p,cc = move(gr, pos, dr)
+                if cc == Byte('#') || (is_door(cc) && !(key_for_door(cc) in keys))
+                    continue
+                end
+                push!(q, (p, dist + 1))
+            end
+        end
+    end
+    dst
+end
+
 function print_gr(gr)
     nr,nc = size(gr)
     for r = 1:nr
@@ -96,18 +122,66 @@ function print_gr(gr)
     end
 end
 
-function part_one_test(fname)
+function part_one(gr::Array{Byte,2}, port::Dict{String,Vector{Point}})::Int
+    pport = Dict( (p => s) for (s,v) in port for p in v)
+    nr,nc = size(gr)
+    vs = falses(nr, nc)
+    goal = port["ZZ"][1]
+    q = [(port["AA"][1], 0)]
+
+    total_dist = 0
+    while length(q) != 0
+        pos,dist = popfirst!(q)
+        if !vs[pos.y,pos.x]
+            vs[pos.y,pos.x] = true
+            if pos == goal
+                total_dist = dist
+                break
+            end
+            for dr = 0:3
+                p,cc = move(gr, pos, dr)
+                if cc == Byte('#')
+                    continue
+                end
+                push!(q, (p, dist + 1))
+            end
+            key = get(pport, pos, "")
+            if key != "" && key != "AA"
+                tunnel_exit = [p for p in port[key] if p != pos][1]
+                push!(q, (tunnel_exit, dist + 1))
+            end
+        end
+    end
+
+    total_dist
+end
+
+function part_one_test(fname, ans)
     instr = open(fname) do f
         read(f, String)
     end
     gr,port = read_data(instr)
-    print_gr(gr)
-    println(port)
+    #print_gr(gr)
+    #println(port)
+    r = part_one(gr, port)
+    #println(r)
+    @assert r == ans
 end
 
 function part_one_tests()
-    part_one_test("test1.txt")
+    part_one_test("test1.txt", 23)
+    part_one_test("test2.txt", 58)
+end
+
+function part_one()
+    instr = open("input.txt") do f
+        read(f, String)
+    end
+    gr,port = read_data(instr)
+    r = part_one(gr, port)
+    println("PART1: ", r)
 end
 
 part_one_tests()
+part_one()
 
