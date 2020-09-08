@@ -25,48 +25,37 @@ function read_data(inp::String)::Tuple{Array{Byte,2}, Dict{String,Vector{Point}}
             # if it's upper case we will visit the top or left character first
             # (since we scan l/r top to bottom
             if isuppercase(c)
-                println(x, " ", y)
                 if y + 1 <= nr && isuppercase(rows[y+1][x])
                     c2 = rows[y+1][x]
                     # stacked top to bottom
                     if y+2 <= nr && rows[y+2][x] == '.'
                         # portal point is underneath
-                        p = Point(x,y+2)
+                        p = Point(x-2,y+2-2)
                     elseif y-1 >= 1 && rows[y-1][x] == '.'
                         # portal point is above
-                        p = Point(x,y-1)
-                    else
-                        continue
+                        p = Point(x-2,y-2-1)
                     end
+                    key = string(c, c2)
+                    v = get!(port, key, [])
+                    push!(v, p)
                 elseif x+1 <= nc && isuppercase(rows[y][x+1])
                     c2 = rows[y][x+1]
                     # stacked left to right
                     if x+2 <= nr && rows[y][x+2] == '.'
                         # portal point is to right
-                        p = Point(x+2,y)
+                        p = Point(x+2-2,y-2)
                     elseif x-1 >= 1 && rows[y][x-1] == '.'
                         # portal point is to left
-                        p = Point(x-1,y)
-                    else
-                        error("wtf2? ", x, " ", y)
+                        p = Point(x-2-1,y-2)
                     end
-                else
-                    continue
+                    key = string(c, c2)
+                    v = get!(port, key, [])
+                    push!(v, p)
                 end
-                key = string(c, c2)
-                v = get!(port, key, [])
-                push!(v, p)
-            else
-                if y >= 3 && y <= nr - 2 && x >= 3 && x <= nc - 2
-                    c = rows[y][x]
-                    gr[y-2,x-2] = if c == ' ' || c == '#'
-                        Byte('#')
-                    elseif c == '.'
-                        Byte('.')
-                    else
-                        error("???")
-                    end
-                end
+            end
+            if y >= 3 && y <= nr - 2 && x >= 3 && x <= nc - 2
+                c = rows[y][x]
+                gr[y-2,x-2] = (c == '.') ? Byte('.') : Byte('#')
             end
         end
     end
