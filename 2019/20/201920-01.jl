@@ -156,7 +156,7 @@ function part_one(gr::Array{Byte,2}, port::Dict{String,Vector{Point}})::Int
     total_dist
 end
 
-function part_one_test(fname, ans)
+function part_one_run(fname)
     instr = open(fname) do f
         read(f, String)
     end
@@ -164,21 +164,16 @@ function part_one_test(fname, ans)
     #print_gr(gr)
     #println(port)
     r = part_one(gr, port)
-    #println(r)
-    @assert r == ans
+    r
 end
 
 function part_one_tests()
-    part_one_test("test1.txt", 23)
-    part_one_test("test2.txt", 58)
+    @assert part_one_run("test1.txt") == 23
+    @assert part_one_run("test2.txt") == 58
 end
 
 function part_one()
-    instr = open("input.txt") do f
-        read(f, String)
-    end
-    gr,port = read_data(instr)
-    r = part_one(gr, port)
+    r = part_one_run("input.txt")
     println("PART1: ", r)
 end
 
