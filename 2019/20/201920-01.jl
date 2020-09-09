@@ -147,11 +147,11 @@ function part_one_tests()
     @assert part_one_run("test2.txt") == 58
 end
 
-function part_one()
+function main()
     r = part_one_run("input.txt")
     println("PART1: ", r)
 end
 
 part_one_tests()
-part_one()
+main()
 
