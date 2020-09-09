@@ -87,31 +87,6 @@ function move(gr::Array{Byte,2}, f::Point, dr::Int)::Tuple{Point,Byte}
     t,c
 end
 
-function find_zz(gr::Array{Byte,2}, from_pos::Point, keys::BitSet)::Dict{Byte,Int}
-    dst = Dict{Byte,Int}()
-    vs = falses(size(gr)...)
-    q = [(from_pos, 0)]
-
-    while length(q) != 0
-        pos,dist = popfirst!(q)
-        if !vs[pos.y,pos.x]
-            vs[pos.y,pos.x] = true
-            c = gr[pos.y,pos.x]
-            if is_key(c) && !(c in keys)
-                dst[c] = dist
-            end
-            for dr = 0:3
-                p,cc = move(gr, pos, dr)
-                if cc == Byte('#') || (is_door(cc) && !(key_for_door(cc) in keys))
-                    continue
-                end
-                push!(q, (p, dist + 1))
-            end
-        end
-    end
-    dst
-end
-
 function print_gr(gr)
     nr,nc = size(gr)
     for r = 1:nr
