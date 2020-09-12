@@ -123,10 +123,16 @@ function gen_springscript(eqn::Eqn)::Vector{String}
     for term in 1:(2^eqn.nv)
         ts = gen_springscript_term(eqn, term)
         append!(insts, ts)
+        b = eqn.tab & (2 << (term-1))
         if term == 1
             push!(insts, "NOT T J")
-            push!(insts, "NOT J J")
+            if b == 1
+                push!(insts, "NOT J J")
+            end
         else
+            if b == 0
+                push!(insts, "NOT J J")
+            end
             push!(insts, "OR T J")
         end
     end
@@ -143,8 +149,8 @@ end
 function try_all()
     prog = read_data()
     res = -1
-    for i in 0:(2^3-1)
-        eq = Eqn(3,i)
+    for i in 1:(2^3)
+        eq = Eqn(3,i-1)
         insts = gen_springscript(eq)
         script = finalize_springscript(insts, ["AND D J", "WALK"])
         res = run_for_result(prog, script)
@@ -156,7 +162,8 @@ function try_all()
     end
 end
 
-println(gen_springscript_term(Eqn(3, 1), 4))
-try_all()
+#println(gen_springscript_term(Eqn(3, 1), 4))
+#try_all()
+println(gen_springscript(Eqn(2, 0)))
 
 
