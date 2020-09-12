@@ -73,7 +73,7 @@ end
 #   A & B & !C & D would be encoded as 1011 or 11 ( a little endian
 #   encoding where A = bit 0 and B = bit 1 and C = bit 2 etc)
 function gen_springscript_term(eqn::Eqn, term::Int)::Vector{String}
-    insts = []
+    insts = ["NOT A T", "AND A T"] # zero out T
     or = []
     and = []
     letters = "ABCDEFGHI"
@@ -87,27 +87,11 @@ function gen_springscript_term(eqn::Eqn, term::Int)::Vector{String}
         term = term >> 1
     end
     for (i,l) in enumerate(or)
-        if i == 1
-            push!(insts, "NOT $l T")
-            push!(insts, "NOT T T")
-        else
-            push!(insts, "OR $l T")
-        end
+        push!(insts, "OR $l T")
     end
-    if length(or) > 0
-        push!(insts, "NOT T T")
-        for (i,l) in enumerate(and)
-            push!(insts, "AND $l T")
-        end
-    else
-        for (i,l) in enumerate(and)
-            if i == 1
-                push!(insts, "NOT $l T")
-                push!(insts, "NOT T T")
-            else
-                push!(insts, "AND $l T")
-            end
-        end
+    push!(insts, "NOT T T")  # negate the sum of all the or terms (de morgan)
+    for (i,l) in enumerate(and)
+        push!(insts, "AND $l T")
     end
     insts
 end
@@ -120,23 +104,37 @@ end
 # the products (for 'sum of products').
 function gen_springscript(eqn::Eqn)::Vector{String}
     insts = []
-    for term in 1:(2^eqn.nv)
-        ts = gen_springscript_term(eqn, term)
-        append!(insts, ts)
-        b = eqn.tab & (2 << (term-1))
-        if term == 1
-            push!(insts, "NOT T J")
-            if b == 1
-                push!(insts, "NOT J J")
-            end
-        else
-            if b == 0
-                push!(insts, "NOT J J")
-            end
+    # zero out J
+    append!(insts, ["NOT A J", "AND A J"])
+    # or in each non-zero term in the table for this equation
+    for term in 0:(2^eqn.nv-1)
+        b = eqn.tab & (1 << term)
+        if b != 0
+            ts = gen_springscript_term(eqn, term)
+            append!(insts, ts)
             push!(insts, "OR T J")
         end
     end
     insts
+end
+
+function eval_springscript(script::Vector{String}, vars::Dict{String,Int})
+    vars = copy(vars)
+    vars["T"] = 0
+    vars["J"] = 0
+    for ins in script
+        f = split(ins, " ")
+        if f[1] == "NOT"
+            vars[f[3]] = vars[f[2]] == 0 ? 1 : 0
+        elseif f[1] == "AND"
+            vars[f[3]] = vars[f[2]] & vars[f[3]]
+        elseif f[1] == "OR"
+            vars[f[3]] = vars[f[2]] | vars[f[3]]
+        else
+            error("Invalid instr: ", f)
+        end
+    end
+    vars["J"]
 end
 
 function finalize_springscript(insts::Vector{String}, additional::Vector{String})::String
@@ -157,13 +155,21 @@ function try_all()
         if res != -1
             println("EQN: ", eq, " ANS: ", res)
         else
-            println("NO: ", eq, " ", insts)
+            println("NO: ", eq)
         end
     end
 end
 
 #println(gen_springscript_term(Eqn(3, 1), 4))
 #try_all()
-println(gen_springscript(Eqn(2, 0)))
+#println(gen_springscript(Eqn(2, 3)))
+
+sc = gen_springscript(Eqn(2, 3))
+for a in [0, 1]
+    for b in [0, 1]
+        println(a, " ", b, " ", eval_springscript(sc, Dict("A"=>a, "B"=>b)))
+    end
+end
+
 
 
