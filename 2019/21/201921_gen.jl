@@ -39,47 +39,63 @@ end
 @assert run_for_result(prog, "NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nWALK\n") == 19360724
 @assert run_for_result(prog, "NOT D J\nWALK\n") == -1
 
-function gen_springscript(n::Int, numl::Int, cmd::String)::String
+# struct representing a boolean equation in 'nv' variables
+# 'tab' indicates the 'table number' such that all possible
+# 2^nv equations in nv variables are represented.
+#
+# For nv == 2:
+#   0 0 -> 1
+#   0 1 -> 1
+#   1 0 -> 0
+#   1 1 -> 1
+#
+#   would be expressed with the number 11 (sort of a little-endian
+#   representation of the truth table number)
+#
+# So that equation is represented as Eqn(2,11)
+#
+struct Eqn
+    nv::Int
+    tab::Int
+end
+
+# Given an equation eqn, generate a springscript to evaluate it
+# such that J is 1 at the end of the evaluation if eqn evaluates
+# to True.  This is done by breaking each row of the table into
+# a product term, and generating a spring script using only the T register
+# to evaluate that term, then using the J register to 'sum' together
+# the products (for 'sum of products').
+function gen_springscript(eqn::Eqn, cmd::String)::String
     insts = []
-    letters = "ABCDEFGHI"
-    for i in 1:numl
-        letter = letters[i]
-        b = n & 1
-        n = n >> 1
-        if i == 1
-            push!(insts, "NOT A J")
-            if b == 1
-                push!(insts, "NOT J J")
-            end
+    for term in 1:(2^eqn.nv)
+        ts = gen_springscript_term(eqn, term)
+        append!(insts, ts)
+        if term == 1
+            push!(insts, "NOT T J")
+            push!(insts, "NOT J J")
         else
-            if b == 0
-                push!(insts, "NOT $letter T")
-                push!(insts, "AND T J")
-            else
-                push!(insts, "AND $letter J")
-            end
+            push!(insts, "OR T J")
         end
     end
+
     push!(insts, cmd)
     push!(insts, "")
     join(insts, "\n")
 end
 
-function part_two()
+function try_all()
     prog = read_data()
     res = -1
-    #for i in 0:(2^9-1)
-    for i in 0:(2^4-1)
-        sc = gen_springscript(i, 4, "WALK")
-        print(sc)
+    for i in 0:(2^3-1)
+        eq = Eqn(3,i)
+        sc = gen_springscript(eq, "AND J D\nWALK")
         res = run_for_result(prog, sc)
         if res != -1
-            break
+            println("EQN: ", eq, " ANS: ", res)
         end
     end
-    res
 end
 
-r = part_two()
-println("PART 2: ", r)
+try_all()
+
 
