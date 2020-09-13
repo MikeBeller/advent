@@ -153,11 +153,15 @@ function try_all()
         eq = Eqn(3,i)
         insts = gen_springscript(eq)
         script = finalize_springscript(insts, ["AND D J", "WALK"])
+        if i == 127
+            println("SCRIPT: $script")
+            #script = "NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nWALK\n"
+        end
         res = run_for_result(prog, script)
         if res != -1
             println("EQN: ", eq, " ANS: ", res)
         else
-            println("NO: ", eq)
+            #println("NO: ", eq)
         end
     end
 end
