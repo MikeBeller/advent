@@ -36,7 +36,7 @@ function run_for_result(prog::Vector{Int}, sc::String)::Int
     end
 end
 
-#@assert run_for_result(prog, "NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nWALK\n") == 19360724
+@assert run_for_result(prog, "NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nWALK\n") == 19360724
 #@assert run_for_result(prog, "NOT D J\nWALK\n") == -1
 
 # struct representing a boolean equation in 'nv' variables
@@ -109,9 +109,11 @@ function gen_springscript(eqn::Eqn)::Vector{String}
     # or in each non-zero term in the table for this equation
     for term in 0:(2^eqn.nv-1)
         b = eqn.tab & (1 << term)
+        #println("TERM $term is $b")
         if b != 0
             ts = gen_springscript_term(eqn, term)
             append!(insts, ts)
+            #println("SCRIPT FOR TERM IS $ts")
             push!(insts, "OR T J")
         end
     end
@@ -147,8 +149,8 @@ end
 function try_all()
     prog = read_data()
     res = -1
-    for i in 1:(2^3)
-        eq = Eqn(3,i-1)
+    for i in 0:(2^(2^3)-1)
+        eq = Eqn(3,i)
         insts = gen_springscript(eq)
         script = finalize_springscript(insts, ["AND D J", "WALK"])
         res = run_for_result(prog, script)
@@ -163,13 +165,40 @@ end
 #println(gen_springscript_term(Eqn(3, 1), 4))
 #try_all()
 #println(gen_springscript(Eqn(2, 3)))
+#
 
-sc = gen_springscript(Eqn(2, 3))
-for a in [0, 1]
+function test_springscript2(eqn)
+    sc = gen_springscript(eqn)
+    r = 0
     for b in [0, 1]
-        println(a, " ", b, " ", eval_springscript(sc, Dict("A"=>a, "B"=>b)))
+        for a in [0, 1]
+            x = eval_springscript(sc, Dict("A"=>a, "B"=>b))
+            println("A: $a B: $b J: $x")
+        end
     end
 end
+test_springscript2(Eqn(2, 3))
+test_springscript2(Eqn(2, 9))
+
+function test_springscript3(sc)
+    r = 0
+    for c in [0, 1]
+        for b in [0, 1]
+            for a in [0, 1]
+                x = eval_springscript(sc, Dict("A"=>a, "B"=>b, "C" => c))
+                println("A: $a B: $b C: $c J: $x")
+            end
+        end
+    end
+end
+sc = gen_springscript(Eqn(3, 127))
+test_springscript3(sc)
+sc = ["NOT A J","NOT B T","OR T J","NOT C T","OR T J"]
+test_springscript3(sc)
+
+
+try_all()
+
 
 
 
