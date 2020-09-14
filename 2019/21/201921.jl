@@ -25,5 +25,10 @@ end
 prog = read_data()
 #run_print(prog, "NOT D J\nWALK\n")
 print("PART 1: ")
+# (!A | !B | !C) & D & (H | E)
 run_print(prog, "NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nWALK\n")
+
+print("PART 2: ")
+# (!A | !B | !C) & D & (H | E)
+run_print(prog, "NOT A T\nNOT T T\nAND B T\nAND C T\nNOT T J\nAND D J\nNOT H T\nNOT T T\nOR E T\nAND T J\nRUN\n")
 
