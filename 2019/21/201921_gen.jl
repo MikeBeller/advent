@@ -157,6 +157,10 @@ function try_all()
             println("SCRIPT: $script")
             #script = "NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nWALK\n"
         end
+        if length(insts) > 13
+            # only allowed 15 instructions in a springscript -- oops!
+            println("$i $(length(insts))")
+        end
         res = run_for_result(prog, script)
         if res != -1
             println("EQN: ", eq, " ANS: ", res)
