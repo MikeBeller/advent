@@ -54,6 +54,12 @@ function test1()
             "cut -1",]
     t = apply_cmds(collect(0:9), cmds)
     @assert t == [9, 2, 5, 8, 1, 4, 7, 0, 3, 6]
+
+    for i in 1:length(cmds)
+        t = apply_cmds(collect(0:9), cmds[1:i])
+        n = findfirst(x->x==3, t) - 1
+        println("I: $n T: $t CMD: $(cmds[i])")
+    end
 end
 
 test1()

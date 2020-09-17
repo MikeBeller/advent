@@ -1,10 +1,10 @@
 
 
-D(n, i) = mod(-i, n)
+D(n, i) = mod(-(i+1), n)
 C(k, n, i) = mod((i - k), n)
 I(k, n, i) = mod(i * k, n)
 
-@assert D(10, 3) == 7
+@assert D(10, 3) == 6
 @assert C(3, 10, 3) == 0
 @assert C(-4, 10, 3) == 7
 @assert I(3, 10, 3) == 9
@@ -22,6 +22,7 @@ function apply_cmds(n, i, cmds)
             k = parse(Int, strip(f[2]))
             i = C(k, n, i)
         end
+        println("I: $i CMD: $cmd")
     end
     i
 end
@@ -48,7 +49,7 @@ test1()
 
 function part_one()
     cmds = split(strip(read("input.txt", String)), "\n")
-    i = apply_cmds(10007, cmds)
+    i = apply_cmds(10007, 2019, cmds)
     i
 end
 
