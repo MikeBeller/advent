@@ -72,3 +72,32 @@ end
 
 println("PART 1: ", part_one())
 
+function test2()
+    cmdss = [
+             ["cut 5", "cut -5"],
+            [ "cut 3",
+            "deal into new stack",
+            "cut 3",
+            "deal into new stack",
+           ],
+            [ "deal with increment 3",
+             "deal with increment 4",
+            ],
+            [ "deal with increment 3",
+             "deal into new stack",
+             "deal with increment 4",
+             "cut -3",
+             "deal into new stack",
+            ],
+           ]
+
+    x = collect(0:10)
+    for cmds in cmdss
+        t = apply_cmds(copy(x), cmds)
+        println(cmds, t)
+        @assert x == t
+    end
+end
+
+test2()
+    

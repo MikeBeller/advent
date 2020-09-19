@@ -22,7 +22,7 @@ function apply_cmds(n, i, cmds)
             k = parse(Int, strip(f[2]))
             i = C(k, n, i)
         end
-        println("I: $i CMD: $cmd")
+        #println("I: $i CMD: $cmd")
     end
     i
 end
@@ -54,4 +54,22 @@ function part_one()
 end
 
 println("PART 1: ", part_one())
+
+function part_two()
+    # start by looking for a repeating pattern
+    #seen = Set{Int}()
+    cmds = split(strip(read("input.txt", String)), "\n")
+    i = 2019
+    for n in 1:10000000
+        i = apply_cmds(119315717514047, i, cmds)
+        #println("$n: $i")
+        #if i in seen
+        #    println("REPEATED: $i at $n")
+        #    break
+        #end
+        #push!(seen, i)
+    end
+end
+
+#part_two()
 
