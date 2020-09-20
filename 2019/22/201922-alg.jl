@@ -1,8 +1,8 @@
 
 struct Eq
-    a::Int128
-    b::Int128
-    n::Int128
+    a::BigInt
+    b::BigInt
+    n::BigInt
 end
 
 # algebraic representation of the operators
@@ -10,16 +10,19 @@ D(eq::Eq) = Eq(mod(-eq.a, eq.n), mod(-eq.b-1,eq.n), eq.n)          # D = -x - 1
 C(k, eq::Eq) = Eq(eq.a, mod(eq.b-k, eq.n), eq.n)                   # Ck = x - k
 I(k, eq::Eq) = Eq(mod(k * eq.a, eq.n), mod(k * eq.b, eq.n), eq.n)  # Ik = k * x
 
-x = Eq(1, 0, 11)
-@assert D(D(x)) == x
-@assert C(-5, C(5, x)) == x
-@assert D(C(3,D(C(3,x)))) == x
+eql(e1, e2) = e1.a == e2.a && e1.b == e2.b && e1.n == e2.n
 
-eval_eq(eq::Eq, x::Int128) = mod(eq.a * x + eq.b, eq.n)
-eval_eq(eq::Eq, x::Int) = eval_eq(eq, Int128(x))
+x = Eq(1, 0, 11)
+println(D(D(x)))
+@assert eql(D(D(x)), x)
+@assert eql(C(-5, C(5, x)), x)
+@assert eql(D(C(3,D(C(3,x)))), x)
+
+eval_eq(eq::Eq, x::BigInt) = mod(eq.a * x + eq.b, eq.n)
+eval_eq(eq::Eq, x::Int) = eval_eq(eq, BigInt(x))
 
 function apply_cmds(cmds, n::Int)
-    n = Int128(n)
+    n = BigInt(n)
     eq = Eq(1, 0, n)
     for cmd in cmds
         f = split(cmd, " ")
@@ -67,14 +70,35 @@ end
 println("PART 1: ", part_one())
 
 function part_two()
+    # Compute the polynomial for a single application
     cmds = split(strip(read("input.txt", String)), "\n")
     eq = apply_cmds(cmds, 119315717514047)
     println(eq)
-    # Invert the equation algebraicly, and evaluate
-    r = mod(mod((2020-eq.b), eq.n) * invmod(eq.a, eq.n), eq.n)
-    rr = eval_eq(eq, r)
-    println("Ans: $r, reversed: $rr")
-    r
+
+    # Now what is involved in iterating the polynomial k times
+    #  x[1] = ax[0] + b, x[2] = a^2x[0] + ab +b
+    #  in general
+    #    x[k] = a^k * x0 + b(1 + a + a^2 + ... + a^(k-1))
+    #
+    #  thus x[k] = a^k*x0 + b * (1 - a^(k-1))/(1 - a)
+    #
+    #  We are given X[k] as 2020 and want to find x[0]
+    #
+    #  X[0] = a^(-k) * (2020 - b*(1 - a^(k-1)) / (1 - a))
+    #
+    xk = BigInt(2020)
+    k = BigInt(101741582076661)
+    a = eq.a
+    b = eq.b
+    n = eq.n
+    x0 = powermod(a, -k, n) * (xk - b * (1 - powermod(a, k-1, n)) * invmod(1 - a, n))
+    x0 = mod(x0, n)
+
+    # check it forward:
+    xk = powermod(a, k, n) + b * (1 - powermod(a, k-1, n)) * invmod(1 - a, n)
+    xk = mod(xk, n)
+    println("FORWARD: $x0 BACK: $xk")
+    x0
 end
 
 println("PART 2:")
