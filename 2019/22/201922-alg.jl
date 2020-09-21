@@ -76,28 +76,29 @@ function part_two()
     println(eq)
 
     # Now what is involved in iterating the polynomial k times
-    #  x[1] = ax[0] + b, x[2] = a^2x[0] + ab +b
+    #  x[1] = ax[0] + b, x[2] = a^2x[0] + ab +b, x[3] =...
     #  in general
     #    x[k] = a^k * x0 + b(1 + a + a^2 + ... + a^(k-1))
     #
-    #  thus x[k] = a^k*x0 + b * (1 - a^(k-1))/(1 - a)
+    #  thus x[k] = a^k*x0 + b * (a^k - 1)/(a - 1)
     #
-    #  We are given X[k] as 2020 and want to find x[0]
+    #  We are given X[k] as 2020 and want to find x[0], so invert the equation:
     #
-    #  X[0] = a^(-k) * (2020 - b*(1 - a^(k-1)) / (1 - a))
+    #  X[0] = a^(-k) * (2020 - b*(a^k - 1) / (a - 1))
     #
     xk = BigInt(2020)
     k = BigInt(101741582076661)
     a = eq.a
     b = eq.b
     n = eq.n
-    x0 = powermod(a, -k, n) * (xk - b * (1 - powermod(a, k-1, n)) * invmod(1 - a, n))
+    x0 = powermod(a, -k, n) * (xk - b * (powermod(a, k, n) - 1) * invmod(a - 1, n))
     x0 = mod(x0, n)
 
     # check it forward:
-    xk = powermod(a, k, n) + b * (1 - powermod(a, k-1, n)) * invmod(1 - a, n)
+    xk = x0 * powermod(a, k, n) + b * (powermod(a, k, n) - 1) * invmod(a - 1, n)
     xk = mod(xk, n)
     println("FORWARD: $x0 BACK: $xk")
+    @assert xk == BigInt(2020)
     x0
 end
 
