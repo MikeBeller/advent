@@ -6,10 +6,11 @@ mutable struct Intcode
     pc::Int
     relative_base::Int
     awaiting_input::Bool
+    state::Int
 end
 
 Intcode(prog::Vector{Int}, input::Vector{Int}) = 
-    Intcode( Dict(((i-1)=>v) for (i,v) in enumerate(prog)), input, [], 0, 0, false)
+    Intcode( Dict(((i-1)=>v) for (i,v) in enumerate(prog)), input, [], 0, 0, false, 0)
 Intcode(prog::Vector{Int}) = Intcode(prog, Vector{Int}())
 
 get_mem(ic::Intcode, addr::Int) = get(ic.mem, addr, 0)
@@ -103,7 +104,8 @@ function step(ic::Intcode)
         error("Invalid opcode: ", op)
     end
 
-    (op == 3 && !ic.awaiting_input) ? -3 : op
+    ic.state = (op == 3 && !ic.awaiting_input) ? -3 : op
+    ic.state
 end
 
 function intcode_test(prgstr::String, inp::Vector{Int}=Vector{Int}())
