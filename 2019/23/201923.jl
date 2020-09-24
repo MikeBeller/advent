@@ -34,7 +34,7 @@ function part_one()
             run_to_read(nic)
 
             while length(nic.out) >= 3
-                println("$(i-1) sending to: $(nic.out[1]) x: $(nic.out[2]) y: $(nic.out[3])")
+                #println("$(i-1) sending to: $(nic.out[1]) x: $(nic.out[2]) y: $(nic.out[3])")
                 d = popfirst!(nic.out)
                 @assert d >= 0 && d <= 49 || d == 255
                 x = popfirst!(nic.out)
@@ -52,7 +52,7 @@ end
 
 r = part_one()
 println("PART1: $r")
-#
+
 function test1()
     prog = read_data()
     println("PROGSIZE $(length(prog))")
@@ -71,8 +71,57 @@ function test1()
     end
 end
 
-#test1()
+function part_two()
+    nat = (0,0)
+    nat_sent = BitSet()
+    prog = read_data()
+    nics = Vector{Intcode}()
+    for i in 0:49
+        nic = Intcode(prog)
+        @assert run_to_event(nic) == 3
+        push!(nic.inp, i)  # give it its network address
+        run_to_event(nic)
+        push!(nics, nic)
+    end
 
+    while true
+        all_empty = true
+        for (i,nic) in enumerate(nics)
+            while length(nic.inp) > 0
+                all_empty = false
+                run_to_read(nic)
+            end
+            push!(nic.inp, -1)
+            run_to_read(nic)
 
+            while length(nic.out) >= 3
+                println("$(i-1) sending to: $(nic.out[1]) x: $(nic.out[2]) y: $(nic.out[3])")
+                d = popfirst!(nic.out)
+                @assert d >= 0 && d <= 49 || d == 255
+                x = popfirst!(nic.out)
+                y = popfirst!(nic.out)
+                if d == 255
+                    nat = (x, y)
+                else
+                    push!(nics[d+1].inp, x)
+                    push!(nics[d+1].inp, y)
+                end
+            end
+        end
+        if all_empty
+            x,y = nat
+            nic0 = nics[1]
+            push!(nic0.inp, x)
+            push!(nic0.inp, y)
+            if y in nat_sent
+                return y
+            else
+                push!(nat_sent, y)
+            end
+        end
+    end
+    -1
+end
 
-
+r = part_two()
+println("PART2: $r")
