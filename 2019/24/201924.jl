@@ -39,6 +39,8 @@ function hash(gr::Grid)::Int
     sum(2^i for i in gr.s)
 end
 
+Base.length(gr::Grid) = length(gr.s)
+
 function nadj(gr::Grid, r::Int, c::Int)
     n = 0
     n += gr[r-1,c] ? 1 : 0
@@ -148,4 +150,69 @@ st = strip(read("input.txt", String))
 gr = to_grid(st)
 ans = part_one(gr)
 println("PART 1: $ans")
+
+function nadj2(grids::Dict{Int,Grid}, i::Int, r::Int, c::Int) ::Int
+    n = 0
+    n += gr[r-1,c] ? 1 : 0
+    n += gr[r+1,c] ? 1 : 0
+    n += gr[r,c-1] ? 1 : 0
+    n += gr[r,c+1] ? 1 : 0
+    n
+end
+
+function step2(grids::Dict{Int,Grid}, i::Int)::Grid
+    gr2 = Grid()
+    gr = get(grids, i) do
+        Grid()
+    end
+    for r in 1:gr.nr
+        for c in 1:gr.nc
+            v = gr[r, c]
+            n = nadj2(grids, i, r, c)
+            if v && n != 1
+                gr2[r, c] = false
+            elseif !v && (n == 1 || n == 2)
+                gr2[r, c] = true
+            else
+                gr2[r, c] = v
+            end
+        end
+    end
+    gr2
+end
+
+function part_two(gr,nit)
+    grids = Dict{Int,Grid}(0 => gr)
+    mni = 0
+    mxi = 0
+    for step in 1:nit
+        # Advance all existing levels
+        grids2 = Dict{Int,Grid}()
+        for i in mni:mxi
+            gr = grids[i]
+            grids2[i] = step2(grids, i)
+        end
+
+        # New higher up level
+        gr2 = step2(grids, mni)
+        if length(gr2) > 0
+            mni -= 1
+            grids2[mni] = gr2
+        end
+
+        # New lower down level
+        gr2 = step2(grids, mxi)
+        if length(gr2) > 0
+            mxi += 1
+            grids2[mxi] = gr2
+        end
+
+        grids = grids2
+    end
+    nbugs = sum(length(g) for g in values(grids))
+    nbugs
+end
+
+ans2 = part_two(gr, 4)
+println("PART 2: $ans2")
 
