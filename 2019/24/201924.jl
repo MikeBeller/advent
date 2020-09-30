@@ -146,29 +146,95 @@ test1()
 test2()
 test3()
 
-st = strip(read("input.txt", String))
-gr = to_grid(st)
-ans = part_one(gr)
-println("PART 1: $ans")
+input_string = strip(read("input.txt", String))
+starting_grid = to_grid(input_string)
+ans1 = part_one(starting_grid)
+println("PART 1: $ans1")
 
-function nadj2(grids::Dict{Int,Grid}, i::Int, r::Int, c::Int) ::Int
-    n = 0
-    n += gr[r-1,c] ? 1 : 0
-    n += gr[r+1,c] ? 1 : 0
-    n += gr[r,c-1] ? 1 : 0
-    n += gr[r,c+1] ? 1 : 0
-    n
+adj_map_raw = Dict(
+           "A" => "B,G,F,-8,-12",
+           "B" => "A,C,G,-8",
+           "C" => "B,D,H,-8",
+           "D" => "C,E,I,-8",
+           "E" => "D,I,J,-8,-14",
+           "F" => "A,G,K,-12",
+           "G" => "B,F,H,L",
+           "H" => "C,G,I,1,2,3,4,5",
+           "I" => "D,H,J,N",
+           "J" => "E,I,O,-14",
+           "K" => "F,L,P,-12",
+           "L" => "G,K,Q,1,6,11,16,21",
+           "N" => "I,O,S,5,10,15,20,25",
+           "O" => "J,N,T,-14",
+           "P" => "K,Q,U,-12",
+           "Q" => "L,P,R,V",
+           "R" => "Q,S,W,21,22,23,24,25",
+           "S" => "N,R,T,X",
+           "T" => "O,S,Y,-14",
+           "U" => "P,V,-18,-12",
+           "V" => "Q,U,W,-18",
+           "W" => "R,V,X,-18",
+           "X" => "S,W,Y,-18",
+           "Y" => "T,X,-14,-18",
+          )
+
+const AdjMap = Array{Vector{Tuple{Int,Int,Int}},2}
+
+function to_coord(s::AbstractString) ::Tuple{Int,Int,Int}
+    n = findfirst(s[1], "ABCDEFGHIJKLMNOPQRSTUVWXY")
+    if !isnothing(n)
+        n -= 1
+        l = 0
+        r = div(n,5)+1
+        c = mod(n,5)+1
+    else
+        n = parse(Int, s)
+        println("N IS $n")
+        l = n < 0 ? -1 : 1
+        n = abs(n)-1
+        r = div(n, 5) + 1
+        c = mod(n, 5) + 1
+    end
+    (l, r, c)
+end
+    
+function digest_adj_map(raw::Dict{String,String}) ::AdjMap
+    adj = AdjMap(undef, 5, 5)
+    for (k,v) in raw
+        l,r,c = to_coord(k)
+        adj[r,c] = [to_coord(s) for s in split(v,",")]
+    end
+    adj
 end
 
-function step2(grids::Dict{Int,Grid}, i::Int)::Grid
+function nadj2(adj_map::AdjMap, grids::Dict{Int,Grid}, i::Int, r::Int, c::Int) ::Int
+    gr = grids[i]
+    grm1 = get(grids, i-1) do
+        Grid()
+    end
+    grp1 = get(grids, i+1) do
+        Grid()
+    end
+    grs = [grm1, gr, grp1]
+    #sum(grs[lev+2][r,c] for (lev,r,c) in adj_map[r,c])
+    sm = 0
+    for (lev,r,c) in adj_map[r,c]
+        println("LRC: $lev, $r, $c")
+        sm += grs[lev+2][r,c] ? 1 : 0
+    end
+    sm
+end
+
+function step2(adj_map::AdjMap, grids::Dict{Int,Grid}, i::Int)::Grid
     gr2 = Grid()
-    gr = get(grids, i) do
+    gr = get!(grids, i) do
         Grid()
     end
     for r in 1:gr.nr
         for c in 1:gr.nc
+            if (r,c) == (3,3); continue; end
             v = gr[r, c]
-            n = nadj2(grids, i, r, c)
+            n = nadj2(adj_map, grids, i, r, c)
             if v && n != 1
                 gr2[r, c] = false
             elseif !v && (n == 1 || n == 2)
@@ -182,6 +248,8 @@ function step2(grids::Dict{Int,Grid}, i::Int)::Grid
 end
 
 function part_two(gr,nit)
+    adj_map = digest_adj_map(adj_map_raw)
+    println(adj_map)
     grids = Dict{Int,Grid}(0 => gr)
     mni = 0
     mxi = 0
@@ -190,29 +258,52 @@ function part_two(gr,nit)
         grids2 = Dict{Int,Grid}()
         for i in mni:mxi
             gr = grids[i]
-            grids2[i] = step2(grids, i)
+            grids2[i] = step2(adj_map, grids, i)
         end
 
         # New higher up level
-        gr2 = step2(grids, mni)
+        gr2 = step2(adj_map, grids, mni-1)
         if length(gr2) > 0
             mni -= 1
             grids2[mni] = gr2
         end
 
         # New lower down level
-        gr2 = step2(grids, mxi)
+        gr2 = step2(adj_map, grids, mxi+1)
         if length(gr2) > 0
             mxi += 1
             grids2[mxi] = gr2
         end
 
         grids = grids2
+        #println()
+        #println(string(grids[0]))
+    end
+    for i in mni:mxi
+        println("LEVEL $i")
+        println(string(grids[i]))
+        println()
     end
     nbugs = sum(length(g) for g in values(grids))
     nbugs
 end
 
-ans2 = part_two(gr, 4)
-println("PART 2: $ans2")
+function test21()
+    st = """
+    ....#
+    #..#.
+    #..##
+    ..#..
+    #...."""
+    
+    gr = to_grid(st)
+    ans = part_two(gr, 10)
+    println("ANS: $ans")
+    #@assert ans == 10
+end
+
+test21()
+
+#ans2 = part_two(starting_grid, 200)
+#println("PART 2: $ans2")
 
