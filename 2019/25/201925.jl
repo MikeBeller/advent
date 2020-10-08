@@ -21,9 +21,9 @@ function part_one()
     prog = read_data()
     ic = Intcode(prog)
     while true
-        run_to_read(ic, with_write=true)
+        run_to_read(ic, true)
         while length(ic.inp) > 0
-            run_to_read(ic, with_write=true)
+            run_to_read(ic, true)
         end
         line = readline()
         append!(ic.inp, Int(c) for c in line)
