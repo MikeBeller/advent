@@ -33,3 +33,8 @@ end
 
 part_one()
 
+# literally just tried combos til I got it:
+#  There are 8 items that don't kill you:
+#  spaceheater, mug, easteregg, weathermachine, hat, peas, sand, shell
+#  If you pick up spaceheater, mug, easteregg, sand, then
+#  you will weigh the right amount to get across the sensor.
