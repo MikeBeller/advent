@@ -13,10 +13,8 @@ type Point struct {
 }
 
 type State struct {
-	pos       Point
-	totalDist int
-	keys      KeySet
-	path      string
+	pos  Point
+	keys KeySet
 }
 
 type KeySet int32
@@ -29,17 +27,19 @@ func isDoor(b byte) bool {
 	return b >= 'A' && b <= 'Z'
 }
 
-func (k KeySet) Add(b byte) KeySet {
-	if !isKey(b) {
-		panic("invalid key")
+func assert(b bool, s string) {
+	if !b {
+		panic(s)
 	}
+}
+
+func (k KeySet) Add(b byte) KeySet {
+	assert(isKey(b), "invalid key")
 	return k | (1 << (b - 'a'))
 }
 
 func (k KeySet) Has(b byte) bool {
-	if !isKey(b) {
-		panic("invalid key")
-	}
+	assert(isKey(b), "invalid key")
 	return (k & (1 << (b - 'a'))) != 0
 }
 
@@ -88,9 +88,7 @@ func move(gr [][]byte, from Point, dr int) (Point, byte) {
 }
 
 func keyForDoor(c byte) byte {
-	if !isDoor(c) {
-		panic("invalid door")
-	}
+	assert(isDoor(c), "invalid door")
 	return c + 32
 }
 
@@ -130,63 +128,39 @@ func keyDistances(gr [][]byte, st State) map[byte]int {
 	return dst
 }
 
-func minState(q []State) State {
-	minDist := math.MaxInt64
-	var minState State
-	for _, s := range q {
-		if s.totalDist < minDist {
-			minState = s
-			minDist = s.totalDist
-		}
-	}
-	return minState
-}
-
-func getKey(k byte, p Point, dist int, s State) State {
-	return State{p, s.totalDist + dist, s.keys.Add(k), s.path + string(k)}
-}
-
-func bestStatesByPosAndKeys(q []State) []State {
-	type PK struct {
-		p  Point
-		ks KeySet
-	}
-	uq := make(map[PK]State)
-	for _, s := range q {
-		pk := PK{s.pos, s.keys}
-		if _, ok := uq[pk]; !ok {
-			uq[pk] = s
-		}
-		if s.totalDist < uq[pk].totalDist {
-			uq[pk] = s
-		}
-	}
-	r := []State{}
-	for _, s := range uq {
-		r = append(r, s)
-	}
-	return r
-}
-
 func part1(instr []byte) int {
 	gr, loc, nKeys := read_data(instr)
-	q := []State{State{loc['@'], 0, KeySet(0), ""}}
+	pathLengths := make(map[State]int)
+	pathLengths[State{loc['@'], 0}] = 0
 	for depth := 0; depth < nKeys; depth++ {
-		fmt.Println("GEN", depth, "SIZE", len(q))
-		bestStates := bestStatesByPosAndKeys(q)
-
-		q = q[:0]
-		for _, s := range bestStates {
-			kds := keyDistances(gr, s)
+		fmt.Println("GEN", depth, "SIZE", len(pathLengths))
+		oldPathLengths := pathLengths
+		pathLengths = make(map[State]int)
+		for state, totalDist := range oldPathLengths {
+			kds := keyDistances(gr, state)
 			for k, dist := range kds {
-				q = append(q, getKey(k, loc[k], dist, s))
+				newTotalDist := totalDist + dist
+				newPos := loc[k]
+				newKeys := state.keys.Add(k)
+				newState := State{newPos, newKeys}
+				if pl, ok := pathLengths[newState]; !ok || newTotalDist < pl {
+					pathLengths[newState] = newTotalDist
+				}
 			}
 		}
 	}
 
-	sMin := minState(q)
-	fmt.Println(sMin)
-	return sMin.totalDist
+	minDist := math.MaxInt64
+	var minState State
+	for state, totalDist := range pathLengths {
+		if totalDist < minDist {
+			minDist = totalDist
+			minState = state
+		}
+	}
+
+	fmt.Println(minState)
+	return minDist
 }
 
 func runTests() {
