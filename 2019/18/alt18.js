@@ -27,6 +27,8 @@ function readData(inStr) {
     return [gr, loc, nKeys];
 }
 
+const gridSize = (gr) => [gr.length, gr[0].length];
+
 function move(gr, from, dr) {
     let to = [0, 0];
     const [x,y] = from;
@@ -47,10 +49,44 @@ function move(gr, from, dr) {
             assert(false, "invalid direction");
     }
     const [newX,newY] = to;
-    if (newX < 0 || newY >= gr[0].length || newY < 0 || newY >= gr.length) {
+    let [nr, nc] = gridSize(gr);
+    if (newX < 0 || newX >= nc || newY < 0 || newY >= nr) {
         return [to, '#'];
     }
     return [to, gr[newY][newX]];
+}
+
+function keyDistances(gr, from_pos, keys) {
+    let dst = {};
+    let [nr, nc] = gridSize(gr);
+    for (let y = 0; y < nr; y++) {
+        vs[y] = new Array(gr.length).fill(false);
+    }
+
+    let q = [(from_pos, 0)];
+    while (q.length != 0) {
+        let [[x,y],dist] = q.shift();
+        if (!vs[y][x]) {
+            vs[y][x] = true;
+            let c = gr[y][x];
+            if (isKey(c) && !keys.has(c)) {
+                dst[c] = dist;
+            }
+            for (let dr = 0; dr < 4; dr++) {
+                let [[xNew,yNew], cc] = move(gr, [x, y], dr);
+                if (cc == '#' || (isDoor(cc) && !keys.has(keyForDoor(cc)))) {
+                    continue
+                }
+                q.push([[xNew, yNew], dist+1]);
+            }
+        }
+    }
+    return dst;
+}
+
+function partOne(inStr) {
+    const [gr, loc, nKeys] = readData(inStr);
+
 }
 
 function runTests() {
