@@ -49,7 +49,7 @@ function readData(inStr) {
     return [gr, loc, nKeys];
 }
 
-const gridSize = (gr) => [gr.length, gr[0].length];
+const gridSize = (gr) => {return {nr: gr.length, nc: gr[0].length}};
 
 function move(gr, x, y, dr) {
     let toX = 0;
@@ -74,24 +74,25 @@ function move(gr, x, y, dr) {
         default:
             assert(false, "invalid direction");
     }
-    let [nr, nc] = gridSize(gr);
+    let {nr, nc} = gridSize(gr);
     if (toX < 0 || toX >= nc || toY < 0 || toY >= nr) {
         return [toX, toY, '#'];
     }
-    return [toX, toY, gr[toY][toX]];
+    //return [toX, toY, gr[toY][toX]];
+    return {x: toX, y: toY, c: gr[toY][toX]};
 }
 
-function keyDistances(gr, fromPos, keys) {
+function keyDistances(gr, fromX, fromY, keys) {
     let dst = {};
-    let [nr, nc] = gridSize(gr);
-    let vs = [];
+    let {nr, nc} = gridSize(gr);
+    let vs = new Array(nr);
     for (let y = 0; y < nr; y++) {
-        vs.push(new Array(gr.length).fill(false));
+        vs[y] = new Array(gr.length).fill(false);
     }
 
-    let q = [[...fromPos, 0]];
+    let q = [{x: fromX, y: fromY, dist: 0}];
     while (q.length != 0) {
-        let [x,y,dist] = q.shift();
+        let {x, y, dist} = q.shift();
         if (!vs[y][x]) {
             vs[y][x] = true;
             let c = gr[y][x];
@@ -99,11 +100,9 @@ function keyDistances(gr, fromPos, keys) {
                 dst[c] = dist;
             }
             for (let dr = 0; dr < 4; dr++) {
-                let [xNew, yNew, cc] = move(gr, x, y, dr);
-                if (cc == '#' || (isDoor(cc) && !keys.has(keyForDoor(cc)))) {
-                    continue
-                }
-                q.push([xNew, yNew, dist+1]);
+                let nw = move(gr, x, y, dr);
+                if (nw.c == '#' || (isDoor(nw.c) && !keys.has(keyForDoor(nw.c)))) continue;
+                q.push({x: nw.x, y: nw.y, dist:dist+1});
             }
         }
     }
@@ -135,7 +134,7 @@ function partOne(inStr) {
         pathLengths = new Map();
         for (const [stateString,totalDist] of oldPathLengths) {
             const state = State.fromString(stateString);
-            const kds = keyDistances(gr, state.pos, state.keys);
+            const kds = keyDistances(gr, state.pos[0], state.pos[1], state.keys);
             for (const [k, dist] of Object.entries(kds)) {
                 const newTotalDist = totalDist + dist;
                 const newPos = loc[k];
@@ -162,8 +161,8 @@ function runTests() {
     assert.deepEqual(loc, { a: [ 2, 1 ], Z: [ 1, 2 ] });
     assert(nKeys == 1);
 
-    assert.deepEqual(move(gr, 1,1, 1), [2, 1, 'a']);
-    assert.deepEqual(move(gr, 2,2, 2), [2, 3, '#']);
+    //assert.deepEqual(move(gr, 1,1, 1), [2, 1, 'a']);
+    //assert.deepEqual(move(gr, 2,2, 2), [2, 3, '#']);
 
     let ks = new KeySet(0).add('c');
     console.log(ks);
@@ -183,7 +182,7 @@ function runTests() {
     ########################`;
 
     [gr,loc,nKeys] = readData(test2);
-    let dst = keyDistances(gr, loc['@'], new KeySet().add('a').add('c'));
+    let dst = keyDistances(gr, loc['@'][0], loc['@'][1], new KeySet().add('a').add('c'));
     assert.deepEqual(dst, {b: 4, e: 8});
 
     let ans2 = partOne(test2);
