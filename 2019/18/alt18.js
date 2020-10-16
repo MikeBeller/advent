@@ -51,34 +51,37 @@ function readData(inStr) {
 
 const gridSize = (gr) => [gr.length, gr[0].length];
 
-function move(gr, from, dr) {
-    let to = [0, 0];
-    const [x,y] = from;
+function move(gr, x, y, dr) {
+    let toX = 0;
+    let toY = 0;
     switch (dr) {
         case 0:
-            to = [x, y-1];
+            toX = x;
+            toY = y-1;
             break;
         case 1:
-            to = [x + 1, y];
+            toX = x + 1;
+            toY = y;
             break;
         case 2:
-            to = [x, y + 1];
+            toX = x;
+            toY = y+1;
             break;
         case 3:
-            to = [x - 1, y];
+            toX = x - 1;
+            toY = y;
             break;
         default:
             assert(false, "invalid direction");
     }
-    const [newX,newY] = to;
     let [nr, nc] = gridSize(gr);
-    if (newX < 0 || newX >= nc || newY < 0 || newY >= nr) {
-        return [to, '#'];
+    if (toX < 0 || toX >= nc || toY < 0 || toY >= nr) {
+        return [toX, toY, '#'];
     }
-    return [to, gr[newY][newX]];
+    return [toX, toY, gr[toY][toX]];
 }
 
-function keyDistances(gr, from_pos, keys) {
+function keyDistances(gr, fromPos, keys) {
     let dst = {};
     let [nr, nc] = gridSize(gr);
     let vs = [];
@@ -86,7 +89,7 @@ function keyDistances(gr, from_pos, keys) {
         vs.push(new Array(gr.length).fill(false));
     }
 
-    let q = [[...from_pos, 0]];
+    let q = [[...fromPos, 0]];
     while (q.length != 0) {
         let [x,y,dist] = q.shift();
         if (!vs[y][x]) {
@@ -96,7 +99,7 @@ function keyDistances(gr, from_pos, keys) {
                 dst[c] = dist;
             }
             for (let dr = 0; dr < 4; dr++) {
-                let [[xNew,yNew], cc] = move(gr, [x, y], dr);
+                let [xNew, yNew, cc] = move(gr, x, y, dr);
                 if (cc == '#' || (isDoor(cc) && !keys.has(keyForDoor(cc)))) {
                     continue
                 }
@@ -123,15 +126,15 @@ class State {
 
 function partOne(inStr) {
     const [gr, loc, nKeys] = readData(inStr);
-    let pathLengths = {};
+    let pathLengths = new Map();
     const state0 = new State(loc['@'], new KeySet(0));
-    pathLengths[state0.toString()] = 0;
+    pathLengths.set(state0.toString(), 0);
     for (let depth = 0; depth < nKeys; depth++) {
-        console.log("GEN:", depth, "SIZE:", Object.keys(pathLengths).length);
+        console.log("GEN:", depth, "SIZE:", pathLengths.size);
         const oldPathLengths = pathLengths;
-        pathLengths = {};
-        for (const [plKey,totalDist] of Object.entries(oldPathLengths)) {
-            const state = State.fromString(plKey);
+        pathLengths = new Map();
+        for (const [stateString,totalDist] of oldPathLengths) {
+            const state = State.fromString(stateString);
             const kds = keyDistances(gr, state.pos, state.keys);
             for (const [k, dist] of Object.entries(kds)) {
                 const newTotalDist = totalDist + dist;
@@ -139,13 +142,13 @@ function partOne(inStr) {
                 const newKeys = (new KeySet(state.keys.n)).add(k);
                 const newState = new State(newPos, newKeys);
                 const newStateString = newState.toString();
-                if (!(newStateString in pathLengths) || newTotalDist < pathLengths[newStateString]) {
-                    pathLengths[newStateString] = newTotalDist;
+                if (!(pathLengths.has(newStateString)) || newTotalDist < pathLengths.get(newStateString)) {
+                    pathLengths.set(newStateString, newTotalDist);
                 }
             }
         }
     }
-    return Math.min(...Object.values(pathLengths));
+    return Math.min(...pathLengths.values());
 }
 
 function runTests() {
@@ -159,8 +162,8 @@ function runTests() {
     assert.deepEqual(loc, { a: [ 2, 1 ], Z: [ 1, 2 ] });
     assert(nKeys == 1);
 
-    assert.deepEqual(move(gr, [1,1], 1), [[2, 1], 'a']);
-    assert.deepEqual(move(gr, [2,2], 2), [[2, 3], '#']);
+    assert.deepEqual(move(gr, 1,1, 1), [2, 1, 'a']);
+    assert.deepEqual(move(gr, 2,2, 2), [2, 3, '#']);
 
     let ks = new KeySet(0).add('c');
     console.log(ks);
