@@ -1,5 +1,6 @@
 'use strict';
 var assert = require('assert');
+var fs = require('fs');
 
 const isKey = c => c >= 'a' && c <= 'z';
 const isDoor = c => c >= 'A' && c <= 'Z';
@@ -19,10 +20,11 @@ class KeySet {
     add(b) {
         let k = this.keyNum(b);
         this.n += 1 << k;
+        return this;
     }
     has(b) {
         let k = this.keyNum(b);
-        return this.n | (2 << k);
+        return this.n & (1 << k);
     }
 }
 
@@ -79,8 +81,9 @@ function move(gr, from, dr) {
 function keyDistances(gr, from_pos, keys) {
     let dst = {};
     let [nr, nc] = gridSize(gr);
+    let vs = [];
     for (let y = 0; y < nr; y++) {
-        vs[y] = new Array(gr.length).fill(false);
+        vs.push(new Array(gr.length).fill(false));
     }
 
     let q = [[...from_pos, 0]];
@@ -113,8 +116,8 @@ class State {
         return this.pos[0] + "," + this.pos[1] + "," + this.keys.n;
     }
     static fromString(s) {
-        let [x, y, kn] = s.split(",");
-        return new State([x, y], new KeySet(parseInt(kn)));
+        let [x, y, k] = s.split(",").map(f => parseInt(f));
+        return new State([x, y], new KeySet(k));
     }
 }
 
@@ -124,16 +127,16 @@ function partOne(inStr) {
     const state0 = new State(loc['@'], new KeySet(0));
     pathLengths[state0.toString()] = 0;
     for (let depth = 0; depth < nKeys; depth++) {
-        console.log("GEN:", depth, "SIZE:", pathLengths.length);
+        console.log("GEN:", depth, "SIZE:", Object.keys(pathLengths).length);
         const oldPathLengths = pathLengths;
         pathLengths = {};
-        for (const [plKey,totalDist] of Object.entries(pathLengths)) {
+        for (const [plKey,totalDist] of Object.entries(oldPathLengths)) {
             const state = State.fromString(plKey);
             const kds = keyDistances(gr, state.pos, state.keys);
             for (const [k, dist] of Object.entries(kds)) {
                 const newTotalDist = totalDist + dist;
                 const newPos = loc[k];
-                const newKeys = (new KeySet(keys.n)).add(k);
+                const newKeys = (new KeySet(state.keys.n)).add(k);
                 const newState = new State(newPos, newKeys);
                 const newStateString = newState.toString();
                 if (!(newStateString in pathLengths) || newTotalDist < pathLengths[newStateString]) {
@@ -151,7 +154,7 @@ function runTests() {
     assert(keyForDoor('A') == 'a');
 
     const test1 = "###\n#.a\n.Z.";
-    const [gr,loc,nKeys] = readData(test1);
+    let [gr,loc,nKeys] = readData(test1);
     assert.deepEqual(gr, ["###", "#.a", ".Z."]);
     assert.deepEqual(loc, { a: [ 2, 1 ], Z: [ 1, 2 ] });
     assert(nKeys == 1);
@@ -159,22 +162,42 @@ function runTests() {
     assert.deepEqual(move(gr, [1,1], 1), [[2, 1], 'a']);
     assert.deepEqual(move(gr, [2,2], 2), [[2, 3], '#']);
 
+    let ks = new KeySet(0).add('c');
+    console.log(ks);
+    assert(ks.has('c') && !ks.has('a'));
+
     let st = new State([1,2], new KeySet(0));
     st.keys.add('c');
     assert(st.toString() == "1,2,4");
     let st2 = State.fromString(st.toString());
+    console.log(st2);
     assert(st2.pos[0] == 1 && st2.pos[1] == 2 && st2.keys.n == 4);
 
     const test2 = `########################
     #f.D.E.e.C.b.A.@.a.B.c.#
     ######################.#
     #d.....................#
-    ########################`
+    ########################`;
 
-    const n = partOne(test2);
-    console.log(n);
+    [gr,loc,nKeys] = readData(test2);
+    let dst = keyDistances(gr, loc['@'], new KeySet().add('a').add('c'));
+    assert.deepEqual(dst, {b: 4, e: 8});
+
+    let ans2 = partOne(test2);
+    assert(ans2 == 86);
+
+    const test3 = `########################
+    #...............b.C.D.f#
+    #.######################
+    #.....@.a.B.c.d.A.e.F.g#
+    ########################`;
+    let ans3 = partOne(test3);
+    assert(ans3 == 132);
 
 }
 
 runTests();
 
+let inputStr = fs.readFileSync('input.txt', 'utf8');
+let ans1 = partOne(inputStr);
+console.log("PART1:", ans1);
