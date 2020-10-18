@@ -125,46 +125,37 @@ fn key_distances(gr: &Grid, st: State) -> HashMap<u8, i32> {
     dst
 }
 
-#[derive(Debug,Clone,Copy)]
+#[derive(Debug,Clone,Copy,Eq,PartialEq,Hash)]
 struct State {
     pos: Point,
-    total_dist: i32,
     keys: KeySet,
-}
-
-fn get_key(k: u8, p: Point, dist: i32, s: State) -> State {
-    State{pos: p, total_dist: s.total_dist + dist, keys: s.keys.insert(k)}
-}
-
-fn best_states_by_pos_and_keys(q: &Vec<State>) -> Vec<State> {
-    let mut uq = HashMap::new();
-    for s in q {
-        let ms = uq.entry((s.pos,s.keys)).or_insert(*s);
-        if s.total_dist < (*ms).total_dist {
-            *ms = *s
-        }
-    }
-    uq.values().copied().collect::<Vec<State>>()
 }
 
 fn part1(instr: &str) -> i32 {
     let (gr, loc, n_keys) = read_data(instr);
-    let mut q = vec![State{pos: loc[&b'@'], total_dist: 0, keys: KeySet::new()}];
+    let mut path_lengths = HashMap::new();
+    path_lengths.insert(State{pos: loc[&b'@'], keys: KeySet::new()}, 0);
     for depth in 0..n_keys {
-        println!("GEN {} SIZE {}", depth, q.len());
-        let best_states = best_states_by_pos_and_keys(&q);
-        q.clear();
-        for s in best_states {
+        println!("GEN {} SIZE {}", depth, path_lengths.len());
+        let old_path_lengths = path_lengths;
+        path_lengths = HashMap::new();
+        for (s, total_dist) in old_path_lengths {
             let kds = key_distances(&gr, s);
             for (k,dist) in kds {
-                q.push(get_key(k, loc[&k], dist, s));
+                let new_state = State{pos: loc[&k], keys: s.keys.insert(k)};
+                let new_total_dist = total_dist + dist;
+                if let Some(pl) = path_lengths.get(&new_state) {
+                    if new_total_dist < *pl {
+                        path_lengths.insert(new_state, new_total_dist);
+                    }
+                } else {
+                    path_lengths.insert(new_state, new_total_dist);
+                }
             }
         }
     }
 
-    let s_min = q.iter().min_by_key(|s| s.total_dist).unwrap();
-    println!("SMIN: {:?}", s_min);
-    s_min.total_dist
+    *path_lengths.values().min().unwrap()
 }
 
 fn main() {
