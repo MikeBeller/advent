@@ -10,6 +10,7 @@ On Hal, anaconda python 3.8:
     Go         alt18.go             9.3 real 13.7 user
     Julia      alt18.jl             8.2s (7.6s without tests)
     Rust       alt18rs.rs           5s (rustc -O o alt18rs alt18rs.rs)
+    WebAssembly alt18as.ts          ...work in progress
 
 To optimize, the function taking all the time was key_distances
 In go if you make the "visited" (vs) data structure an array
@@ -46,4 +47,16 @@ and between pypy and numpy is a disaster!
 Needed to simplify State class so that it only had types
 supported by numba.  Specifically instead of frozenset
 for keys, we now use numpy arrays.  
+
+## AssemblyScript:
+
+First install AssemblyScript (npm install -g assemblyscript)
+Then as-wasi:  (npm install -g as-wasi)
+
+Also wasmtime needs to be installed
+
+
+    asc alt18as.ts --path /home/mike/local/node/lib/node_modules/ -b alt18as.wasm
+    wasmtime alt18as.wasm  # not working yet
+
 

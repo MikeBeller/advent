@@ -44,9 +44,10 @@ class KeySet {
     }
 }
 
-
+// Got stuck here -- need to refactor to eliminate multiple returns.  Pain in the ass.
     /*
-function readData(inStr) {
+
+function readData(inStr)  {
     let gr = [];
     let loc = {};
     let nKeys = 0;
