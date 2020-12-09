@@ -1,3 +1,6 @@
+# It turns out it's a bit tricky to break out of a double
+# loop in the loop macro.  If you use :until or :while you can
+# not easily capture the result.  Use break instead.
 
 (defn part1 [data]
   (def ln (length data))
