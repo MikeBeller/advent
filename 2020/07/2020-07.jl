@@ -64,7 +64,6 @@ println("PART1: ", length(part1(data)))
 
 function nbags(g, col)
     kids = g[col]
-    println(col, kids)
     length(kids) == 0 ? 1 : 1 + sum(n * nbags(g, c) for (n,c) in kids)
 end
 
