@@ -1,13 +1,11 @@
 
 (defn part1 [data]
   (def ln (length data))
-  (def pairs
-    (generate
-        [i :range [0 (dec ln)]
-         j :range [(inc i) ln]]
-         [(in data i) (in data j)]))
   (var ans nil)
-  (loop [[a b] :generate pairs]
+  (loop
+    [i :range [0 (dec ln)]
+     j :range [(inc i) ln]
+     :let [a (in data i) b (in data j)]]
     (if (= (+ a b) 2020)
       (do
         (set ans (* a b))
@@ -18,22 +16,20 @@
 (assert (= (part1 td) 514579))
 
 (def data (->>
-    (slurp "input.txt")
-    (string/trim)
-    (string/split "\n")
-    (map scan-number)))
+            (slurp "input.txt")
+            (string/trim)
+            (string/split "\n")
+            (map scan-number)))
 (print "PART1: " (part1 data))
 
 (defn part2 [data]
   (def ln (length data))
-  (def triples
-    (generate
-        [i :range [0 (- ln 2)]
-         j :range [(+ i 1) (- ln 1)]
-         k :range [(+ i 2) ln]]
-         [(in data i) (in data j) (in data k)]))
   (var ans nil)
-  (loop [[a b c] :generate triples]
+  (loop
+    [i :range [0 (- ln 2)]
+     j :range [(+ i 1) (- ln 1)]
+     k :range [(+ i 2) ln]
+     :let [a (in data i) b (in data j) c (in data k)]]
     (if (= (+ a b c) 2020)
       (do
         (set ans (* a b c))
