@@ -11,6 +11,15 @@ faded blue bags contain no other bags.
 dotted black bags contain no other bags.
 ``)
 
+
+# A few interesting peg tricks:  Note that :bag exists merely
+# as a wrapper to :bg, in order to factor out the manipulation
+# of the captured values from the pattern to be matched.
+# Also note the "group" call in :main causes the list of bags
+# to come back separate from the main color, so each result
+# is a 2-tuple, where the first element is the bag color, and
+# the second element is a list of (num, color) pairs.
+
 (def pg
   (peg/compile
               ~{
