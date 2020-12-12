@@ -54,4 +54,58 @@ end
 data = read_data(read("input.txt", String))
 println("PART1: ", part1(data))
 
+function turn2(xw, yw, th)
+    if th < 0
+        th += 360
+    end
+
+    if th == 0
+        (xw, yw)
+    elseif th == 90
+        (-yw, xw)
+    elseif th == 180
+        (-xw, -yw)
+    elseif th == 270
+        (yw, -xw)
+    else
+        @assert false "invalid angle"
+    end
+end
+
+function step2(state, cmd)
+    (c,n) = cmd
+    (xs, ys, xw, yw) = state
+    if c == 'F'
+        (xs + n * xw, ys + n * yw, xw, yw)
+    elseif c == 'E'
+        (xs, ys, xw + n, yw)
+    elseif c == 'S'
+        (xs, ys, xw, yw + n)
+    elseif c == 'W'
+        (xs, ys, xw - n, yw)
+    elseif c == 'N'
+        (xs, ys, xw, yw - n)
+    elseif c == 'R'
+        xw, yw = turn2(xw, yw, n)
+        (xs, ys, xw, yw)
+    elseif c == 'L'
+        xw, yw = turn2(xw, yw, -n)
+        (xs, ys, xw, yw)
+    else
+        @assert false "invalid command"
+    end
+end
+
+function part2(data)
+    state = (0, 0, 10, -1)
+    for cmd in data
+        state = step2(state, cmd)
+        #println(state)
+    end
+    (xs, ys, xw, yw) = state
+    abs(xs) + abs(ys)
+end
+
+@assert part2(td) == 286
+println("PART2: ", part2(data))
 
