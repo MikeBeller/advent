@@ -23,3 +23,5 @@ My leaderboard:
     |   17    |   37  |
     |   18    |   76  |
     |   19    |  168  |
+    |   20    |   ?   |  On and off over a 24 hour period -- maybe 300 minutes?
+

@@ -12,15 +12,12 @@ rotate(a) = rotr90(a)
 @assert fliptb(test1) == fliplr(rotate(rotate(test1)))
 @assert rotl90(test1) == fliptb(fliplr(rotr90(test1)))
 
-function gen_all(mx)
+function gen_all_rot_flip(mx)
     r = []
     m = copy(mx)
     push!(r, m)
     push!(r, rotr90(m)) # only one rotation required for all orientations
-    #for i = 2:4
-    #    m = rotr90(m)  
-    #    push!(r, m)
-    #end
+                        # (when combined with the flips that is)
 
     for m in copy(r)
         push!(r, fliptb(m))
@@ -30,18 +27,12 @@ function gen_all(mx)
         push!(r, fliplr(m))
     end
 
-    #for m in r
-    #    display(m)
-    #    println()
-    #end
-
     @assert length(unique(r)) == length(r)
-    unique(r)
+    r
 end
 
-#gen_all(test1)
 test2 = rand(Bool, (10,10))
-gen_all(test2)
+gen_all_rot_flip(test2)
 
 function tobin(v)
     if typeof(v[1]) == Char
@@ -91,7 +82,6 @@ tiles_with_top_left_equal(tiles, unused, tval, lval) = [(i,j) for i in unused
                                             if tiles[i][j].t == tval && tiles[i][j].l == lval]
 
 function solve(tiles::Dict{Int,Vector{Code}}, n::Int, w::Int, mat::Array{Int,3}, r::Int, c::Int, ti::Tuple{Int,Int}, unused::BitSet)::Tuple{Bool,Array{Int,3}}
-    #println("TRYING: $r $c = $ti")
     m = copy(mat)
     (tii,tir) = ti
     m[r, c, 1] = tii
@@ -106,13 +96,10 @@ function solve(tiles::Dict{Int,Vector{Code}}, n::Int, w::Int, mat::Array{Int,3},
         c = 1
         r += 1
     end
-    #println("NOW WORKING ON $r $c")
     if r == 1
         @assert !(r == 1 && c == 1)
         rr,cc = r,c-1
         rightval = tiles[m[rr,cc,1]][m[rr,cc,2]].r
-        #println("POSSIBILITIES ARE: $(tiles_with_left_equal(tiles,unused,rightval))")
-        #println("RIGHT IS $rightval")
 
         for tile in tiles_with_left_equal(tiles, unused, rightval)
             (ok,m2) = solve(tiles, n, w, m, r, c, tile, unused)
@@ -123,8 +110,6 @@ function solve(tiles::Dict{Int,Vector{Code}}, n::Int, w::Int, mat::Array{Int,3},
     elseif c == 1
         rr,cc = r-1,c
         bottomval = tiles[m[rr,cc,1]][m[rr,cc,2]].b
-        #println("POSSIBILITIES ARE: $(tiles_with_top_equal(tiles,unused,bottomval))")
-        #println("BOTTOM IS $bottomval")
         for tile in tiles_with_top_equal(tiles, unused, bottomval)
             (ok,m2) = solve(tiles, n, w, m, r, c, tile, unused)
             if ok
@@ -136,8 +121,6 @@ function solve(tiles::Dict{Int,Vector{Code}}, n::Int, w::Int, mat::Array{Int,3},
         rightval = tiles[m[rr,cc,1]][m[rr,cc,2]].r
         rr,cc = r-1,c
         bottomval = tiles[m[rr,cc,1]][m[rr,cc,2]].b
-        #println("POSSIBILITIES ARE: $(tiles_with_top_left_equal(tiles,unused,bottomval,rightval))")
-        #println("BOTTOM IS $bottomval RIGHT is $rightval")
         for tile in tiles_with_top_left_equal(tiles, unused, bottomval, rightval)
             (ok,m2) = solve(tiles, n, w, m, r, c, tile, unused)
             if ok
@@ -156,7 +139,7 @@ function part1(tiles)
     tn_to_i = Dict{Int,Int}()
     i_to_tn = Dict{Int,Int}()
     for (i,(tn,tm)) in enumerate(tiles)
-        all_tiles[i] = [encode(m) for m in gen_all(tm)]
+        all_tiles[i] = [encode(m) for m in gen_all_rot_flip(tm)]
         tn_to_i[tn] = i
         i_to_tn[i] = tn
     end
@@ -184,19 +167,18 @@ tiles = read_tiles(input)
 println("PART1: ", ans1)
 
 function matches(image, monst)
-    nmonst = count(c->c=='#', monst)
+    npix = count(c->c=='#', monst)
     ih,iw = size(image)
     mh,mw = size(monst)
-    n = 0
-    for r = 1:(iw-mw-1)
-        for c = 1:(ih-mh-1)
-            println(size(image[r:(r+mh-1),c:(c+mw-1)]), size(monst))
-            if count(image[r:(r+mh-1),c:(c+mw-1)] .== monst) == nmonst
-                n += 1
+    nfound = 0
+    for r = 1:(ih-mh+1)
+        for c = 1:(iw-mw+1)
+            if count(image[r:(r+mh-1),c:(c+mw-1)] .== monst) == npix
+                nfound += 1
             end
         end
     end
-    n
+    nfound
 end
 
 function part2(tiles, ans1)
@@ -209,7 +191,7 @@ function part2(tiles, ans1)
     th -= 2
     tw -= 2
 
-    all_tiles = [gen_all(tm) for (i,tm) in tiles]
+    all_tiles = [gen_all_rot_flip(tm) for (i,tm) in tiles]
 
     image = Array{Char}(undef, w * tw, w * th)
     for r = 1:w
@@ -223,9 +205,14 @@ function part2(tiles, ans1)
 
     monster_lines = split(read("monst.txt", String), "\n")[1:3]
     monster = reduce(vcat, permutedims.(collect.(monster_lines)))
+    npix_monst = count(c->c=='#', monster)
 
-    matches(image, monster)
+    nmatch = [(i,matches(rot_image, monster))
+              for (i,rot_image) in enumerate(gen_all_rot_flip(image))]
+    @assert count(t -> t[2] != 0, nmatch) == 1
+    (i,nmonst) = filter(t->t[2] != 0, nmatch)[1]
+    count(c->c=='#', image) - npix_monst * nmonst
 end
 
-println(part2(tiles, ans1))
+println("PART2: ", part2(tiles, ans1))
 
