@@ -78,41 +78,154 @@ end
 teststr = read("testinput.txt", String)
 test_tiles = read_tiles(teststr)
 
-function solve(ts, tn, n)
-    m = zeros(Int, (n,n))
-    tiles_left = Set(keys(ts))
-    for y = 1:n
-        for x = 1:n
-            if y == 1 && x == 1
-                m[1,1] = pop!(tiles_left, tn)
-            elseif y == 1
-                #try_all_matches_left
-            elseif x == 1
-                #try_all_matches_above
-            else
-                #try_all_matches_left_above
+const Code = NamedTuple{(:t, :b, :l, :r), Tuple{Int,Int,Int,Int}}
+
+tiles_with_left_equal(tiles, unused, val) = [(i,j) for i in unused
+                                             for j in 1:8
+                                             if tiles[i][j].l == val]
+tiles_with_top_equal(tiles, unused, val) = [(i,j) for i in unused
+                                             for j in 1:8
+                                             if tiles[i][j].t == val]
+tiles_with_top_left_equal(tiles, unused, tval, lval) = [(i,j) for i in unused
+                                                for j in 1:8
+                                            if tiles[i][j].t == tval && tiles[i][j].l == lval]
+
+function solve(tiles::Dict{Int,Vector{Code}}, n::Int, w::Int, mat::Array{Int,3}, r::Int, c::Int, ti::Tuple{Int,Int}, unused::BitSet)::Tuple{Bool,Array{Int,3}}
+    #println("TRYING: $r $c = $ti")
+    m = copy(mat)
+    (tii,tir) = ti
+    m[r, c, 1] = tii
+    m[r, c, 2] = tir
+    pop!(unused, tii)
+    if (r,c) == (w,w)
+        return (true, m)
+    end
+
+    c += 1
+    if c > w
+        c = 1
+        r += 1
+    end
+    #println("NOW WORKING ON $r $c")
+    if r == 1
+        @assert !(r == 1 && c == 1)
+        rr,cc = r,c-1
+        rightval = tiles[m[rr,cc,1]][m[rr,cc,2]].r
+        #println("POSSIBILITIES ARE: $(tiles_with_left_equal(tiles,unused,rightval))")
+        #println("RIGHT IS $rightval")
+
+        for tile in tiles_with_left_equal(tiles, unused, rightval)
+            (ok,m2) = solve(tiles, n, w, m, r, c, tile, unused)
+            if ok
+                return (ok, m2)
+            end
+        end
+    elseif c == 1
+        rr,cc = r-1,c
+        bottomval = tiles[m[rr,cc,1]][m[rr,cc,2]].b
+        #println("POSSIBILITIES ARE: $(tiles_with_top_equal(tiles,unused,bottomval))")
+        #println("BOTTOM IS $bottomval")
+        for tile in tiles_with_top_equal(tiles, unused, bottomval)
+            (ok,m2) = solve(tiles, n, w, m, r, c, tile, unused)
+            if ok
+                return (ok, m2)
+            end
+        end
+    else
+        rr,cc = r,c-1
+        rightval = tiles[m[rr,cc,1]][m[rr,cc,2]].r
+        rr,cc = r-1,c
+        bottomval = tiles[m[rr,cc,1]][m[rr,cc,2]].b
+        #println("POSSIBILITIES ARE: $(tiles_with_top_left_equal(tiles,unused,bottomval,rightval))")
+        #println("BOTTOM IS $bottomval RIGHT is $rightval")
+        for tile in tiles_with_top_left_equal(tiles, unused, bottomval, rightval)
+            (ok,m2) = solve(tiles, n, w, m, r, c, tile, unused)
+            if ok
+                return (ok, m2)
             end
         end
     end
+    (false, m)
 end
 
 function part1(tiles)
-    n = sqrt(length(tiles))
-    @assert n * n == length(tiles)
-    all_tiles = Dict()
-    for (tn,tm) in tiles
-        all_tiles[tn] = [encode(m) for m in gen_all(tm)]
+    n = length(tiles)
+    w = isqrt(n)
+    @assert w * w == n
+    all_tiles = Dict{Int,Vector{Code}}()
+    tn_to_i = Dict{Int,Int}()
+    i_to_tn = Dict{Int,Int}()
+    for (i,(tn,tm)) in enumerate(tiles)
+        all_tiles[i] = [encode(m) for m in gen_all(tm)]
+        tn_to_i[tn] = i
+        i_to_tn[i] = tn
     end
-    tns = collect(keys(tn))
-    m = zeros(Int, (n,n))
-    for tn in tns
-        ok,m = solve(all_tiles, tn, n)
-        if ok
-            return m
+
+    for i = 1:n
+        for j = 1:8
+            m = zeros(Int,(w,w,2))  # use will be m[r,c,1] = tile index, m[r,c,2] = tile rotation
+            unused = BitSet(1:n)
+            ok,m = solve(all_tiles, n, w, m, 1, 1, (i,j), unused)
+            if ok
+                ans = i_to_tn[m[1,1,1]] * i_to_tn[m[1,w,1]] * i_to_tn[m[w,1,1]] * i_to_tn[m[w,w,1]]
+                return (ans, m)
+            end
         end
     end
     @assert false "no solution"
 end
 
-println(part1(test_tiles))
+(ans1,m) = part1(test_tiles) 
+@assert ans1 == 20899048083289
+
+input = read("input.txt", String)
+tiles = read_tiles(input)
+(ans1,m) = part1(tiles)
+println("PART1: ", ans1)
+
+function matches(image, monst)
+    nmonst = count(c->c=='#', monst)
+    ih,iw = size(image)
+    mh,mw = size(monst)
+    n = 0
+    for r = 1:(iw-mw-1)
+        for c = 1:(ih-mh-1)
+            println(size(image[r:(r+mh-1),c:(c+mw-1)]), size(monst))
+            if count(image[r:(r+mh-1),c:(c+mw-1)] .== monst) == nmonst
+                n += 1
+            end
+        end
+    end
+    n
+end
+
+function part2(tiles, ans1)
+    n = length(tiles)
+    w = isqrt(n)
+    @assert w * w == n
+    (_,tile1) = tiles[1]
+    th,tw = size(tile1)
+    @assert tw == th
+    th -= 2
+    tw -= 2
+
+    all_tiles = [gen_all(tm) for (i,tm) in tiles]
+
+    image = Array{Char}(undef, w * tw, w * th)
+    for r = 1:w
+        for c = 1:w
+            tn,tr = m[r,c,1],m[r,c,2]
+            tile = all_tiles[tn][tr]
+            ulr,ulc = (r-1)*th+1, (c-1)*tw+1
+            image[ulr:(ulr+th-1),ulc:(ulc+tw-1)] = tile[2:(2+th-1),2:(2+tw-1)]
+        end
+    end
+
+    monster_lines = split(read("monst.txt", String), "\n")[1:3]
+    monster = reduce(vcat, permutedims.(collect.(monster_lines)))
+
+    matches(image, monster)
+end
+
+println(part2(tiles, ans1))
 
