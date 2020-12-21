@@ -86,7 +86,7 @@ function solve(tiles::Dict{Int,Vector{Code}}, n::Int, w::Int, mat::Array{Int,3},
     (tii,tir) = ti
     m[r, c, 1] = tii
     m[r, c, 2] = tir
-    pop!(unused, tii)
+    unused = delete!(copy(unused), tii)  # immutable pop
     if (r,c) == (w,w)
         return (true, m)
     end
