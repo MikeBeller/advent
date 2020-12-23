@@ -1,33 +1,55 @@
 
+(defn to-seq [& as]
+  ~(* ,;as))
+
+(defn to-or [a b]
+  ~(+ ,a ,b))
+
 (defn parse-rules (txt)
-  (peg/match
-    '{
-      :cmd (* :d+ ":" :seqs)
-      :seqs (+ :seq :or)
-      :seq (some (* " " :d+))
-      :or (* :seq "|" :seq)
-      :main (some :cmd)}
+  (def pm (peg/match
+    ~{
+      :line (* :num ":" :rule)
+      :rule (+ :str :or :seq)
+      :seq (cmt (some (* " " :num)) ,to-seq)
+      :or (cmt (* :seq " |" :seq) ,to-or)
+      :str (* :s+ :quote (<- :S) :quote )
+      :quote `"`
+      :num (cmt (<- :d+) ,keyword)
+      :main (* :line (some (* :s+ :line)) -1)
+      }
     txt))
+  (def pg (table ;pm))
+  (put pg :main '(* :0 -1))
+  (table/to-struct pg))
 
-(def tds ```
-0: 4 1 5
-1: 2 3 | 3 2
-2: 4 4 | 5 5
-3: 4 5 | 5 4
-4: "a"
-5: "b"```)
+(defn part1 (inp)
+  (def [rulestr teststr] (string/split "\n\n" inp))
+  (def pg (parse-rules rulestr))
+  (count truthy?
+         (seq [line :in (string/split "\n" teststr)]
+           (peg/match pg line))))
 
-(def peg
-  '{
-    :main (* :1 :2)
-    :1 "a"
-    :2 (+ (* :1 :3) (* :3 :1))
-    :3 "b"})
+(assert (= (part1 (slurp "test1.txt")) 2))
 
-(pp (peg/match peg "aab"))
-(pp (peg/match peg "aba"))
-(pp (peg/match peg "abb"))
+(print "PART1: " (part1 (slurp "input.txt")))
 
-(pp (parse-rules tds))
+(defn struct-to-table [str] (table ;(mapcat identity (pairs str))))
+
+(defn part2 (inp)
+  (def [rulestr teststr] (string/split "\n\n" inp))
+  (def pg1 (parse-rules rulestr))
+  (pp pg1)
+  (def pgt (struct-to-table pg1))
+  (put pgt :8 '(some :42))
+  (put pgt :11 '(* :42 (any :11) :31))
+  (def pg (table/to-struct pgt))
+  (pp pg)
+  (count truthy?
+         (seq [line :in (string/split "\n" teststr)]
+           (def xx (peg/match pg line))
+           (print line " " xx)
+           (peg/match pg line))))
+
+(print (part2 (slurp "test2.txt")))
 
 
