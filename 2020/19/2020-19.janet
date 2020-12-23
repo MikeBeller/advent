@@ -1,4 +1,3 @@
-
 (defn to-seq [& as]
   ~(* ,;as))
 
@@ -35,21 +34,26 @@
 
 (defn struct-to-table [str] (table ;(mapcat identity (pairs str))))
 
+(defn gen-all-pats []
+  (seq [i :range [1 30]
+        j :range [1 30]]
+    ~(* (,i :42) (,j :42) (,j :31))))
+
 (defn part2 (inp)
   (def [rulestr teststr] (string/split "\n\n" inp))
   (def pg1 (parse-rules rulestr))
-  (pp pg1)
   (def pgt (struct-to-table pg1))
-  (put pgt :8 '(some :42))
-  (put pgt :11 '(* :42 (any :11) :31))
+  # the below changes didn't work so just do a hack (like we did in Julia)
+  # (probably didn't work due to greediness of matches in pegs)
+  #(put pgt :8 '(+ :42 (* :42 :8)))
+  #(put pgt :11 '(+ (* :42 :31) (* :42 :11 :31)))
+  (put pgt :0 ~(+ ,;(gen-all-pats)))
   (def pg (table/to-struct pgt))
-  (pp pg)
   (count truthy?
          (seq [line :in (string/split "\n" teststr)]
-           (def xx (peg/match pg line))
-           (print line " " xx)
            (peg/match pg line))))
 
-(print (part2 (slurp "test2.txt")))
+(assert (= 12 (part2 (slurp "test2.txt"))))
+(print "PART2: " (part2 (slurp "input.txt")))
 
 
