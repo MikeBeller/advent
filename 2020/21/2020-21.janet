@@ -48,7 +48,6 @@ sqjhc mxmxvkd sbzzf (contains fish)
                     is))))
   can-be)
 
-
 (defn part1 [rules]
   (def can-be (possible-assignments rules))
   (def all-used-ings
@@ -66,4 +65,29 @@ sqjhc mxmxvkd sbzzf (contains fish)
 
 (def rules (read-data (slurp "input.txt")))
 (print "PART1: " (part1 rules))
+
+(defn solve [rs i m]
+  (if (>= i (length rs))
+    [true m]
+    (let [[alg ings] (in rs i)]
+      (var ret [false m])
+      (loop [ing :in (set/items ings) :when (nil? (get m ing))]
+        (def [ok m2] (solve rs (inc i) (struct ing alg ;(kvs m))))
+        (if ok
+          (do
+            (set ret [ok m2])
+            (break))))
+      ret)))
+
+(defn part2 [rules]
+  (def can-be (possible-assignments rules))
+  (def rs (pairs can-be))
+  (def [ok m] (solve rs 0 {}))
+  (def rm (struct ;(mapcat reverse (pairs m))))
+  (string/join (seq [k :in (sort (keys rm))]
+                 (in rm k)) ",")
+  )
+
+(assert (= "mxmxvkd,sqjhc,fvjkl" (part2 test-rules)))
+(print "PART2: " (part2 rules))
 
