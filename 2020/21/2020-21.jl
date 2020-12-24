@@ -40,9 +40,35 @@ test_rules = read_data(tds)
 rules = read_data(read("input.txt", String))
 println("PART1: ", part1(rules))
 
-function part2(rules)
-    can_be = possible_assignments(rules)
-    println(can_be)
+function solve(rs, i, m)
+    if i > length(rs)
+        return true, m
+    end
+
+    (alg,ings) = rs[i]
+    for ing in ings
+        if haskey(m, ing)
+            continue
+        end
+        m2 = Base.ImmutableDict(m, ing => alg)
+        ok,m3 = solve(rs, i+1, m2)
+        if ok
+            return true, m3
+        end
+    end
+    false, m
 end
 
-println("PART2: ", part2(test_rules))
+function part2(rules)
+    can_be = possible_assignments(rules)
+    rs = collect(can_be)
+    m = Base.ImmutableDict{String,String}()
+    ok, m = solve(rs, 1, m)
+    @assert ok
+    rm = Dict(v=>k for (k,v) in m)
+    ans = join([rm[k] for k in sort(collect(keys(rm)))], ",")
+    ans
+end
+
+@assert part2(test_rules) == "mxmxvkd,sqjhc,fvjkl"
+println("PART2: ", part2(rules))
