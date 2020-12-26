@@ -13,7 +13,6 @@ nearby tickets:
 55,2,20
 38,6,12```)
 
-
 (defn read-data [inp]
   (def [rulestr mystr nbstr] (string/split "\n\n" (string/trim inp)))
 
@@ -21,8 +20,8 @@ nearby tickets:
   (def rules @{})
   (loop [line :in (string/split "\n" rulestr)]
     (def m
-      (peg/match '(* (<- :w+) ": " (<- :d+) "-" (<- :d+) " or " (<- :d+) "-" (<- :d+)) line))
-    (put rules (first m) (drop 1 m)))
+      (peg/match '(* (<- (to ":")) ": " (<- :d+) "-" (<- :d+) " or " (<- :d+) "-" (<- :d+)) line))
+    (put rules (first m) (map scan-number (drop 1 m))))
 
   # my ticket
   (def [title stuff] (string/split "\n" mystr))
@@ -36,7 +35,33 @@ nearby tickets:
 
   [rules mine others])
 
-(pp (read-data td-string))
+(defn in-range? [[a b c d] x]
+  (or (<= a x b) (<= c x d)))
 
+(defn field-invalid-for-all-rules [rules v]
+  (nil? (find |(in-range? $ v) (values rules))))
+
+(defn check-tickets [rules nearby]
+  (var err 0)
+  (def valid-tickets @[])
+  (loop [ticket :in nearby]
+    (def bad-field-values
+      (filter |(field-invalid-for-all-rules rules $) ticket))
+    #(printf "TICKET: %q BAD: %q" ticket bad-field-values)
+    (+= err (sum bad-field-values))
+    (when (empty? bad-field-values)
+      (array/push valid-tickets ticket)))
+  [err valid-tickets])
+
+(defn part1 [rules nearby]
+  (def [err valid] (check-tickets rules nearby))
+  err)
+
+(def [trules tmine tnearby] (read-data td-string))
+#(print (part1 trules tnearby))
+(assert (= 71 (part1 trules tnearby)))
+
+(def [rules mine nearby] (read-data (slurp "input.txt")))
+(print "PART1: " (part1 rules nearby))
 
 
