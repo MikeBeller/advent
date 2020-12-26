@@ -90,17 +90,17 @@ nearby tickets:
         (array/push rl i))))
   r)
 
-(defn solve [rules ind rn m]
+(defn solve [rules ind i m]
   (if
-    (= rn (length rules))
+    (= i (length rules))
        [true m]
-       (let [rule (in rules (in ind rn))]
-         #(printf "RULE: %d %q MAP %q" rn rule m)
+       (let [rn (in ind i)
+             rule (in rules rn)]
          (var ret [false m])
-         (loop [c :in rule
-                :when (nil? (get m c))]
-           (def m2 (table ;(kvs m) c rn))
-           (def [ok m3] (solve rules ind (inc rn) m2))
+         (loop [candidate :in rule
+                :when (nil? (get m candidate))]
+           (def m2 (table ;(kvs m) candidate rn))
+           (def [ok m3] (solve rules ind (inc i) m2))
            (when ok (do
                       (set ret [ok m3])
                       (break))))
@@ -110,34 +110,18 @@ nearby tickets:
   (def [_ tickets] (check-tickets rules nearby))
   (def rs (can-be rules tickets))
 
-  # solve the "can be" rules by length of rule (to optimize search)
+  # sort the "can be" rules by length of rule (to optimize search)
   (def ind (sort-by |(length (in rs $)) (range 0 (length rs))))
-  (printf "IND %q" ind)
   (def [ok m] (solve rs ind 0 (tuple)))
-  (printf "LENGTH %d" (length m))
+  (def mm (struct ;(mapcat reverse (pairs m))))
 
   (product
     (seq [[i lab] :pairs rulenames
           :when (string/has-prefix? "departure" lab)]
-      (printf "using field %s %d" lab (in mine (in m i)))
-      (in mine (in m i)))))
-
-
-(def td2-string ```
-class: 0-1 or 4-19
-row: 0-5 or 8-19
-seat: 0-13 or 16-19
-
-your ticket:
-11,12,13
-
-nearby tickets:
-3,9,18
-15,1,5
-5,14,9```)
+      #(printf "using field %s %d" lab (in mine (in mm i)))
+      (in mine (in mm i)))))
 
 (def [t2rulenames t2rules t2mine t2nearby] (read-data td2-string))
-(pp (part2 t2rulenames t2rules t2mine t2nearby))
+(assert (= 1 (part2 t2rulenames t2rules t2mine t2nearby)))
 (print "PART2: " (part2 rulenames rules mine nearby))
-
 

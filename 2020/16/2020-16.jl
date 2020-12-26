@@ -112,14 +112,10 @@ function column_order(rules, tickets)
     m = assignment_matrix(rules, tickets)
     @assert size(m) == (length(rules), length(tickets[1]))
     ncols = length(rules)
-    display(m)
-    println()
     row_to_name = Dict((i,rname) for (i,(rname,rng)) in enumerate(rules))
     m2 = -m
     match = Hungarian.munkres(m2)
     mm = Matrix(match)
-    display(mm)
-    println
     order = [row_to_name[findfirst(x->x==2, mm[:,c])] for c in 1:ncols]
     order
 end
@@ -129,13 +125,11 @@ td2 = read_data(td2_string)
 
 function part2(data)
     (rules_dict, mine, nearby) = data
-    #println("NEARBY: $(length(nearby))")
     _, valid_tickets = check_tickets(rules_dict, nearby)
-    #println("VALID: $(length(valid_tickets))")
     rules = [(k,v) for (k,v) in rules_dict]
     order = column_order(rules, valid_tickets)
     (rules_dict, mine, nearby) = data
     prod(mine[i] for i in 1:length(order) if startswith(order[i], "departure"))
 end
 
-println("\nPART2: ", part2(data))
+println("PART2: ", part2(data))
