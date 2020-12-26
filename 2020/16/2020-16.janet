@@ -17,11 +17,13 @@ nearby tickets:
   (def [rulestr mystr nbstr] (string/split "\n\n" (string/trim inp)))
 
   # read the rules
-  (def rules @{})
+  (def rule-names @[])
+  (def rules @[])
   (loop [line :in (string/split "\n" rulestr)]
     (def m
       (peg/match '(* (<- (to ":")) ": " (<- :d+) "-" (<- :d+) " or " (<- :d+) "-" (<- :d+)) line))
-    (put rules (first m) (map scan-number (drop 1 m))))
+    (array/push rule-names (first m))
+    (array/push rules (map scan-number (drop 1 m))))
 
   # my ticket
   (def [title stuff] (string/split "\n" mystr))
@@ -33,13 +35,13 @@ nearby tickets:
           :when (not (string/has-prefix? "nearby" line))]
       (map scan-number (string/split "," line))))
 
-  [rules mine others])
+  [rule-names rules mine others])
 
 (defn in-range? [[a b c d] x]
   (or (<= a x b) (<= c x d)))
 
 (defn field-invalid-for-all-rules [rules v]
-  (nil? (find |(in-range? $ v) (values rules))))
+  (nil? (find |(in-range? $ v) rules)))
 
 (defn check-tickets [rules nearby]
   (var err 0)
@@ -47,7 +49,6 @@ nearby tickets:
   (loop [ticket :in nearby]
     (def bad-field-values
       (filter |(field-invalid-for-all-rules rules $) ticket))
-    #(printf "TICKET: %q BAD: %q" ticket bad-field-values)
     (+= err (sum bad-field-values))
     (when (empty? bad-field-values)
       (array/push valid-tickets ticket)))
@@ -57,11 +58,86 @@ nearby tickets:
   (def [err valid] (check-tickets rules nearby))
   err)
 
-(def [trules tmine tnearby] (read-data td-string))
+(def [trulenames trules tmine tnearby] (read-data td-string))
 #(print (part1 trules tnearby))
 (assert (= 71 (part1 trules tnearby)))
 
-(def [rules mine nearby] (read-data (slurp "input.txt")))
+(def [rulenames rules mine nearby] (read-data (slurp "input.txt")))
 (print "PART1: " (part1 rules nearby))
+
+(def td2-string ```
+class: 0-1 or 4-19
+row: 0-5 or 8-19
+seat: 0-13 or 16-19
+
+your ticket:
+11,12,13
+
+nearby tickets:
+3,9,18
+15,1,5
+5,14,9```)
+
+# struct mapping field name to list of possible field numbers
+(defn can-be [rules tickets]
+  (def r @{})
+  (def tl (length (first tickets)))
+  (loop [[field rng] :pairs rules]
+    (def rl @[])
+    (put r field rl)
+    (loop [i :range [0 tl]]
+      (when (all |(in-range? rng (in $ i)) tickets)
+        (array/push rl i))))
+  r)
+
+(defn solve [rules ind rn m]
+  (if
+    (= rn (length rules))
+       [true m]
+       (let [rule (in rules (in ind rn))]
+         #(printf "RULE: %d %q MAP %q" rn rule m)
+         (var ret [false m])
+         (loop [c :in rule
+                :when (nil? (get m c))]
+           (def m2 (table ;(kvs m) c rn))
+           (def [ok m3] (solve rules ind (inc rn) m2))
+           (when ok (do
+                      (set ret [ok m3])
+                      (break))))
+         ret)))
+
+(defn part2 [rulenames rules mine nearby]
+  (def [_ tickets] (check-tickets rules nearby))
+  (def rs (can-be rules tickets))
+
+  # solve the "can be" rules by length of rule (to optimize search)
+  (def ind (sort-by |(length (in rs $)) (range 0 (length rs))))
+  (printf "IND %q" ind)
+  (def [ok m] (solve rs ind 0 (tuple)))
+  (printf "LENGTH %d" (length m))
+
+  (product
+    (seq [[i lab] :pairs rulenames
+          :when (string/has-prefix? "departure" lab)]
+      (printf "using field %s %d" lab (in mine (in m i)))
+      (in mine (in m i)))))
+
+
+(def td2-string ```
+class: 0-1 or 4-19
+row: 0-5 or 8-19
+seat: 0-13 or 16-19
+
+your ticket:
+11,12,13
+
+nearby tickets:
+3,9,18
+15,1,5
+5,14,9```)
+
+(def [t2rulenames t2rules t2mine t2nearby] (read-data td2-string))
+(pp (part2 t2rulenames t2rules t2mine t2nearby))
+(print "PART2: " (part2 rulenames rules mine nearby))
 
 
