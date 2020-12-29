@@ -48,10 +48,10 @@ def part1(cs, nmoves):
 
 def part2(cs, nmoves):
     nxt = [0] * 1000001
-    #nxt = {}  #-- code works this way too but is slower!
-    #import array
+    #nxt = {}               # test a dict instead of a python list
+    #import array           # test an array.array instead
     #nxt = array.array('I', [0]*1000001)
-    #import numpy as np
+    #import numpy as np     # test a numpy array (horrible performance)
     #nxt = np.zeros(1000001,np.int64)
     nxt[0] = cs[0]
     p = nxt[0]
