@@ -20,6 +20,8 @@ rounds.  Tests of smaller problems removed from timing runs.)
  Array.array, pypy      |   0.23s
  Hashtable, pypy        |   3.0s
  Ndarray, pypy          | 108.0s     # ndarray from pypy3 is insanely slow
+ Janet array            |   2.6s     # twice as fast as python!
+ Janet table            |   4.6s
  Julia int32 array      |   0.21s
  Julia int64 array      |   0.35s
  Julia hashtable        |   6.8s
@@ -33,6 +35,7 @@ rounds.  Tests of smaller problems removed from timing runs.)
 * Pypy-7.3.0 (python 3.6.9)
 * Julia 1.5.3
 * gcc 7.5 -O3
+* Janet 1.13
 
 # OBSERVATIONS
 
@@ -42,4 +45,5 @@ rounds.  Tests of smaller problems removed from timing runs.)
 * Julia and pypy are roughtly equivalent, and both equivalent to C
   **not including warmup**
 * Accessing ndarray's from python is very slow and insanely slow from pypy!
+* Janet actually performs better than regular python on this benchmark
 
