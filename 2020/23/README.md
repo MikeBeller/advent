@@ -5,7 +5,7 @@ rounds.  Tests of smaller problems removed from timing runs.)
 
 * Using a linked list, and an associated dictionary, in python
 * Using a single hash table, in python and julia
-* Using a single array, in python and julia
+* Using a single array, in python and julia, and C
 * Tried a single array with different 'arrays': ndarray, array.array
 
  Solution               |  Time
@@ -32,4 +32,14 @@ rounds.  Tests of smaller problems removed from timing runs.)
 * Python-3.8.3 anaconda
 * Pypy-7.3.0 (python 3.6.9)
 * Julia 1.5.3
+* gcc 7.5 -O3
+
+# OBSERVATIONS
+
+* Python hashtable version is 40% slower than array version
+* Pypy array is 20x faster than python version (but pypy hashtable is only 2x!)
+* Array.array is slightly faster than python lists in pypy and python
+* Julia and pypy are roughtly equivalent, and both equivalent to C
+  **not including warmup**
+* Accessing ndarray's from python is very slow and insanely slow from pypy!
 
