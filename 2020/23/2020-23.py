@@ -25,10 +25,10 @@ def move(nodes, current):
     # find the next label down (wrapping 1->9) which
     # is not in the set of nodes being moved
     dc = current.label - 1
-    if dc < 1: dc = max(nd.label for nd in nodes.values())
+    if dc < 1: dc = len(nodes)
     while dc in move_set:
         dc -= 1
-        if dc < 1: dc = max(nd.label for nd in nodes.values())
+        if dc < 1: dc = len(nodes)
 
     # place the cups clockwise of the "destination cup"
     dest_node = nodes[dc]
@@ -55,10 +55,10 @@ def part1(cs, nmoves):
 
     return list_items(nodes[1].nxt)[:-1]
 
-assert part1([3, 8, 9, 1, 2, 5, 4, 6, 7], 10) == [9, 2, 6, 5, 8, 3, 7, 4]
-assert part1([3, 8, 9, 1, 2, 5, 4, 6, 7], 100) == [6, 7, 3, 8, 4, 5, 2, 9]
+#assert part1([3, 8, 9, 1, 2, 5, 4, 6, 7], 10) == [9, 2, 6, 5, 8, 3, 7, 4]
+#assert part1([3, 8, 9, 1, 2, 5, 4, 6, 7], 100) == [6, 7, 3, 8, 4, 5, 2, 9]
 
-print("PART1:", part1([2, 1, 9, 7, 4, 8, 3, 6, 5], 100))
+#print("PART1:", part1([2, 1, 9, 7, 4, 8, 3, 6, 5], 100))
 
 def part2(cs, nmoves):
     nodes = {}
@@ -84,5 +84,5 @@ def part2(cs, nmoves):
 
     return l1 * l2
 
-assert part2([3, 8, 9, 1, 2, 5, 4, 6, 7], 10000000) == 149245887792
+#assert part2([3, 8, 9, 1, 2, 5, 4, 6, 7], 10000000) == 149245887792
 print("PART2:", part2([2, 1, 9, 7, 4, 8, 3, 6, 5], 10000000))

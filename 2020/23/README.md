@@ -23,6 +23,8 @@ rounds.  Tests of smaller problems removed from timing runs.)
  Julia int32 array      |   0.21s
  Julia int64 array      |   0.35s
  Julia hashtable        |   6.8s
+ C int32 array          |   0.21s
+ C int64 array          |   0.36s
 
 
 # Versions:
