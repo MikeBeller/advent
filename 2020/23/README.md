@@ -30,6 +30,7 @@ rounds.  Tests of smaller problems removed from timing runs.)
  WASM wasmer jit        |   0.30
  WASM wasmtime cranelift|   0.35
  WASM node.js           |   0.37
+ Assemblyscript -O3     |   0.24
 
 
 
