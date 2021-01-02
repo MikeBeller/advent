@@ -27,6 +27,10 @@ rounds.  Tests of smaller problems removed from timing runs.)
  Julia hashtable        |   6.8s
  C int32 array          |   0.21s
  C int64 array          |   0.36s
+ WASM wasmer jit        |   0.30
+ WASM wasmtime cranelift|   0.35
+ WASM node.js           |   0.37
+
 
 
 # Versions:
@@ -36,6 +40,7 @@ rounds.  Tests of smaller problems removed from timing runs.)
 * Julia 1.5.3
 * gcc 7.5 -O3
 * Janet 1.13
+* wat2wasm 1.0.13, wasmer 1.0.0-rc1 or wasmtime 0.20.0 or node.js 12.18.1
 
 # OBSERVATIONS
 
@@ -46,4 +51,5 @@ rounds.  Tests of smaller problems removed from timing runs.)
   **not including warmup**
 * Accessing ndarray's from python is very slow and insanely slow from pypy!
 * Janet actually performs better than regular python on this benchmark
+* WASM is almost competitive with C/Julia_int32  (takes 1.5x as long, like pypy "list" version)
 
