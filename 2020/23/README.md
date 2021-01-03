@@ -33,7 +33,9 @@ rounds.  Tests of smaller problems removed from timing runs.)
  Assemblyscript -O3     |   0.24
  Javascript Int32Array  |   0.26     # similar to pypy array.array solution
  Rust                   |   0.21     # as fast as C
-
+ Lua w/array attribs    |   1.41
+ Lua w pure array       |   1.32     # 4 times faster than python!!
+ Luajit (attrib or no)  |   0.48     # not much speedup over pure array lua
 
 # Versions:
 
