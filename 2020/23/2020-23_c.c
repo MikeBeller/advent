@@ -1,10 +1,19 @@
-#ifndef EMSCRIPTEN
 #include <stdio.h>
-#endif
-
 #include <stddef.h>
 #include <stdint.h>
+#include <inttypes.h>
+
 #define T int32_t
+
+/* compile with:
+ *   gcc -O3 -o 2020-23_c 2020-23_c.c
+ *   or
+ *   emcc -O3 -o 2020-23_c.js 2020-23_c.c
+ *   then run: node 2020-23_c.js
+ *
+ *   Timing for emcc (wasm) is only a bit worse than optimized C!
+ *   (.26s for WASM vs .22s for C -O3)
+ */
 
 void move(T ln, T nxt[]) {
     T cur = nxt[0];
@@ -85,9 +94,7 @@ int64_t part2(T cs[], size_t nmoves) {
     return (int64_t) l1 * (int64_t) l2;
 }
 
-
-#ifndef EMSCRIPTEN
-void main() {
+int main() {
     /*
     T p1data[9] = {3, 8, 9, 1, 2, 5, 4, 6, 7};
     int64_t ans = part1(p1data, 10);
@@ -98,14 +105,6 @@ void main() {
 
     T p2data[9] = {2, 1, 9, 7, 4, 8, 3, 6, 5};
     int64_t ans2 = part2(p2data, 10000000);
-    printf("PART2: %ld\n", ans2);
-
+    printf("PART2: %" PRId64 "\n", ans2);
+    return 0;
 }
-#endif
-
-#ifdef EMSCRIPTEN
-int main() {
-    T p2data[9] = {2, 1, 9, 7, 4, 8, 3, 6, 5};
-    return part2(p2data, 10000000);
-}
-#endif
