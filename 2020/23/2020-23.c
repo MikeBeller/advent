@@ -1,6 +1,9 @@
+#ifndef EMSCRIPTEN
 #include <stdio.h>
-#include <stdint.h>
+#endif
 
+#include <stddef.h>
+#include <stdint.h>
 #define T int32_t
 
 void move(T ln, T nxt[]) {
@@ -54,16 +57,17 @@ int64_t part1(T cs[], size_t nmoves) {
     return r;
 }
 
+#define MX 1000000
+#define CS 9
+
 int64_t part2(T cs[], size_t nmoves) {
-    T csln = 9;
-    T ln = 1000000;
     T nxt[1000000];
     T p = cs[0];
     nxt[0] = cs[0];
-    for (size_t i = 1; i <= ln; i++) {
-        if (i < csln)
+    for (size_t i = 1; i <= MX; i++) {
+        if (i < CS)
             nxt[p] = cs[i];
-        else if (i == csln)
+        else if (i == CS)
             continue;
         else
             nxt[p] = i;
@@ -72,7 +76,7 @@ int64_t part2(T cs[], size_t nmoves) {
     nxt[p] = nxt[0];
 
     for (size_t i = 0; i < nmoves; i++) {
-        move(ln, nxt);
+        move(MX, nxt);
     }
 
     T l1 = nxt[1];
@@ -82,6 +86,7 @@ int64_t part2(T cs[], size_t nmoves) {
 }
 
 
+#ifndef EMSCRIPTEN
 void main() {
     /*
     T p1data[9] = {3, 8, 9, 1, 2, 5, 4, 6, 7};
@@ -96,4 +101,11 @@ void main() {
     printf("PART2: %ld\n", ans2);
 
 }
+#endif
 
+#ifdef EMSCRIPTEN
+int main() {
+    T p2data[9] = {2, 1, 9, 7, 4, 8, 3, 6, 5};
+    return part2(p2data, 10000000);
+}
+#endif
