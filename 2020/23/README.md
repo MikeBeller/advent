@@ -31,7 +31,8 @@ rounds.  Tests of smaller problems removed from timing runs.)
  WASM wasmtime cranelift|   0.35
  WASM node.js           |   0.37
  Assemblyscript -O3     |   0.24
-
+ Javascript Int32Array  |   0.26     # similar to pypy array.array solution
+ Rust                   |   0.21     # as fast as C
 
 
 # Versions:
@@ -42,6 +43,8 @@ rounds.  Tests of smaller problems removed from timing runs.)
 * gcc 7.5 -O3
 * Janet 1.13
 * wat2wasm 1.0.13, wasmer 1.0.0-rc1 or wasmtime 0.20.0 or node.js 12.18.1
+* jscript is just node 12.18.1
+* Rust 1.47.0
 
 # OBSERVATIONS
 
