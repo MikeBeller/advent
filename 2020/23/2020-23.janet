@@ -44,6 +44,7 @@
   r)
 
 #(assert (deep= (part1 [3 8 9 1 2 5 4 6 7] 10) @[9 2 6 5 8 3 7 4]))
+(printf "PART1: %q" (part1 [2 1 9 7 4 8 3 6 5] 100))
 
 (defn part2 [cs nmoves]
   (def nxt (array/new-filled 1000001 0))

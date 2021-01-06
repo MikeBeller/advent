@@ -33,7 +33,6 @@ def part1(cs, nmoves):
         nxt[p] = cs[i]
         p = nxt[p]
     nxt[p] = nxt[0]
-    print(nxt)
     for i in range(nmoves):
         move(nxt)
     r = []
@@ -44,6 +43,7 @@ def part1(cs, nmoves):
     return r
 
 #assert part1([3, 8, 9, 1, 2, 5, 4, 6, 7], 10) == [9, 2, 6, 5, 8, 3, 7, 4]
+print("PART1:", part1([2, 1, 9, 7, 4, 8, 3, 6, 5], 100))
 
 
 def part2(cs, nmoves):
