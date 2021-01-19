@@ -15,7 +15,7 @@ and ;
   while
       ddig
       drop
-  repeat drop ;
+  repeat ;
 
 ( sum the numbers in the input )
 : sumfile
@@ -27,4 +27,4 @@ and ;
         +
     repeat ;
 
-sumfile .
+sumfile . 
