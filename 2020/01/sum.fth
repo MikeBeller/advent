@@ -1,7 +1,7 @@
 : btwn ( k a b -- a <= k <= b )
-2 pick >=
--rot >=
-and ;
+  2 pick >=
+  -rot >=
+  and ;
 
 : ddig ( n k -- n' k) dup 48 - rot 10 * + swap ;
 
@@ -18,13 +18,17 @@ and ;
   repeat ;
 
 ( sum the numbers in the input )
-: sumfile
+: sumfile ( -- n )
     0
     begin
         dnum
         -1 = not
     while
         +
-    repeat ;
+    repeat drop ;
 
-sumfile . 
+( trace dnum g .  )
+( trace sumfile g . )
+sumfile . cr
+
+
