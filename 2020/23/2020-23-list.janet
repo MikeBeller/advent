@@ -83,7 +83,7 @@
   # return the new 'current' pointer
   (cup/next-cup cur))
 
-(defn part1 [cs nmoves]
+(defn part12 [cs nmoves part2]
   # create a list of cup objects
   #  cup/label 1-9
   #  cup/next-label is pointer to cup with next lower label
@@ -96,12 +96,32 @@
   # make the cdr of each number cell point to the number cell of the next label in cs
   (def cur (cup/find-label cups (car cs)))
   (defn lp [cs p]
-    (if (nil? cs) (cup/set-next-cup p cur)
+    (if (nil? cs) p
       (let [nxl (car cs)
             nx (cup/find-label cups nxl)]
         (cup/set-next-cup p nx)
         (lp (cdr cs) nx))))
-  (lp (cdr cs) cur)
+  (def last-cup (lp (cdr cs) cur))
+  (def cups
+    (if (not part2)
+      (do
+        (cup/set-next-cup last-cup cur)
+        cups)
+      (do
+        # form a chain from 10 to 1000000
+        (defn lp [n p]
+          (if (= n 1000001) p
+            (let [nx (cup/new n p)]
+              (if (not= n 10)
+                (cup/set-next-cup p nx))
+              (lp (inc n) nx))))
+        (def new-last-cup (lp 10 (cup/find-label cups 9)))
+        (cup/set-next-cup last-cup (cup/find-label new-last-cup 10))
+        (cup/set-next-cup new-last-cup cur)
+        #(cup/print-cups new-last-cup cup/next-label)
+        #(cup/print-cups cur cup/next-cup)
+        new-last-cup
+        )))
 
   # advance nmoves
   (defn lp [n cur]
@@ -111,9 +131,23 @@
         (lp (dec n) (next cups cur)))))
   (def cur (lp nmoves cur))
 
-  (cup/print-cups cur cup/next-cup)
-  )
+  # print result if not part2
+  (if (not part2)
+    (cup/print-cups cur cup/next-cup))
 
-(part1 (list 3 8 9 1 2 5 4 6 7) 10)
-(part1 (list 2 1 9 7 4 8 3 6 5) 100)
+  # return the product of the labels of the two cups to the right of the cup labeled 1
+  (def one (cup/find-label cups 1))
+  (def n1 (cup/next-cup one))
+  (def n2 (cup/next-cup n1))
+  (print (cup/label n1) " " (cup/label n2))
+  (* (cup/label n1) (cup/label n2))
+)
 
+(defn part1 [cs nmoves] (part12 cs nmoves false))
+(defn part2 [cs nmoves] (part12 cs nmoves true))
+
+#(part1 (list 3 8 9 1 2 5 4 6 7) 10)
+#(part1 (list 2 1 9 7 4 8 3 6 5) 100)
+
+#(part2 (list 3 8 9 1 2 5 4 6 7) 10000000)
+(print "PART2: " (part2 (list 2 1 9 7 4 8 3 6 5) 10000000))
