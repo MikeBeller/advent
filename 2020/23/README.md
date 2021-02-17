@@ -36,6 +36,7 @@ rounds.  Tests of smaller problems removed from timing runs.)
  Lua w/array attribs    |   1.41
  Lua w pure array       |   1.32     # 4 times faster than python!!
  Luajit (attrib or no)  |   0.48     # not much speedup over pure array lua
+ Zig ReleaseFast        |   0.21     # same as Rust and C int32
 
 # Versions:
 
@@ -47,6 +48,7 @@ rounds.  Tests of smaller problems removed from timing runs.)
 * wat2wasm 1.0.13, wasmer 1.0.0-rc1 or wasmtime 0.20.0 or node.js 12.18.1
 * jscript is just node 12.18.1
 * Rust 1.47.0
+* Zig 0.8.0-dev.1127+6a5a6386c
 
 # OBSERVATIONS
 
