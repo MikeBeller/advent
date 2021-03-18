@@ -1,4 +1,4 @@
-defmodule Advent04 do
+defmodule Advent05 do
   def test_data do
     ~S"""
     BFFFBBFRRR
@@ -37,7 +37,7 @@ defmodule Advent04 do
     |> Enum.map(fn {r,c} -> r * 8 + c end)
     |> Enum.sort()
 
-    {a, b} = Enum.zip(r, (tl r))
+    {a, _b} = Enum.zip(r, (tl r))
     |> Enum.drop_while(fn {a,b} -> b == a + 1 end)
     |> hd
 
@@ -49,7 +49,7 @@ end
 ExUnit.start
 defmodule Advent.Test do
   use ExUnit.Case
-  import Advent04
+  import Advent05
 
   test "test" do
     td = read_data(test_data())
