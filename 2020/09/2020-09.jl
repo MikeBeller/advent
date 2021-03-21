@@ -47,7 +47,7 @@ end
 @assert find_weakness(td, 127) == 62
 
 data = read_data(read("input.txt", String))
-ans1 = part1(data)
+ans1 = @time part1(data)
 println("PART1: ", ans1)
-part2(data) = find_weakness(data, ans1)
+part2(data) = @time find_weakness(data, ans1)
 println("PART2: ", part2(data))

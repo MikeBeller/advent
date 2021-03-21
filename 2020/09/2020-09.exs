@@ -49,7 +49,23 @@ defmodule Advent09.Test do
     p1(s, t, m)
   end
 
-  def part2(_code) do
+  def adds_to(ls, n) do
+    Enum.reduce_while(ls, {0,[]}, fn x,{s,xs} ->
+      #IO.puts "called w #{x} #{inspect xs}"
+      y = x + s
+      case y do
+        ^n -> {:halt, [x | xs]}
+        _ when y > n -> {:halt, []}
+        _ -> {:cont, {x + s, [x | xs]}}
+      end
+    end)
+  end
+
+  def part2(data, n) do
+    case adds_to(data, n) do
+      [] -> part2((tl data), n)
+      ls -> ({a,b} = Enum.min_max(ls); a + b)
+    end
   end
     
   test "test" do
@@ -59,6 +75,10 @@ defmodule Advent09.Test do
     #{us,r} = :timer.tc(fn -> part1(data, 5) end, [])
     {us,r} = :timer.tc(Advent09.Test, :part1, [data, 25])
     IO.puts "PART1: #{r} TIME: #{us} us"
-    #IO.puts "PART2: #{part2(data)}"
+
+    assert adds_to([3,5,6,9],14) == [6,5,3]
+    assert adds_to([3,5,6,9],15) == []
+    {us,r2} = :timer.tc(Advent09.Test, :part2, [data, r])
+    IO.puts "PART2: #{r2} TIME: #{us} us"
   end
 end
