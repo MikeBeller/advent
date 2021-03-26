@@ -24,7 +24,30 @@
     (put m xi (if (= dv 1) nil (dec dv))))
   found)
 
+(defn mxsum [xs i n]
+  (var s (in xs i))
+  (def ys @[s])
+  (loop [j :range [(inc i) (length xs)]]
+    (def y (in xs j))
+    (+= s y)
+    (array/push ys y)
+    (if (>= s n) (break)))
+  [s ys])
+
+(defn part2 [xs n]
+  (var found nil)
+  (loop [i :range [0 (dec (length xs))]
+         :while (nil? found)]
+    (def [r ys] (mxsum xs i n))
+    (if (= r n)
+      (set found (+ (min ;ys) (max ;ys)))))
+  found)
+
 (assert (= 127 (part1 test-data 5)))
 (def data (map scan-number (string/split "\n" (slurp "input.txt"))))
-(print "PART1: " (part1 data 25))
+(def ans1 (part1 data 25))
+(print "PART1: " ans1)
+
+(assert (= 62 (part2 test-data 127)))
+(print "PART2: " (part2 data ans1))
 
