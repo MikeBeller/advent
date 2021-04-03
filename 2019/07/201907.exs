@@ -60,13 +60,46 @@ defmodule Advent07.Test do
     end
   end
 
+  def list_to_mem(mlist), do:
+    for {v,i} <- Enum.with_index(mlist), into: %{}, do: {i,v}
+
   def run_with_input(mlist, inp) do
-    mem = for {v,i} <- Enum.with_index(mlist), into: %{}, do: {i,v}
+    mem = list_to_mem(mlist)
     in_f = fn [h | t] -> {h, t} end
     out_f = fn ls, v -> [v | ls] end
     state = %{m: mem, pc: 0, i: inp, o: []}
     final_state = rwi(state, in_f, out_f)
     final_state.o
+  end
+
+  def run_to_out(state, in_f, out_f) do
+    case step(state, in_f, out_f) do
+      {4, next_state} -> next_state
+      {_op, next_state} -> run_to_out(next_state, in_f, out_f)
+    end
+  end
+
+  def run_phases(prog, phases) do
+    mem = list_to_mem(prog)
+    in_f = fn [h | t] -> {h, t} end
+    out_f = fn ls, v -> [v | ls] end
+    Enum.reduce(phases, 0, fn ph,sg  ->
+      st = %{m: mem, pc: 0, i: [ph, sg], o: []}
+      nst = run_to_out(st, in_f, out_f)
+      %{o: [sg]} = nst
+      sg
+    end)
+  end
+
+  def perms([]), do: [[]]
+  def perms(l) do
+    for h <- l, t <- perms(l -- [h]), do: [h|t]
+  end
+
+  def part1(prog) do
+    perms([0,1,2,3,4])
+    |> Enum.map(fn phases -> {run_phases(prog, phases), phases} end)
+    |> Enum.max()
   end
 
   test "test intcode" do
@@ -80,5 +113,14 @@ defmodule Advent07.Test do
       assert [999] == run_with_input(big_prog, [7])
       assert [1000] == run_with_input(big_prog, [8])
       assert [1001] == run_with_input(big_prog, [9393])
+  end
+
+  test "run_phases" do
+    assert {43210,[4, 3, 2, 1, 0]} == part1([3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0])
+    assert {54321, [0, 1, 2, 3, 4]}  == part1([3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0])
+    assert {65210, [1,0,4,3,2]}  == part1([3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33, 1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0])
+
+    data = read_data(File.read!("input.txt"))
+    IO.puts "PART1: #{inspect part1(data)}"
   end
 end
