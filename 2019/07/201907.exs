@@ -102,6 +102,7 @@ defmodule Advent07.Test do
     |> Enum.max()
   end
 
+
   test "test intcode" do
       assert [1] == run_with_input([3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8], [8])
       assert [0] == run_with_input([3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8], [-1])
