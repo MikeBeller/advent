@@ -46,10 +46,6 @@ defmodule Advent11.Test do
       {{r,c},v2}
     end
     nc = Enum.count(m2, fn {k,v} -> v != m[k] end)
-    #IO.puts "RETURNING #{nc}"
-    #IO.puts map_to_string(m)
-    #IO.puts ""
-    #IO.puts map_to_string(m2)
     {nc, m2}
   end
 
@@ -57,7 +53,6 @@ defmodule Advent11.Test do
     {_nc, m} = {1, data}
                 |> Stream.iterate(fn {nc,m} -> one_gen({nc,m}) end)
                 |> Enum.find(fn {nc,_nf} -> nc == 0 end)
-                #|> Enum.take(3) |> hd()
     Map.values(m) |> Enum.count(fn c -> c == ?# end)
   end
 
