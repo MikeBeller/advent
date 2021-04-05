@@ -70,7 +70,7 @@ int64_t part1(T cs[], size_t nmoves) {
 #define CS 9
 
 int64_t part2(T cs[], size_t nmoves) {
-    T nxt[1000000];
+    T nxt[1000001];
     T p = cs[0];
     nxt[0] = cs[0];
     for (size_t i = 1; i <= MX; i++) {
