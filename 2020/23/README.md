@@ -10,6 +10,7 @@ rounds.  Tests of smaller problems removed from timing runs.)
 
  Solution               |  Time
  -----------------------|:-------:
+ Elixir, Map            |  52.9s
  Linked list, python    |  17.8s
  Linked list, pypy      |   4.7s
  Ndarray, python        |  18.1s     # accessing ndarray from python is slow

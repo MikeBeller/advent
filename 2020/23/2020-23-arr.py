@@ -24,6 +24,7 @@ def move(nxt):
 
     # new current is one node clockwise of the current
     nxt[0] = nxt[cur]
+    #print("CUPS:", n1, n2, n3, "CUR:", nxt[0])
 
 def part1(cs, nmoves):
     ln = len(cs)
@@ -43,7 +44,7 @@ def part1(cs, nmoves):
     return r
 
 #assert part1([3, 8, 9, 1, 2, 5, 4, 6, 7], 10) == [9, 2, 6, 5, 8, 3, 7, 4]
-print("PART1:", part1([2, 1, 9, 7, 4, 8, 3, 6, 5], 100))
+#print("PART1:", part1([2, 1, 9, 7, 4, 8, 3, 6, 5], 100))
 
 
 def part2(cs, nmoves):
@@ -66,6 +67,7 @@ def part2(cs, nmoves):
     nxt[p] = nxt[0]
 
     for i in range(nmoves):
+        #print("MOVE", i, end=" ")
         move(nxt)
 
     l1 = nxt[1]
@@ -73,9 +75,10 @@ def part2(cs, nmoves):
 
     return l1 * l2
 
-#assert part2([3, 8, 9, 1, 2, 5, 4, 6, 7], 10000000) == 149245887792
-#print("PART2:", part2([2, 1, 9, 7, 4, 8, 3, 6, 5], 10000000))
+assert part2([3, 8, 9, 1, 2, 5, 4, 6, 7], 10000000) == 149245887792
+print("PART2:", part2([2, 1, 9, 7, 4, 8, 3, 6, 5], 10000000))
 
 if __name__ == '__main__':
     import timeit
     print("TIME:", timeit.timeit('print("PART2:", part2([2, 1, 9, 7, 4, 8, 3, 6, 5], 10000000))', globals=locals(), number=1))
+    #print(part2([3, 8, 9, 1, 2, 5, 4, 6, 7], 10000000))
