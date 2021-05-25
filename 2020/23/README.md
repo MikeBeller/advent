@@ -11,9 +11,10 @@ rounds.  Tests of smaller problems removed from timing runs.)
  Solution               |  Time
  -----------------------|:-------:
  Elixir, Map            |  52.9s
+ Elixir, Array          |  32.4s
+ Ndarray, python        |  18.1s     # accessing ndarray from python is slow
  Linked list, python    |  17.8s
  Linked list, pypy      |   4.7s
- Ndarray, python        |  18.1s     # accessing ndarray from python is slow
  List, python           |   5.6s
  Array.array, python    |   5.1s     # must use 'I' (uint32) for best timing
  Hashtable, python      |   7.6s

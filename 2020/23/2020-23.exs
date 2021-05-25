@@ -2,15 +2,24 @@ ExUnit.start
 defmodule Advent23.Test do
   use ExUnit.Case
 
-  def move(nxt, ln) do
-    cur = nxt[0]
+  # use maps
+  #def make_nxt(kvs), do: Enum.into(kvs, %{})
+  #def put(nxt, k, v), do: Map.put(nxt, k, v)
+  #def get(nxt, k), do: nxt[k]
 
+  # use arrays -- 40% reduction in runtime
+  def make_nxt(kvs) do
+    Enum.sort(kvs) |> :array.from_orddict()
+  end
+  def put(nxt, k, v), do: :array.set(k, v, nxt)
+  def get(nxt, k), do: :array.get(k, nxt)
+
+  def move(nxt, cur, ln) do
     # pick up 3 and "remove" them
-    n1 = nxt[cur]
-    n2 = nxt[n1]
-    n3 = nxt[n2]
-    nxt = Map.put(nxt, cur, nxt[n3])
-    #IO.puts "Picked up: #{n1} #{n2} #{n3}"
+    n1 = get(nxt, cur)
+    n2 = get(nxt, n1)
+    n3 = get(nxt, n2)
+    nxt = put(nxt, cur, get(nxt, n3))
 
     # find next label down numerically as dest cup
     # as long as dest cup is not in the removed nodes
@@ -20,32 +29,30 @@ defmodule Advent23.Test do
       |> Stream.drop_while(fn dc -> dc == n1 || dc == n2 || dc == n3 end)
       |> Enum.take(1)
       |> hd()
-    #IO.puts "Destination: #{dc}"
 
     # put the removed cups clockwise of the destination cup
-    nx = nxt[dc]
-    nxt = Map.put(nxt, dc, n1)
-    nxt = Map.put(nxt, n3, nx)
+    nx = get(nxt, dc)
+    nxt = put(nxt, dc, n1)
+    nxt = put(nxt, n3, nx)
 
     #IO.puts "CUPS: #{n1} #{n2} #{n3} CUR: #{nxt[cur]}"
     # new current is one node clockwise of old current
-    Map.put(nxt, 0, nxt[cur])
+    {nxt, get(nxt, cur)}
   end
 
-  def nxt_to_list(nxt), do: nxt_to_list(nxt, nxt[0])
-  def nxt_to_list(nxt, fst), do: nxt_to_list(nxt, fst, nxt[fst], [fst])
+  def nxt_to_list(nxt, fst), do: nxt_to_list(nxt, fst, get(nxt, fst), [fst])
   def nxt_to_list(_nxt, fst, cur, rs) when cur == fst, do: Enum.reverse(rs)
-  def nxt_to_list(nxt, fst, cur, rs), do: nxt_to_list(nxt, fst, nxt[cur], [cur | rs])
+  def nxt_to_list(nxt, fst, cur, rs), do: nxt_to_list(nxt, fst, get(nxt, cur), [cur | rs])
 
   def part1(cs, nmoves) do
     ln = length(cs)
     nxt = [0 | cs] ++ Enum.take(cs, 1)
     |> Enum.chunk_every(2, 1, :discard)
     |> Enum.map(fn [k,v] -> {k,v} end)
-    |> Enum.into(%{})
+    |> make_nxt()
 
-    nxt = Enum.reduce(1..nmoves, nxt, fn _n,nxt -> 
-      move(nxt, ln) 
+    {nxt,_} = Enum.reduce(1..nmoves, {nxt,hd(cs)}, fn _n,{nxt,cur} -> 
+      move(nxt, cur, ln) 
     end)
 
     nxt_to_list(nxt, 1)
@@ -55,18 +62,18 @@ defmodule Advent23.Test do
 
   def part2(cs, nmoves) do
     ln = 1000000
-    nxt = ([0 | cs] ++ Enum.to_list(10..1000000) ++ Enum.take(cs, 1))
+    nxt = (cs ++ Enum.to_list(10..1000000) ++ Enum.take(cs, 1))
     |> Enum.chunk_every(2, 1, :discard)
     |> Enum.map(fn [k,v] -> {k,v} end)
-    |> Enum.into(%{})
+    |> make_nxt()
 
-    nxt = Enum.reduce(1..nmoves, nxt, fn _n,nxt -> 
+    {nxt,_cur} = Enum.reduce(1..nmoves, {nxt,hd(cs)}, fn _n,{nxt,cur} -> 
       #IO.write "Round #{n} "
-      move(nxt, ln) 
+      move(nxt, cur, ln) 
     end)
 
-    l1 = nxt[1]
-    l2 = nxt[l1]
+    l1 = get(nxt, 1)
+    l2 = get(nxt, l1)
     IO.puts "l1: #{l1} l2: #{l2}"
     l1 * l2
   end
@@ -79,6 +86,7 @@ defmodule Advent23.Test do
     IO.puts "PART1: #{part1(data,100)}"
 
     #assert part2(td, 10000000) == 149245887792
-    IO.inspect :timer.tc(fn -> part2(data, 10000000) end)
+    {tm,ans} =  :timer.tc(fn -> part2(data, 10000000) end)
+    IO.puts "PART2: #{ans} TIME(us): #{tm}"
   end
 end
