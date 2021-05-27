@@ -71,14 +71,19 @@ defmodule Advent24.Test do
       end)
   end
 
+  def count_black_tiles(tiles) do
+    tiles
+    |> Map.values()
+    |> Enum.count(fn x -> x == :black end)
+  end
+
   def part1(rules) do
     rules
     |> Enum.reduce(%{}, fn rule,tiles ->
       tl = find(rule)
       flip(tiles, tl)
     end)
-    |> Map.values()
-    |> Enum.count(fn x -> x == :black end)
+    |> count_black_tiles()
   end
 
   def read_data() do
@@ -88,6 +93,52 @@ defmodule Advent24.Test do
     |> Enum.map(&parse_rule(&1))
   end
 
+  def all_neighbors(p) do
+    [:e, :se, :sw, :w, :nw, :ne]
+    |> Enum.map(&move(p, &1))
+  end
+
+  def num_bl_neighbors(tiles, p) do
+    all_neighbors(p)
+    |> Enum.count(fn p -> Map.get(tiles, p, :white) == :black end)
+  end
+
+  def life_step(tiles, p) do
+    nn = num_bl_neighbors(tiles, p)
+    c = Map.get(tiles, p, :white)
+    case {c, nn} do
+      {:black, n} when n == 1 or n == 2 -> {p, :black}
+      {:black, _} -> {p, :white}
+      {:white, 2} -> {p, :black}
+      {:white, _} -> {p, :white}
+    end
+  end
+
+  def life(tiles) do
+    tiles
+    |> Enum.filter(fn {_k,v} -> v == :black end)
+    |> Enum.flat_map(fn {p,_v} -> all_neighbors(p) end)
+    |> Enum.map(&life_step(tiles, &1))
+    |> Enum.filter(fn {_p, v} -> v == :black end)
+    |> Enum.into(%{})
+  end
+
+  def part2(rules, n) do
+    start = 
+      rules
+      |> Enum.reduce(%{}, fn rule,tiles ->
+        tl = find(rule)
+        flip(tiles, tl)
+      end)
+    Enum.reduce(1..n, start,
+      fn _day, tiles ->
+        tiles = life(tiles)
+        #IO.puts "DAY: #{day} COUNT: #{count_black_tiles(tiles)}"
+        tiles
+      end)
+      |> count_black_tiles()
+  end
+
   test "test" do
     td = test_data() |> Enum.map(&parse_rule(&1))
     assert find(parse_rule("nwwswee")) == {0, 0}
@@ -95,8 +146,9 @@ defmodule Advent24.Test do
     data = read_data()
     IO.puts "PART1: #{part1(data)}"
 
-    #assert part2(td, 10000000) == 149245887792
-    #{tm,ans} =  :timer.tc(fn -> part2(data, 10000000) end)
-    #IO.puts "PART2: #{ans} TIME(us): #{tm}"
+    assert part2(td, 100) == 2208
+
+    {tm,ans} =  :timer.tc(fn -> part2(data, 100) end)
+    IO.puts "PART2: #{ans} TIME(us): #{tm}"
   end
 end
