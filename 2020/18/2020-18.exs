@@ -11,7 +11,7 @@ defmodule Advent18.Test do
       {"5 + (8 * 3 + 9 + 3 * 4 * 3)", 437, 1445},
       {"5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))", 12240, 669060},
       {"((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2", 13632, 23340},
-      #{"7 * 2 * 7 * ((7 * 6 + 8 * 9) + 2)", 44296, 100},
+      {"7 * 2 * 7 * ((7 * 6 + 8 * 9) + 2)", 44296, 86632}, # bug check
     ]
   end
 
@@ -30,14 +30,20 @@ defmodule Advent18.Test do
   end
 
   def dijkstra(ts, prec, ops \\ [], out \\ [])
-  def dijkstra([], _prec, ops, out), do: Enum.reverse(out) ++ ops
+  def dijkstra([], _prec, ops, out) do
+    out = Enum.reverse(ops) ++ out
+    Enum.reverse(out)
+  end
   def dijkstra([tok | ts], prec, ops, out) do
     case tok do
       :lpar -> dijkstra(ts, prec, [tok | ops], out)
       :rpar ->
         {xs, ops} = Enum.split_while(ops, fn t -> t != :lpar end)
         out = Enum.reverse(xs) ++ out
-        ops = Enum.drop_while(ops, fn t -> t == :lpar end)
+        ops = case ops do
+          [:lpar | rest] -> rest
+          _ -> ops
+        end
         dijkstra(ts, prec, ops, out)
       tok when tok == :add or tok == :mul ->
         {xs, ops} = Enum.split_while(ops, fn t -> (t == :add or t == :mul) and prec.(t) >= prec.(tok) end)
@@ -65,21 +71,19 @@ defmodule Advent18.Test do
   def eval_expr(s, prec) do
     e = parse_expr(s)
     d = dijkstra(e, prec)
-    IO.inspect {e,d}
     eval(d, prec)
   end
 
   def prec_none(_), do: 1
-  def prec_normal(:add), do: 1
-  def prec_normal(:mul), do: 0
+  def prec_reverse(:add), do: 1
+  def prec_reverse(:mul), do: 0
 
   def eval_part1(s), do: eval_expr(s, &prec_none/1)
-  def eval_part2(s), do: eval_expr(s, &prec_normal/1)
+  def eval_part2(s), do: eval_expr(s, &prec_reverse/1)
 
   def part1(ss) do
     ss
     |> Enum.map(&eval_part1/1)
-    |> IO.inspect
     |> Enum.sum()
   end
 
