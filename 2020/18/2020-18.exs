@@ -40,10 +40,7 @@ defmodule Advent18.Test do
       :rpar ->
         {xs, ops} = Enum.split_while(ops, fn t -> t != :lpar end)
         out = Enum.reverse(xs) ++ out
-        ops = case ops do
-          [:lpar | rest] -> rest
-          _ -> ops
-        end
+        [ :lpar | ops ] = ops
         dijkstra(ts, prec, ops, out)
       tok when tok == :add or tok == :mul ->
         {xs, ops} = Enum.split_while(ops, fn t -> (t == :add or t == :mul) and prec.(t) >= prec.(tok) end)
