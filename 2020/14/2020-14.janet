@@ -31,9 +31,8 @@ mem[8] = 0
 
 (def test-data (parse-data test-data-string))
 
-(def MAX_INT_U64 (int/u64 "18446744073709551615"))
-
-(defn bnot [x] (bxor x MAX_INT_U64))
+# override this so it works for int/u64 types
+(defn bnot [x] (- (- x) 1))
 
 (defn apply-mask [[m v] y]
   (def y (int/u64 y))
@@ -48,7 +47,7 @@ mem[8] = 0
       [:mem x y] (put mem x (apply-mask mask y))))
   (sum (values mem)))
 
-(print (part1 test-data))
+(assert (compare= 165 (part1 test-data)))
 (def data (parse-data (slurp "input.txt")))
 (print "PART1: " (part1 data))
 
