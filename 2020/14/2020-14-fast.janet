@@ -48,32 +48,26 @@ mem[8] = 0
   (sum (values mem)))
 
 (defn get-bit [n i] (band 1 (brshift n i)))
-(defn set-bit [n i b] (bor n (blshift (int/u64 b) i)))
+(defn set-bit [n i b]
+  (def m (blshift (int/u64 1) i))
+  (if (zero? b)
+    (band n (bnot m))
+    (bor n m)))
 
-(defn masked-val [[m0 v0] x0 c0]
-  (var r 0)
-  (var m m0)
-  (var v v0)
-  (var x x0)
-  (var c c0)
-  (loop [i :range [0 36]]
-    (var rb 0)
-    (if (zero? (band m 1))
-      (if (zero? (band v 1)) (set rb (band x 1)) (set rb 1))
-      (do
-        (set rb (band c 1))
-        (set c (brshift c 1))))
-    (set m (brshift m 1))
-    (set v (brshift v 1))
-    (set x (brshift x 1))
-    (if (not (zero? rb))
-      (+= r (blshift (int/u64 1) i))))
+(defn bit-locs [m]
+  (seq [i :range [0 36]
+        :when (not (zero? (get-bit m i)))]
+    i))
+
+(defn masked-val [[m v bs] x c]
+  (var r (bor x v))
+  (loop [[i n] :pairs bs]
+    (set r (set-bit r n (get-bit c i))))
   r)
 
 (defn masked-vals [mask x]
-  (def [m _v] mask)
-  (def nm (count |(not (zero? $)) (seq [i :range [0 36]] (get-bit m i))))
-  (def nc (blshift 1 nm))
+  (def [_m _v bs] mask)
+  (def nc (blshift 1 (length bs)))
   (seq [i :range [0 nc]]
     (masked-val mask x i)))
 
@@ -82,7 +76,7 @@ mem[8] = 0
   (var mask nil)
   (loop [cmd :in data]
     (match cmd
-      [:mask m] (set mask m)
+      [:mask [m v]] (set mask [m v (bit-locs m)])
       [:mem x y] (loop [a :in (masked-vals mask x)]
                    (put mem a y))))
   (sum (values mem)))
@@ -92,7 +86,8 @@ mem[8] = 0
 (def data (parse-data (slurp "input.txt")))
 (print "PART1: " (part1 data))
 
-(def tm (parse-mask "000000000000000000000000000000X1001X"))
+(def [m v] (parse-mask "000000000000000000000000000000X1001X"))
+(def tm [m v (bit-locs m)])
 (assert (deep= (masked-vals tm 42) (seq [i :in [26 27 58 59]] (int/u64 i))))
 
 (import spork/test)

@@ -118,5 +118,6 @@ end
 
 #println(sum((2^count_ones(x)) for (cmd,x,y) in data if cmd == MASK))
 
-println("PART2: ", part2(data))
+ans = @time part2(data)
+println("PART2: ", ans)
 

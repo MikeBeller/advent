@@ -99,6 +99,7 @@ defmodule Advent14.Test do
 
     tm = parse_mask("000000000000000000000000000000X1001X")
     assert masked_vals(tm, 42) == [26, 27, 58, 59]
-    IO.puts "PART2: #{part2(data)}"
+    {tm, ans} = :timer.tc( fn -> part2(data) end)
+    IO.puts "PART2: #{ans} TIME: #{tm}"
   end
 end
