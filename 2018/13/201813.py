@@ -1,4 +1,4 @@
-from typing import List, Tuple, DefaultDict, NamedTuple
+from typing import List, Tuple, DefaultDict, NamedTuple, Set, Dict, Optional
 from dataclasses import dataclass
 from collections import defaultdict
 
@@ -19,23 +19,41 @@ class Cart:
     loc: Point
     state: int = -1
 
-def read_data(instr: str) -> Tuple[List[bytearray], List[Cart]]:
+Track = List[bytearray]
+
+def read_data(instr: str) -> Tuple[Track, Dict[Point,Cart]]:
     track = [ bytearray(line.rstrip(), 'utf-8')
         for line in instr.splitlines()]
-    carts: List[Cart] = []
+    carts: Dict[Point,Cart] = {}
     for y,row in enumerate(track):
         for x,c in enumerate(row):
             dr = DIRS.find(c)
             if dr >= 0:
-                carts.append(Cart(dr, Point(x, y)))
+                cart = Cart(dr, Point(x, y))
+                carts[cart.loc] = cart
                 if dr in {EAST, WEST}:
                     row[x] = ord('-')
                 else:
                     row[x] = ord('|')
     return (track, carts)
 
-def tick(track: List[bytearray], carts: List[Cart]) -> Tuple[List[bytearray], List[Cart]]:
-    for c in carts:
+def track_with_carts(track: Track, carts: Dict[Point, Cart]):
+    tr = [r[:] for r in track]
+    for c in carts.values():
+        cc = DIRS[c.dr]
+        tr[c.loc.y][c.loc.x] = cc
+    return "\n".join(r.decode() for r in tr)
+
+def tick(
+    track: Track,
+    carts: Dict[Point, Cart],
+    quit_on_crash: bool = False
+    ) -> Tuple[Dict[Point,Cart], Optional[Point]]:
+
+    deleted: Set[int] = set()
+    for c in sorted(carts.values(), key=lambda c: (c.loc.y, c.loc.x)):
+        if id(c) in deleted:
+            continue
         x,y = c.loc.x, c.loc.y
         if c.dr == NORTH:
             y -= 1
@@ -50,14 +68,25 @@ def tick(track: List[bytearray], carts: List[Cart]) -> Tuple[List[bytearray], Li
         assert track[y][x] in b'|/\\-+'
 
         nloc = Point(x, y)
-        #if nloc in [cc.loc for cc in carts]:
-        #    return nloc
+        if nloc in carts:
+            # collision
+            other = carts[nloc]
+            deleted.add(id(other))
+            deleted.add(id(c))
+            del carts[nloc]
+            del carts[c.loc]
+            if quit_on_crash:
+                return carts, nloc
+            continue
+
+        del carts[c.loc]
         c.loc = nloc
+        carts[c.loc] = c
 
         ch = track[y][x]
         if ch == ord('+'):
             c.dr = (c.dr + c.state) % 4
-            c.state = 0 if c.state == -1 else (1 if c.state == 0 else -1)
+            c.state = -1 if c.state == 1 else c.state + 1
         elif ch == ord('\\'):
             if c.dr == EAST or c.dr == WEST:
                 c.dr = (c.dr + 1) % 4  # right turn
@@ -68,42 +97,47 @@ def tick(track: List[bytearray], carts: List[Cart]) -> Tuple[List[bytearray], Li
                 c.dr = (c.dr - 1) % 4  # left
             else:
                 c.dr = (c.dr + 1) % 4  # right
-    carts.sort(key=lambda c: (c.loc.y, c.loc.x))
-    return (track, carts)
 
-def part1(instr: str) -> Point:
+    return carts, None
+
+def verify(carts: Dict[Point,Cart]):
+    assert all(v.loc == k for k,v in carts.items())
+
+def part1(instr: str, debug=False) -> Point:
     track, carts = read_data(instr)
+    if debug: print("STARTING")
+    if debug: print(track_with_carts(track, carts), "\n")
     while True:
-        track, carts = tick(track, carts)
-        for i in range(len(carts)-1):
-            if carts[i].loc == carts[i+1].loc:
-                return carts[i].loc
+        carts, crash_location = tick(track, carts, quit_on_crash=True)
+        if debug:
+            print(track_with_carts(track, carts))
+            print(carts, "\n")
+        if crash_location:
+            return crash_location
+        verify(carts)
 
 def test1():
     ins = open("tinput.txt").read()
-    d,cs = read_data(ins)
-    assert cs == [Cart(dr=1, loc=Point(2, 0), state=-1), Cart(dr=2, loc=Point(9, 3), state=-1)]
-
     assert part1(ins) == Point(7, 3)
 
 test1()
 
-def part2(instr: str) -> Point:
+def part2(instr: str, debug=False) -> Point:
     track, carts = read_data(instr)
+    if debug: print(track_with_carts(track, carts), "\n")
 
     # run ticks, eliminating both carts on crash, until there is only 1 cart
     while len(carts) > 1:
-        track, carts = tick(track, carts)
-        d: DefaultDict[Point,List[Cart]] = defaultdict(list)
-        for c in carts:
-            d[c.loc].append(c)
-        carts = [cs[0] for cs in d.values() if len(cs) == 1]
-        carts.sort(key=lambda c: (c.loc.y, c.loc.x))
+        carts, _ = tick(track, carts, quit_on_crash=False)
+        if debug: print(track_with_carts(track, carts), "\n")
 
-    # run 1 tick as only cart
-    track, carts = tick(track, carts)
+    return list(carts.keys())[0]
 
-    return carts[0].loc
+def test2():
+    ins = open("tinput2.txt").read()
+    assert part2(ins) == Point(6, 4), "test2 failed"
+
+test2()
 
 def main() -> None:
     ins = open("input.txt").read()
