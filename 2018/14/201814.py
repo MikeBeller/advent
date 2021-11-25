@@ -21,8 +21,15 @@ def scores_after_n(scores: List[int], n: int) -> List[int]:
     st = State(scores)
     while len(st.scores) < n + 10:
         st.step()
-    return st.scores[-10:]
+    return(st.scores[n:n+10])
 
+def part1(n):
+    ds = scores_after_n([3,7], n)
+    return "".join(str(d) for d in ds)
 
-assert scores_after_n([3,7], 9) == [5,1,5,8,9,1,6,7,7,9]
-assert scores_after_n([3,7], 5) == [0,1,2,4,5,1,5,8,9,1]
+assert part1(9) == "5158916779"
+assert part1(5) == "0124515891"
+assert part1(18) == "9251071085"
+assert part1(2018) == "5941429882"
+
+print(part1(330121))
