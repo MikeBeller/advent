@@ -37,3 +37,21 @@ assert part1(18) == "9251071085"
 assert part1(2018) == "5941429882"
 
 print("PART1:", part1(330121))
+
+def part2(inp):
+    st = State([3,7])
+    ln = len(inp)
+    while True:
+        if st.scores[-ln:] == inp:
+            return len(st.scores) - ln
+        if st.scores[-ln-1:-1] == inp:
+            return len(st.scores) -ln - 1
+        st.step()
+
+assert part2([5,1,5,8,9]) == 9
+assert part2([0,1,2,4,5]) == 5
+assert part2([9,2,5,1,0]) == 18
+assert part2([5,9,4,1,4]) == 2018
+
+print(part2(digits(330121)))
+    
