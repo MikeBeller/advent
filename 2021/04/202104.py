@@ -20,17 +20,20 @@ assert boards_t.shape == (3, 5, 5)
 draws, boards = parse(open("input.txt").read())
 
 
-def part1(draws, bs):
+def part1(draws, bs, nth=1):
+    nboards = bs.shape[0]
+    wins = np.zeros(nboards, dtype=np.bool8)
     for d in draws:
         bs[bs == d] = -1
         rs = bs.sum(axis=1)
         cs = bs.sum(axis=2)
-        wh = np.argwhere((rs == -5) | (cs == -5))
-        if len(wh) == 1:
-            bi = wh[0, 0]
+        new_wins = ((rs == -5) | (cs == -5)).any(axis=1)
+        if new_wins.sum() == nth:
+            [[bi]] = np.argwhere(new_wins ^ wins)
             #print("board", bi, "wins")
             wb = bs[bi, :, :]
             return d * wb[wb != -1].sum()
+        wins = new_wins
 
 
 assert part1(draws_t, boards_t) == 4512
@@ -38,20 +41,8 @@ print("PART1:", part1(draws, boards))
 
 
 def part2(draws, bs):
-    wins = set()
     num_boards = bs.shape[0]
-    for d in draws:
-        bs[bs == d] = -1
-        rs = bs.sum(axis=1)
-        cs = bs.sum(axis=2)
-        wh = np.argwhere((rs == -5) | (cs == -5))
-        new_wins = wins | set(wh[:, 0])
-        if len(new_wins) == num_boards:
-            [bi] = list(new_wins - wins)
-            #print("board", bi, "wins last")
-            wb = bs[bi, :, :]
-            return d * wb[wb != -1].sum()
-        wins = new_wins
+    return part1(draws, bs, nth=num_boards)
 
 
 assert part2(draws_t, boards_t) == 1924
