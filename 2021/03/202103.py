@@ -50,7 +50,6 @@ def rating(data, type="o2"):
         mn = d[:, i].mean() >= 0.5
         b = mn if type == 'o2' else ~mn
         d = d[d[:, i] == b, :]
-        # print(d)
         i += 1
     return d[0]
 
@@ -63,4 +62,4 @@ def part2(data):
 
 assert part2(td) == 230
 
-print(part2(data))
+print("PART2:", part2(data))
