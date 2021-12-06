@@ -25,8 +25,8 @@ def part1(data, diag=False):
         else:
             if diag:  # diagonal included
                 n = dx * (x2 - x1) + 1
-                for i in range(0, n):
-                    a[y1+i*dy, x1+i*dx] += 1
+                i = np.arange(n)
+                a[y1 + i * dy, x1 + i * dx] += 1
     return (a > 1).sum()
 
 
