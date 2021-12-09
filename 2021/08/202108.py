@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def parse(instr):
     rows = []
     for line in instr.splitlines():
@@ -19,19 +22,29 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 
 data = parse(open("input.txt").read())
 
+code = ['abcefg', 'cf', 'acdeg', 'acdfg', 'bcdf',
+        'abdfg', 'abdefg', 'acf', 'abcdefg', 'abcdfg']
+len_c = np.array([-1, -1, 1, 7, 4, -1, -1, 8], dtype=np.int8)
 
-def convert(s):
-    lnc = {2: 1, 4: 4, 3: 7, 7: 8}
-    return lnc.get(len(s), -1)
+
+def encode(s):
+    ix = np.frombuffer(bytes(s, encoding='utf8'), dtype=np.int8) - 97
+    r = np.zeros(7, dtype=np.int8)
+    r[ix] = 1
+    return r
+
+
+def encode_case(row):
+    ins, outs = row
+    return np.vstack([encode(i) for i in ins]), np.vstack([encode(o) for o in outs])
 
 
 def part1(data):
     c = 0
     for row in data:
-        ins, outs = row
-        digs = [convert(o) for o in outs]
-        #print(outs, digs)
-        c += len([d for d in digs if d != -1])
+        _, outs = encode_case(row)
+        ds = len_c[np.sum(outs, axis=1)]
+        c += np.sum(ds != -1)
     return c
 
 
