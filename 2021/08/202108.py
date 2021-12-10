@@ -22,8 +22,8 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 
 data = parse(open("input.txt").read())
 
-code = ['abcefg', 'cf', 'acdeg', 'acdfg', 'bcdf',
-        'abdfg', 'abdefg', 'acf', 'abcdefg', 'abcdfg']
+digit_code = ['abcefg', 'cf', 'acdeg', 'acdfg', 'bcdf',
+              'abdfg', 'abdefg', 'acf', 'abcdefg', 'abcdfg']
 len_c = np.array([-1, -1, 1, 7, 4, -1, -1, 8], dtype=np.int8)
 
 
@@ -50,3 +50,63 @@ def part1(data):
 
 assert part1(td) == 26
 print("PART1:", part1(data))
+
+known = np.array([1, 4, 7, 8])
+unknown = np.array([0, 2, 3, 5, 6, 9])
+
+
+def overlap_matrix(codes, known_inds, unknown_inds):
+    def f(a, b):
+        return np.sum(codes[a, :] & codes[b, :])
+    f_uf = np.frompyfunc(f, 2, 1)
+    return f_uf.outer(known_inds, unknown_inds)
+
+
+# Calculate the "overlap matrix" between the known digits (1, 4, 7, 8), and the unknown ones (0, 2, 3, 5, 6, 9)
+digit_codes = np.array([encode(s) for s in digit_code])
+
+
+def find_column(matrix, col):
+    for i in range(matrix.shape[1]):
+        if np.all(matrix[:, i] == col):
+            return i
+    assert False, "not found"
+
+
+def ssort(s):
+    return "".join(sorted(s))
+
+
+def part2(data):
+    sm = 0
+    std_ovm = overlap_matrix(digit_codes, known, unknown)
+    print(std_ovm)
+    for instrs, outstrs in data:
+        print(instrs, outstrs)
+        ins, _ = encode_case([instrs, outstrs])
+        lc = len_c[ins.sum(axis=1)]
+        (known_inds,) = np.nonzero(lc != -1)
+        k_i = np.argsort(lc[lc != -1])
+        k_ii = known_inds[k_i]
+        print(lc, known_inds, k_ii)
+        (unknown_inds,) = np.nonzero(lc == -1)
+        print("UK", unknown_inds)
+        u_ii = unknown_inds
+        ovm = overlap_matrix(ins, k_ii, u_ii)
+        u_iii = [find_column(ovm, std_ovm[:, i]) for i in range(len(unknown))]
+        u_iiii = unknown[u_iii]
+        print(ovm, u_iii, u_iiii)
+        p = np.zeros(10, dtype=np.int32)
+        p[k_ii] = known
+        p[u_ii] = u_iiii
+        print(p)
+        tx = {ssort(istr): ind for istr, ind in zip(instrs, p)}
+        for ostr in outstrs:
+            sostr = ssort(ostr)
+            print(sostr, tx[sostr])
+        sm += 1
+
+    return sm
+
+
+print(part2(td))
