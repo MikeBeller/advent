@@ -27,18 +27,9 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 
 data = parse(open("input.txt").read())
 
-digit_code = ['abcefg', 'cf', 'acdeg', 'acdfg', 'bcdf',
-              'abdfg', 'abdefg', 'acf', 'abcdefg', 'abcdfg']
+base_digit_codes = ['abcefg', 'cf', 'acdeg', 'acdfg', 'bcdf',
+                    'abdfg', 'abdefg', 'acf', 'abcdefg', 'abcdfg']
 len_map = {2: 1, 3: 7, 4: 4, 7: 8}
-# how much each number overlaps with 1, 4, 7, 8 respectively
-overlap = {
-    (2, 3, 3, 6): 0,
-    (1, 2, 2, 5): 2,
-    (2, 3, 3, 5): 3,
-    (1, 3, 2, 5): 5,
-    (1, 3, 2, 6): 6,
-    (2, 4, 3, 6): 9,
-}
 
 
 def part1(data):
@@ -56,6 +47,14 @@ print("PART1:", part1(data))
 
 def nover(s1, s2):
     return len(set(s1) & set(s2))
+
+
+# compute mapping of overlap of each other digit with 1,4,7,8 respectively
+# to the digit in the non-scrambled code
+overlap = {}
+for d in [0, 2, 3, 5, 6, 9]:
+    overlap[tuple(nover(base_digit_codes[d], base_digit_codes[i])
+                  for i in [1, 4, 7, 8])] = d
 
 
 def part2(data):
