@@ -85,10 +85,9 @@ def part1(data, nsteps):
             assert m[r][c] >= 10
             m[r][c] = 0
         nflashed += len(all_flashed)
-        print("After step", step+1, ":")
-        print_board(m)
+        #print("After step", step+1, ":")
+        # print_board(m)
         if len(all_flashed) == 100 and nsteps == DO_ALL:
-            print("GOT HERE")
             break
     if nsteps == DO_ALL:
         return step + 1
