@@ -45,22 +45,21 @@ fold along x=5
 data, folds = parse(open("input.txt").read())
 
 
-def part1(data, folds, break_after_first=True):
-    a = data.copy()
-    for xy, n in folds:
-        if xy == 'y':
-            top = a[0:n, :]
-            bottom = a[(n+1):, :]
-            a = top | np.flip(bottom, axis=0)
-        else:
-            left = a[:, 0:n]
-            right = a[:, (n+1):]
-            a = left | np.flip(right, axis=1)
-        # print(a)
-        if break_after_first:
-            break
-    print(a)
-    return np.sum(a)
+def fold(a, cmd):
+    xy, n = cmd
+    if xy == 'y':
+        top = a[0:n, :]
+        bottom = a[(n+1):, :]
+        return top | np.flip(bottom, axis=0)
+    else:
+        left = a[:, 0:n]
+        right = a[:, (n+1):]
+        return left | np.flip(right, axis=1)
+
+
+def part1(data, folds):
+    folded = fold(data, folds[0])
+    return np.sum(folded)
 
 
 assert part1(tdata, tfolds) == 17
@@ -68,8 +67,12 @@ print("PART1:", part1(data, folds))
 
 
 def part2(data, folds):
-    return part1(data, folds, break_after_first=False)
+    a = data
+    for fld in folds:
+        a = fold(a, fld)
+    print(a)
+    return np.sum(a)
 
 
 assert part2(tdata, tfolds) == 16
-print("PART2:", part2(data, folds))
+#print("PART2:", part2(data, folds))
