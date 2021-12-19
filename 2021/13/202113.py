@@ -3,8 +3,8 @@ import numpy as np
 
 def parse(instr):
     pts_s, fold_s = instr.strip().split("\n\n")
-    pts = np.flip(np.loadtxt(pts_s.splitlines(),
-                  delimiter=",", dtype=np.int32), axis=1)
+    pts = np.fliplr(np.loadtxt(pts_s.splitlines(),
+                               delimiter=",", dtype=np.int32))
     shape = np.max(pts, axis=0) + 1
     a = np.zeros(shape, dtype=np.int32)
     rs = pts[:, 0]
@@ -50,11 +50,11 @@ def fold(a, cmd):
     if xy == 'y':
         top = a[0:n, :]
         bottom = a[(n+1):, :]
-        return top | np.flip(bottom, axis=0)
+        return top | np.flipud(bottom)
     else:
         left = a[:, 0:n]
         right = a[:, (n+1):]
-        return left | np.flip(right, axis=1)
+        return left | np.fliplr(right)
 
 
 def part1(data, folds):
@@ -66,13 +66,21 @@ assert part1(tdata, tfolds) == 17
 print("PART1:", part1(data, folds))
 
 
+def print_formatted(a):
+    nr, nc = a.shape
+    for r in range(nr):
+        print("".join(
+            ('#' if v == 1 else ' ') for v in a[r, :]
+        ))
+
+
 def part2(data, folds):
     a = data
     for fld in folds:
         a = fold(a, fld)
-    print(a)
+    print_formatted(a)
     return np.sum(a)
 
 
 assert part2(tdata, tfolds) == 16
-#print("PART2:", part2(data, folds))
+print("PART2:", part2(data, folds))
