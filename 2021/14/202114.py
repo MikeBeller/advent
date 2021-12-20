@@ -58,7 +58,7 @@ def part1(start, cmds, nsteps):
 
 
 assert part1(tstart, tcmds, 10) == 1588
-print(part1(start, cmds, 10))
+print("PART1:", part1(start, cmds, 10))
 
 
 def pairs(s):
@@ -71,21 +71,36 @@ def step2(cmds, cts):
         if pr in cmds:
             mc = cmds[pr]
             lc, rc = pr
+            added[pr] -= cts[pr]
             added[lc + mc] += cts[pr]
             added[mc + rc] += cts[pr]
-    print(added)
     return cts + added
 
 
 def part2(start, cmds, nsteps):
-    print(cmds)
-    # convert to string map
     cmds = {(lc + rc): v for ((lc, rc), v) in cmds.items()}
-    cts = Counter(pairs(start))
+    counts = Counter(pairs(start))
     for st in range(nsteps):
-        cts = step2(cmds, cts)
-    cm = cts.most_common(len(cts))
+        counts = step2(cmds, counts)
+
+    # convert counts to number of letters
+    # every letter is part of two pairs except the first and last, which are
+    # known at the beginning and don't change
+    ccounts = Counter()
+    for ((lc, rc), n) in counts.items():
+        ccounts[lc] += n
+        ccounts[rc] += n
+    ccounts[start[0]] += 1
+    ccounts[start[-1]] += 1
+    for k in ccounts:
+        assert ccounts[k] % 2 == 0
+        ccounts[k] //= 2
+    #print("TOTAL LEN:", sum(ccounts.values()))
+    cm = ccounts.most_common(len(ccounts))
     return cm[0][1] - cm[-1][1]
 
 
-print(part2(tstart, tcmds, 10))
+assert part2(tstart, tcmds, 10) == 1588
+assert part2(tstart, tcmds, 40) == 2188189693529
+
+print("PART2:", part2(start, cmds, 40))
