@@ -1,3 +1,4 @@
+from timeit import timeit
 from collections import Counter
 
 
@@ -102,5 +103,6 @@ def part2(start, cmds, nsteps):
 
 assert part2(tstart, tcmds, 10) == 1588
 assert part2(tstart, tcmds, 40) == 2188189693529
-
 print("PART2:", part2(start, cmds, 40))
+
+print(timeit("part2(start, cmds, 40)", number=3, globals=globals()))
