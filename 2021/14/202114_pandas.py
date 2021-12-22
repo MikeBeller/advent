@@ -79,4 +79,4 @@ print("PART2:", part2(start, cmds, 40))
 
 # this is quite a bit slower than the regular python code
 # profiling seems to indicate the groupby is slow
-print(timeit("part2(start, cmds, 40)", number=3, globals=globals()))
+#print(timeit("part2(start, cmds, 40)", number=3, globals=globals()))
