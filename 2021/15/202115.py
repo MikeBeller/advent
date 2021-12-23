@@ -45,7 +45,7 @@ def part1(d):
             for dr in [RT, DN, LT, UP]:
                 r2, c2 = move(r, c, dr)
                 if r2 >= 0 and c2 >= 0 and r2 < nr and c2 < nc:
-                    ln2 = ln + d[r][c]
+                    ln2 = ln + d[r2][c2]
                     if (r2, c2) == ((nr-1), (nc-1)):
                         min_len = min(ln2, min_len)
                         #print("New min", min_len)
