@@ -1,3 +1,4 @@
+from timeit import timeit
 from typing import List, Tuple
 
 
@@ -84,3 +85,5 @@ print("PART1:", part1(data))
 
 assert part2(td) == 315
 print("PART2:", part2(data))
+
+print("Time for 3 runs:", timeit("part2(data)", number=3, globals=globals()))
