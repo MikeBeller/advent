@@ -1,9 +1,10 @@
-from typing import List, Tuple
+import numpy as np
 
 
-def parse(s: str) -> List[List[int]]:
-    return [[int(c) for c in line]
-            for line in s.splitlines()]
+def parse(instr):
+    return np.vstack([
+        np.frombuffer(bytes(s, encoding='utf8'), dtype=np.int8) - 48
+        for s in instr.splitlines()]).astype(np.int32)
 
 
 td = parse("""
@@ -25,7 +26,7 @@ INF = 999999999
 RT, DN, LT, UP = 0, 1, 2, 3
 
 
-def move(r: int, c: int, dr: int) -> Tuple[int, int]:
+def move(r, c, dr):
     if dr == RT:
         return r, c+1
     elif dr == DN:
@@ -36,9 +37,9 @@ def move(r: int, c: int, dr: int) -> Tuple[int, int]:
         return r-1, c
 
 
-def search(d: List[List[int]]) -> int:
-    nr, nc = len(d), len(d[0])
-    mn = [([INF] * nc) for _ in range(nr)]
+def search(d):
+    nr, nc = d.shape
+    mn = np.full((nr, nc), INF, dtype=np.int32)
     sr, sc = 0, 0
     st = {(sr, sc): 0}
     min_len = INF
@@ -48,32 +49,30 @@ def search(d: List[List[int]]) -> int:
             for dr in [RT, DN, LT, UP]:
                 r2, c2 = move(r, c, dr)
                 if r2 >= 0 and c2 >= 0 and r2 < nr and c2 < nc:
-                    ln2 = ln + d[r2][c2]
+                    ln2 = ln + d[r2, c2]
                     if (r2, c2) == ((nr-1), (nc-1)):
                         min_len = min(ln2, min_len)
                         #print("New min", min_len)
                         break
-                    if ln2 < mn[r2][c2]:
+                    if ln2 < mn[r2, c2]:
                         new_st[(r2, c2)] = ln2
-                        mn[r2][c2] = ln2
+                        mn[r2, c2] = ln2
         st = new_st
     return min_len
 
 
-def part1(d: List[List[int]]) -> int:
+def part1(d):
     return search(d)
 
 
-def part2(d: List[List[int]]) -> int:
-    nr, nc = len(d), len(d[0])
+def part2(d):
+    nr, nc = d.shape
     NR, NC = 5*nr, 5*nc
-    dd = [([0] * NC) for r in range(NR)]
+    dd = np.zeros((NR, NC), dtype=np.int32)
     for i in range(5):
         for j in range(5):
-            for r in range(nr):
-                for c in range(nc):
-                    v = (d[r][c] - 1 + i + j) % 9 + 1
-                    dd[r + nr*i][c + nc*j] = v
+            r, c = i * nr, j * nc
+            dd[r:(r+nr), c:(c+nc)] = (d - 1 + i + j) % 9 + 1
     ln = search(dd)
     print(ln)
     return ln
