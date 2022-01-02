@@ -1,4 +1,4 @@
-from typing import List, Union, Tuple, Optional
+from typing import List, Union, Tuple, Optional, Iterator, Any
 from math import floor, ceil
 
 SFNum = List[Union[str, int]]
@@ -30,10 +30,6 @@ def pr(n: SFNum) -> str:
 assert pr(parse('[[[[[9,8],1],2],3],4]')) == '[[[[[9,8],1],2],3],4]'
 
 
-def split(n: SFNum) -> Tuple[bool, SFNum]:
-    return False, n
-
-
 def index_of_first_number_before(n: SFNum, i: int) -> Optional[int]:
     for j in range(i-1, -1, -1):
         if isinstance(n[j], int):
@@ -50,13 +46,14 @@ def index_of_first_number_after(n: SFNum, i: int) -> Optional[int]:
 
 def explode_this(n: SFNum, i: int) -> SFNum:
     ln, rn = n[i:i+2]
+    assert isinstance(ln, int) and isinstance(rn, int)
     r = n.copy()
     j = index_of_first_number_before(n, i)
     if j is not None:
-        r[j] += ln
+        r[j] = int(r[j]) + ln
     k = index_of_first_number_after(n, i+2)
     if k is not None:
-        r[k] += rn
+        r[k] = int(r[k]) + rn
     assert r[i-1] == '['
     assert r[i+2] == ']'
     return r[0:i-1] + [0] + r[i+3:]
@@ -78,7 +75,7 @@ def explode(n: SFNum) -> Tuple[bool, SFNum]:
 def split(n: SFNum) -> Tuple[bool, SFNum]:
     for i, v in enumerate(n):
         if isinstance(v, int) and v > 9:
-            p = ['[', floor(v / 2), ceil(v / 2), ']']
+            p: SFNum = ['[', int(floor(v / 2)), int(ceil(v / 2)), ']']
             return True, n[:i] + p + n[i+1:]
     return False, n
 
@@ -148,3 +145,28 @@ ls2 = sflist("""
 """.strip().splitlines())
 
 assert pr(sum(ls2)) == "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"
+
+
+def tree_r(it: Iterator[Union[str, int]]) -> Union[int, List[Any]]:
+    d = next(it)
+    if isinstance(d, int):
+        return d
+    assert d == '['
+    a = tree_r(it)
+    b = tree_r(it)
+    assert next(it) == ']'
+    return [a, b]
+
+
+def tree(num: SFNum) -> List[Any]:
+    return tree_r(iter(num))
+
+
+def tree_magnitude(t: List[Any]) -> int:
+    return 7
+
+
+def magnitude(n: SFNum) -> int:
+    t = tree(n)
+    m = tree_magnitude(t)
+    return m
