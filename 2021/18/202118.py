@@ -210,3 +210,16 @@ def part1(data: List[SFNum]) -> int:
 
 
 print("PART1:", part1(data))
+
+
+def part2(data: List[SFNum]) -> int:
+    return max(
+        max(magnitude(sum([data[i], data[j]])),
+            magnitude(sum([data[j], data[i]])))
+        for i in range(len(data)-1)
+        for j in range(i+1, len(data))
+    )
+
+
+assert part2(ls3) == 3993
+print("PART2:", part2(data))
