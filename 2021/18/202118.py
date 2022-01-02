@@ -1,4 +1,4 @@
-from typing import List, Union, Tuple, Optional, Iterator, Any
+from typing import List, Union, Tuple, Optional, Iterator, Any, cast
 from math import floor, ceil
 
 SFNum = List[Union[str, int]]
@@ -50,10 +50,10 @@ def explode_this(n: SFNum, i: int) -> SFNum:
     r = n.copy()
     j = index_of_first_number_before(n, i)
     if j is not None:
-        r[j] = int(r[j]) + ln
+        r[j] = cast(int, r[j]) + ln
     k = index_of_first_number_after(n, i+2)
     if k is not None:
-        r[k] = int(r[k]) + rn
+        r[k] = cast(int, r[k]) + rn
     assert r[i-1] == '['
     assert r[i+2] == ']'
     return r[0:i-1] + [0] + r[i+3:]
@@ -109,7 +109,7 @@ assert pr(reduce(parse("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"))
 
 
 def add(a: SFNum, b: SFNum) -> SFNum:
-    return ['['] + a + b + [']']
+    return cast(SFNum, ['[']) + a + b + cast(SFNum, [']'])
 
 
 def sum(ns: List[SFNum]) -> SFNum:
@@ -159,14 +159,54 @@ def tree_r(it: Iterator[Union[str, int]]) -> Union[int, List[Any]]:
 
 
 def tree(num: SFNum) -> List[Any]:
-    return tree_r(iter(num))
+    return cast(SFNum, tree_r(iter(num)))
 
 
 def tree_magnitude(t: List[Any]) -> int:
-    return 7
+    if isinstance(t, int):
+        return t
+    else:
+        assert isinstance(t, list) and len(t) == 2
+        lt, rt = t
+        a = tree_magnitude(lt)
+        b = tree_magnitude(rt)
+        return 3 * a + 2 * b
 
 
 def magnitude(n: SFNum) -> int:
     t = tree(n)
     m = tree_magnitude(t)
     return m
+
+
+assert magnitude(parse("[[1,2],[[3,4],5]]")) == 143
+
+assert magnitude(
+    parse("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")) == 3488
+
+ls3 = sflist("""
+[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+[[[5,[2,8]],4],[5,[[9,9],0]]]
+[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+[[[[5,4],[7,7]],8],[[8,3],8]]
+[[9,3],[[9,9],[6,[4,9]]]]
+[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
+""".strip().splitlines())
+
+sm3 = sum(ls3)
+assert pr(
+    sm3) == "[[[[6,6],[7,6]],[[7,7],[7,0]]],[[[7,7],[7,7]],[[7,8],[9,9]]]]"
+assert magnitude(sm3) == 4140
+
+data = sflist(open("input.txt").read().splitlines())
+
+
+def part1(data: List[SFNum]) -> int:
+    return magnitude(sum(data))
+
+
+print("PART1:", part1(data))
