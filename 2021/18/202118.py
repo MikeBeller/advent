@@ -11,7 +11,6 @@ def parse(instr: str) -> SFNum:
             r.append(c)
         elif c.isdigit():
             r.append(int(c))
-    #print("PARSE:", instr, r)
     return r
 
 
@@ -23,7 +22,6 @@ def pr(n: SFNum) -> str:
     s = ",".join(str(v) for v in n)
     s = s.replace("[,", "[")
     s = s.replace(",]", "]")
-    #print("PR", n, s)
     return s
 
 
@@ -81,8 +79,9 @@ def split(n: SFNum) -> Tuple[bool, SFNum]:
 
 
 def reduce(n: SFNum) -> SFNum:
+    i = 0
     while True:
-        # print(pr(n))
+        i += 1
         is_exploded, n = explode(n)
         if is_exploded:
             continue
@@ -90,7 +89,6 @@ def reduce(n: SFNum) -> SFNum:
         if is_split:
             continue
         break
-    # print(pr(n))
     return n
 
 

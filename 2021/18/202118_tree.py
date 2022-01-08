@@ -21,34 +21,45 @@ class SF:
     def explode(self) -> bool:
         ln = None
         nn = None
-        expl = False
+        en = None
 
+        # find last number, exploding node, next number, and whether it explodes
         def explode_r(sf, d=0):
-            nonlocal ln, nn, expl
-            if sf.isnum():
+            nonlocal ln, nn, en
+            if en is not None:
                 if nn is not None:
-                    sf.n += nn
-                    nn = None
-                    return  # exploding done
-                else:
-                    ln = sf  # keep track of 'last number seen'
-                    return  # no recurse on numbers
-
-            if not expl and d == 4 and (sf.a is not None) and sf.a.isnum() and (sf.b is not None) and sf.b.isnum():
-                if ln is not None:
-                    ln.n += sf.a.n
-                nn = sf.b.n
-                sf.a = None
-                sf.b = None
-                sf.n = 0
-                expl = True
+                    return
+                if sf.isnum():
+                    nn = sf
+                    return
+            else:
+                if sf.isnum():
+                    ln = sf
+                    return
+                elif d == 5 and sf.a.isnum():  # and sf.b.isnum():
+                    assert sf.b.isnum(), "this should not happen"
+                    en = sf
+                    return
             if sf.a is not None:
-                explode_r(sf.a, d=d+1)
+                explode_r(sf.a, d+1)
             if sf.b is not None:
-                explode_r(sf.b, d=d+1)
+                explode_r(sf.b, d+1)
 
-        explode_r(self)
-        return expl
+        explode_r(self, d=1)
+
+        # do the changes (if it explodes)
+        if en is not None:
+            #print("EXPLODE:", en)
+            if ln is not None:
+                ln.n += en.a.n
+            if nn is not None:
+                nn.n += en.b.n
+            en.a = None
+            en.b = None
+            en.n = 0
+            return True
+        else:
+            return False
 
     def split(self) -> bool:
         spl = False
@@ -65,15 +76,18 @@ class SF:
             if spl:
                 return
             if sf.a.isnum() and sf.a.n > 9:
+                ss = split_num(sf.a)
                 sf.a = split_num(sf.a)
-                spl = True
-                return
-            elif sf.b.isnum() and sf.b.n > 9:
-                sf.b = split_num(sf.b)
                 spl = True
                 return
             if sf.a and not sf.a.isnum():
                 split_r(sf.a)
+            if spl:
+                return
+            if sf.b.isnum() and sf.b.n > 9:
+                sf.b = split_num(sf.b)
+                spl = True
+                return
             if sf.b and not sf.b.isnum():
                 split_r(sf.b)
 
@@ -81,8 +95,14 @@ class SF:
         return spl
 
     def reduce(self):
-        while self.explode() or self.split():  # 'or' will short circuit appropriately
-            continue
+        i = 0
+        while True:
+            i += 1
+            if self.explode():
+                continue
+            if self.split():
+                continue
+            break
 
     def add(self, other: 'SF'):
         self.a = copy.copy(self)
@@ -120,14 +140,21 @@ def parse(instr: str):
 
 assert str(parse('[[[[[9,8],1],2],3],4]')) == '[[[[[9,8],1],2],3],4]'
 
-# mutable so have to test carefully
-sf = parse('[[[[[9,8],1],2],3],4]')
-assert sf.explode() == True
-assert str(sf) == '[[[[0,9],2],3],4]'
 
-sf = parse('[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]')
-assert sf.explode() == True
-assert str(sf) == '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]'
+def test_explode(a, b):
+    sf = parse(a)
+    assert sf.explode()
+    assert str(sf) == b
+
+
+test_explode('[[[[[9,8],1],2],3],4]', '[[[[0,9],2],3],4]')
+test_explode('[7,[6,[5,[4,[3,2]]]]]', '[7,[6,[5,[7,0]]]]')
+test_explode('[[6,[5,[4,[3,2]]]],1]', '[[6,[5,[7,0]]],3]')
+test_explode('[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]',
+             '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]')
+test_explode('[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]',
+             '[[3,[2,[8,0]]],[9,[5,[7,0]]]]')
+
 
 sf = parse('[2,[9,3]]')
 sf.b.a.n = 11
@@ -142,11 +169,7 @@ ex1.add(ex2)
 assert str(ex1) == '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]'
 
 
-def sflist(strs):
-    return [parse(s) for s in strs]
-
-
-ls2 = sflist("""
+ls2 = """
 [[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
 [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
 [[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
@@ -157,23 +180,26 @@ ls2 = sflist("""
 [1,[[[9,3],9],[[9,0],[0,7]]]]
 [[[5,[7,4]],7],1]
 [[[[4,2],2],6],[8,7]]
-""".strip().splitlines())
+""".strip().splitlines()
 
 
-def part1(ls: List[SF]) -> int:
-    sf = ls[0]
-    for n in ls[1:]:
+def sfsum(ls: List[str]) -> SF:
+    sf = parse(ls[0])
+    for ns in ls[1:]:
+        n = parse(ns)
         sf.add(n)
-        print(sf)
-    print(sf)
-    print(sf.magnitude())
-    return sf.magnitude()
+    return sf
 
 
-#assert pr(sum(ls2)) == "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"
-print(part1(ls2))
+def part1(ls: List[str]) -> int:
+    sm = sfsum(ls)
+    return sm.magnitude()
 
-ls3 = sflist("""
+
+assert str(
+    sfsum(ls2)) == "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"
+
+ls3 = """
 [[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
 [[[5,[2,8]],4],[5,[[9,9],0]]]
 [6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
@@ -184,7 +210,22 @@ ls3 = sflist("""
 [[9,3],[[9,9],[6,[4,9]]]]
 [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
 [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
-""".strip().splitlines())
+""".strip().splitlines()
 
 
 assert part1(ls3) == 4140
+
+data = open("input.txt").read().splitlines()
+print("PART1:", part1(data))
+
+
+def part2(data):
+    return max(
+        max(sfsum([data[i], data[j]]).magnitude(),
+            sfsum([data[j], data[i]]).magnitude())
+        for i in range(len(data)-1)
+        for j in range(i+1, len(data))
+    )
+
+
+print("PART2:", part2(data))
