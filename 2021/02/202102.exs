@@ -1,4 +1,4 @@
-tds = """
+_tds = """
 forward 5
 down 5
 forward 8
@@ -23,6 +23,25 @@ parse = fn x ->
   |> Enum.map(parse_cmd)
 end
 
-IO.inspect(parse.(tds))
-# {:ok, input} = File.read("input.txt")
-# data = parse.(input)
+{:ok, input} = File.read("input.txt")
+data = parse.(input)
+
+move = fn
+  {:forward, num}, {p, d} -> {p + num, d}
+  {:down, num}, {p, d} -> {p, d + num}
+  {:up, num}, {p, d} -> {p, d - num}
+end
+
+{p, d} = Enum.reduce(data, {0, 0}, move)
+
+IO.puts("PART1: #{p * d}")
+
+move2 = fn
+  {:forward, num}, {p, d, a} -> {p + num, d + a * num, a}
+  {:down, num}, {p, d, a} -> {p, d, a + num}
+  {:up, num}, {p, d, a} -> {p, d, a - num}
+end
+
+{p, d, _a} = Enum.reduce(data, {0, 0, 0}, move2)
+
+IO.puts("PART2: #{p * d}")
