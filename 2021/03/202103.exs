@@ -7,7 +7,25 @@ parse = fn s ->
 end
 
 {:ok, input} = File.read("input.txt")
-data = parse.(input)
+
+td =
+  parse.("""
+  00100
+  11110
+  10110
+  10111
+  10101
+  01111
+  00111
+  11100
+  10000
+  11001
+  00010
+  01010
+  """)
+
+_data = parse.(input)
+data = td
 
 n_items = Enum.count(data)
 columns = Enum.zip(data)
@@ -21,24 +39,23 @@ end
 
 IO.puts("PART1: #{btoi.(gamma_rate) * btoi.(epsilon_rate)}")
 
-filter_loop = fn {b, i}, ys ->
-  nys = Enum.filter(ys, fn y -> Enum.at(y, i) == b end)
+defmodule M do
+  def part2() do
+    o2rating = find1.(ys)
+    co2rating = find1.(ys)
+    btoi.(o2rating) * btoi.(co2rating)
+  end
 
-  case nys do
-    [n] -> {:halt, n}
-    _ -> {:cont, nys}
+  def find1(ys, i \\ 0) do
+    # need to also do least popular
+    b = most_popular_bit(ys, i)
+    nys = Enum.filter(ys, fn y -> Enum.at(y, i) == b end)
+
+    case nys do
+      [n] -> n
+      _ -> find1(nys, i + 1)
+    end
   end
 end
 
-find1 = fn ys, r ->
-  Enum.with_index(r)
-  |> Enum.reduce_while(ys, filter_loop)
-end
-
-part2 = fn ys, gr, er ->
-  o2rating = find1.(ys, gr)
-  co2rating = find1.(ys, er)
-  btoi.(o2rating) * btoi.(co2rating)
-end
-
-IO.puts("PART2: #{part2.(data, gamma_rate, epsilon_rate)}")
+IO.puts("PART2: #{part2.(data)}")
