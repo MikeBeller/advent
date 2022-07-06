@@ -20,3 +20,25 @@ btoi = fn ls ->
 end
 
 IO.puts("PART1: #{btoi.(gamma_rate) * btoi.(epsilon_rate)}")
+
+filter_loop = fn {b, i}, ys ->
+  nys = Enum.filter(ys, fn y -> Enum.at(y, i) == b end)
+
+  case nys do
+    [n] -> {:halt, n}
+    _ -> {:cont, nys}
+  end
+end
+
+find1 = fn ys, r ->
+  Enum.with_index(r)
+  |> Enum.reduce_while(ys, filter_loop)
+end
+
+part2 = fn ys, gr, er ->
+  o2rating = find1.(ys, gr)
+  co2rating = find1.(ys, er)
+  btoi.(o2rating) * btoi.(co2rating)
+end
+
+IO.puts("PART2: #{part2.(data, gamma_rate, epsilon_rate)}")
