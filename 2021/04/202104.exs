@@ -41,6 +41,9 @@ defmodule M do
   end
 
   def step(draw, board) do
+    board = Map.update(board, :step, 0, &(&1 + 1))
+    board = Map.put(board, :draw, draw)
+
     case find(draw, board) do
       {r, c} ->
         board = Map.put(board, {r, c}, -draw)
@@ -60,12 +63,35 @@ defmodule M do
     Enum.reduce_while(draws, board, fn draw, board -> step(draw, board) end)
   end
 
+  def score(board) do
+    unmarked =
+      Enum.map(board, fn
+        {{_r, _c}, v} when v > 0 -> v
+        _ -> 0
+      end)
+      |> Enum.sum()
+
+    unmarked * board[:draw]
+  end
+
   def part1(draws, boards) do
     Enum.map(boards, fn board -> play(draws, board) end)
+    |> Enum.min_by(fn board -> Map.get(board, :step) end)
+    |> score()
+  end
+
+  def part2(draws, boards) do
+    Enum.map(boards, fn board -> play(draws, board) end)
+    |> Enum.max_by(fn board -> Map.get(board, :step) end)
+    |> score()
   end
 end
 
-{:ok, input} = File.read("tinput.txt")
+# {:ok, input} = File.read("tinput.txt")
+# {tdraws, tboards} = M.parse(input)
+# IO.inspect(M.part1(tdraws, tboards))
+
+{:ok, input} = File.read("input.txt")
 {draws, boards} = M.parse(input)
-IO.inspect(boards)
-IO.inspect(M.part1(draws, boards))
+IO.puts("PART1: #{M.part1(draws, boards)}")
+IO.puts("PART2: #{M.part2(draws, boards)}")
