@@ -18,7 +18,7 @@ defmodule M do
     |> Enum.map(&parse_line/1)
   end
 
-  def part1(lines) do
+  def part1(lines, diag \\ nil) do
     lines
     |> Enum.reduce(%{}, fn {x1, y1, x2, y2}, m ->
       cond do
@@ -32,6 +32,12 @@ defmodule M do
             Map.update(m, {x, y1}, 1, &(&1 + 1))
           end)
 
+        diag ->
+          Enum.zip(x1..x2, y1..y2)
+          |> Enum.reduce(m, fn {x, y}, m ->
+            Map.update(m, {x, y}, 1, &(&1 + 1))
+          end)
+
         true ->
           m
       end
@@ -39,13 +45,17 @@ defmodule M do
     |> Map.values()
     |> Enum.count(fn v -> v > 1 end)
   end
+
+  def part2(data), do: part1(data, true)
 end
 
 IO.inspect(M.parse_line("830,945 -> 830,210"))
 tinput = File.read!("tinput.txt")
 tdata = M.parse(tinput)
 IO.inspect(M.part1(tdata))
+IO.inspect(M.part2(tdata))
 
 input = File.read!("input.txt")
 data = M.parse(input)
 IO.puts("PART1: #{M.part1(data)}")
+IO.puts("PART2: #{M.part2(data)}")
