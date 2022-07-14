@@ -28,4 +28,4 @@ IO.inspect(M.part1(tdata, 18))
 
 data = File.read!("input.txt") |> M.parse()
 IO.puts("PART1: #{M.part1(data, 80)}")
-IO.puts("PART1: #{M.part1(data, 256)}")
+IO.puts("PART2: #{M.part1(data, 256)}")
