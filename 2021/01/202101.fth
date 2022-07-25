@@ -19,30 +19,28 @@ tdata tlen part1 .
 cr
 
 variable fid
-s" tinput.txt" r/o  open-file abort" open failed" fid !
+s" input.txt" r/o  open-file abort" open failed" fid !
 
 1022 constant max-line
 create line-buf max-line 2 + allot ; \ 2 extra bytes for line terminator
 
 variable dlen
 0 dlen !
-create data
+create data 10000 cells allot
 decimal
 begin
   line-buf max-line fid @ read-line throw \ length !eof
 while \ length
   line-buf swap \ line-buf length
-  0 -rot
-  2dup type cr
-  .s
-  >number .s 2drop \ num
-  \ .s
-  ,
+  0 0 2swap
+  >number 2drop \ ud1 ud2
+  drop  \ only care about ud1
+  data dlen @ cells + !
   1 dlen +!
 repeat drop
 
 .s
 ." Part1: "
 data dlen @ part1 .
-\ data dlen part1 .
 cr
+
