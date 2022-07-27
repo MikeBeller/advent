@@ -1,46 +1,47 @@
-: bounds ( addr n -- addr2 addr1 ) cells over + swap ; \ end and start address of array arr with length n
 
-create tdata 199 , 200 , 208 , 210 , 200 , 207 , 240 , 269 , 260 , 263 ,
-10 constant tlen
+1024 constant line-buf-len
+create line-buf line-buf-len allot ; 
 
-: isless ( addr -- 1/0 ) \ 1 if addr[0] < addr[1]
-    dup cell - @ swap @ < negate ;
+: map-file { fname flen xt buf blen | fid max-line --  } \ map xt over each line in file fname using buffer buf/len
+  fname flen r/o open-file abort" open failed" -> fid
+  blen 2 - -> max-line \ max line is two bytes shorter than the buffer len
+  begin
+    buf max-line fid read-line throw \ length !eof
+  while
+    buf swap xt execute \ call the xt with ( buf line-len )
+  repeat drop ;
 
-: part1 ( arr len -- n ) \ n is number of instances where arr[i] < arr[i+1]
-  0 -rot \ ( 0 arr len )
-  bounds cell+ \ ( 0 &arr[len] &arr[1] ) start with 1th element of array
-  ?do
-    i isless
-    +
-  cell +loop ;
+\ s" tinput.txt" ' type line-buf line-buf-len .s map-file
 
-." Test "
-tdata tlen part1 .
-cr
 
-variable fid
-s" input.txt" r/o  open-file abort" open failed" fid !
+: >num ( buf len -- n )
+  0 0 2swap >number
+  2drop drop
+  ;
 
-1022 constant max-line
-create line-buf max-line 2 + allot ; \ 2 extra bytes for line terminator
+variable last
+variable total
 
-variable dlen
-0 dlen !
-create data 10000 cells allot
-decimal
-begin
-  line-buf max-line fid @ read-line throw \ length !eof
-while \ length
-  line-buf swap \ line-buf length
-  0 0 2swap
-  >number 2drop \ ud1 ud2
-  drop  \ only care about ud1
-  data dlen @ cells + !
-  1 dlen +!
-repeat drop
+: diff1 ( buf len -- )
+  ." hello " .s
+  >num
+  last @ -1 <>
+  if
+    dup last @ >
+    if
+      total +! 
+    then
+  then ( num )
+  last ! 
+;
 
-.s
-." Part1: "
-data dlen @ part1 .
-cr
 
+
+: part1 ( fname flen -- )
+  0 total !
+  -1 last !
+   ['] diff1 line-buf line-buf-len map-file
+   total @
+   ;
+
+s" tinput.txt" part1 .
