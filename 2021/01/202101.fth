@@ -23,19 +23,16 @@ variable last
 variable total
 
 : diff1 ( buf len -- )
-  ." hello " .s
   >num
   last @ -1 <>
   if
     dup last @ >
     if
-      total +! 
+      1 total +! 
     then
   then ( num )
   last ! 
 ;
-
-
 
 : part1 ( fname flen -- )
   0 total !
@@ -44,4 +41,5 @@ variable total
    total @
    ;
 
-s" tinput.txt" part1 .
+s" tinput.txt" part1 7 <> abort" test1 fail"
+." PART1: " s" input.txt" part1 . cr
