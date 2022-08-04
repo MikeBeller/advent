@@ -10,6 +10,7 @@ variable ffl-fid ;
 
 \ read a line of max length 1022 into ffl-buf 
 : ffl-read-line ( -- n !eof ) ffl-buf 1022 ffl-fid @ read-line throw ;
+: ffl-close-file ( -- ) ffl-fid @ close-file drop ;
 
 \ foreach-file-line -- a special loop structure for looping over each line in a file
 \ 
@@ -23,7 +24,10 @@ variable ffl-fid ;
   postpone while
     postpone ffl-buf postpone swap ; immediate
 
-: ffl-repeat postpone repeat postpone drop ; immediate
+: ffl-repeat
+  postpone repeat
+  postpone drop
+  postpone ffl-close-file ; immediate
 
 \ convert positive number string to number
 : >num ( buf len -- n )

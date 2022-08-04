@@ -1,4 +1,4 @@
 .*.swp
 .mypy_cache/
 *.beam
-
+venv/
