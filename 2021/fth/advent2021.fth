@@ -1,6 +1,6 @@
 include  ../fth/t_tools.fth
 
-create ffl-buf 1024 allot ; 
+create ffl-buf 1024 allot ; \ single global buffer for foreach-file-line
 variable ffl-fid ;
 
 : ffl-open-file ( addr u -- fid )
@@ -31,4 +31,3 @@ variable ffl-fid ;
   2drop drop ;
 
 T{ s" 123" >num }T{ 123 }T
-
