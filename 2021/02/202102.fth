@@ -2,23 +2,42 @@ include  ../fth/advent2021.fth
 
 variable pos
 variable dep
+trace-include off
 
-: do-line ( xt n -- ) swap .s execute ;
+: parse-num bl parse-word >num ;
 
-: do-forward ( n -- ) pos +! ;
-: do-down ( n -- ) dep +! ;
-: do-up ( n -- ) negate dep +! ;
+: forward ( n -- ) parse-num pos +! ;
+: down ( n -- ) parse-num dep +! ;
+: up ( n -- ) parse-num negate dep +! ;
 
-: forward ['] do-forward ;
-: down ['] do-down ;
-: up ['] do-up ;
-
-T{ forward 5 do-line pos @ }T{ 5 }T
+T{ forward 5 pos @ }T{ 5 }T
+T{ forward 7 pos @ }T{ 12 }T
 
 : part1 ( addr u -- u )
-    2dup type
-    ['] do-line foreach-file-line
+    0 pos !
+    0 dep !
+    included \ named file addr/u is "executed"
     pos @ dep @ *
     ;
 
- s" input.txt" part1 . cr
+T{ s" tinput.txt" part1 }T{ 150 }T
+." PART1: " s" input.txt" part1 . cr
+
+variable aim
+
+: forward ( n -- )
+  parse-num dup pos +!  ( n -- )
+  aim @ * dep +! ;
+: down ( n -- ) parse-num aim +! ;
+: up ( n -- ) parse-num negate aim +! ;
+
+: part2 ( addr u -- u )
+    0 pos !
+    0 dep !
+    0 aim !
+    included
+    pos @ dep @ *
+    ;
+
+T{ s" tinput.txt" part2 }T{ 900 }T
+." PART2: " s" input.txt" part2 . cr

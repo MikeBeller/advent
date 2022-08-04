@@ -1,21 +1,23 @@
-include  ../fth/t_tools.fth
+: hello ." hello" cr ;
+: rep 0 postpone literal postpone do ; immediate
+: bar rep hello loop ;
+9 bar
+hello
+
 
 create ffl-buf 1024 allot ; 
 variable ffl-fid ;
 
+\ open a file for reading and put fid in ffl-fid
 : ffl-open-file ( addr u -- fid )
   r/o open-file abort" open failed"
   ffl-fid !
   ;
 
 \ read a line of max length 1022 into ffl-buf 
+\ return nchars and !eof flag
 : ffl-read-line ( -- n !eof ) ffl-buf 1022 ffl-fid @ read-line throw ;
 
-\ foreach-file-line -- a special loop structure for looping over each line in a file
-\ 
-\   s" input.txt" foreach-file-line
-\     type cr
-\   ffl-repeat ;
 : foreach-file-line ( addr u -- ) \ file name string
     postpone ffl-open-file
   postpone begin
@@ -25,10 +27,14 @@ variable ffl-fid ;
 
 : ffl-repeat postpone repeat postpone drop ; immediate
 
-\ convert positive number string to number
-: >num ( buf len -- n )
-  0 0 2swap >number
-  2drop drop ;
+: test1 ( addr u )
+  foreach-file-line
+    type cr
+  ffl-repeat
+  ;
 
-T{ s" 123" >num }T{ 123 }T
+s" tinput.txt" test1
+
+s" tinput.txt" foreach-file-line type cr ffl-repeat
+
 
