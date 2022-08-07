@@ -40,3 +40,4 @@ variable ffl-nlines
   2drop drop ;
 
 \ T{ s" 123" >num }T{ 123 }T
+
