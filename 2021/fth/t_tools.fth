@@ -7,7 +7,7 @@
 \ Syntax was changed to avoid conflict with { -> and } for local variables.
 \ Also added tracking of #successes and #errors.
 
-anew task-t_tools.fth
+\ anew task-t_tools.fth \ for gforth compatibility
 
 decimal
 
