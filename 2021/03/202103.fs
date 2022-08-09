@@ -29,13 +29,14 @@ T{ binary 10101 decimal 3 bit -> 0 }T
 
 : most-common-bit { nbit -- 1/0 }
   0
+  ." vec len " nums vec>len . cr
   nums vec>len 0 do ( total )
     i nums vec@ nbit bit ( total 1/0 )
     +
   loop 
   nums vec>len 2/ > 1 and ;
 
-: tdata nums vec>clear binary 00100 11110 10110 10111 10101 01111 00111 11100 10000 11001 00010 01010 decimal 12 nums vec#, ;
+: tdata s" tinput.txt" 5 read-nums ;
 
 T{ tdata 4 most-common-bit -> 1 }T
 T{ tdata 3 most-common-bit -> 0 }T
@@ -61,9 +62,23 @@ T{ tdata 3 most-common-bit -> 0 }T
 T{ s" tinput.txt" 5 part1  -> 198 }T
 ." PART1: " s" input.txt" 12 part1 . cr
 
+\ keep items with bitval in bit number nbit
+: keeper .s cr over and ;
+: keep-with-bit ( bitval nbit )
+  lshift  ( bitval<<nbit )
+  ['] keeper nums vec>filter drop    \ bitval<<nbit t/f
+;
+
+T{ tdata 1 4 keep-with-bit nums vec>len -> 7 }T
 
 : o2rating { fname flen nbits -- o2rating }
   fname flen nbits read-nums
-;
 
-\ s" tinput.txt" 5 o2rating
+  0 nbits 1- do
+    i most-common-bit ( mcb )
+    i keep-with-bit
+    nums vec>len dup . cr 1 = if leave then
+  -1 +loop ;
+
+s" tinput.txt" 5 o2rating . cr
+

@@ -60,13 +60,13 @@ require  ../fth/ttester.fs
   vc vec>len 0
   ?do
     i vc vec@ ( vec[i] )
-    dup xt execute
+    dup >r
+    xt execute
     if  ( vec[i] )
-      p vc vec!
+      r@ p vc vec!
       p 1+ to p
-    else
-      drop
     then
+    r> drop
   loop
   p vc vec>len! ;
 
