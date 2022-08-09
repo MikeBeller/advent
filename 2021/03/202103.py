@@ -63,3 +63,12 @@ def part2(data):
 assert part2(td) == 230
 
 print("PART2:", part2(data))
+
+
+def bench(n):
+    for i in range(n):
+        data = parse(open("input.txt").read())
+        part2(data)
+
+
+bench(1000)

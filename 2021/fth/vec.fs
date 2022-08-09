@@ -53,6 +53,15 @@ require  ../fth/ttester.fs
     v i vc vec!
   loop ;
 
+\ copy vector vec1 to vector v2 (must be long enough)
+: vec>copy { vsource vdest }
+  vdest vec>clear
+  vsource vec>len
+  0 ?do
+    i vsource vec@
+    vdest vec,
+  loop ;
+
 \ filter a vector in place based on a predicate
 \ keep only items for which the predicate xt  ( v -- 1/0 ) returns truthy
 : vec>filter ( xt vec -- )
@@ -77,3 +86,6 @@ T{ test-read-after-end swap drop -> 99 }T
 T{ gt1 vec>clear 5 7 9 3 gt1 vec#, 0 gt1 vec@ 1 gt1 vec@ 2 gt1 vec@ gt1 vec>len -> 5 7 9 3 }T
 
 T{ gt1 vec>clear 6 0 9 3 gt1 vec#, ' 0<> gt1 vec>filter gt1 vec>len -> 2 }T
+
+3 vec gt2
+T{ gt1 vec>clear 3 5 7 3 gt1 vec#, gt1 gt2 vec>copy 0 gt2 vec@ 1 gt2 vec@ 2 gt2 vec@ gt2 vec>len -> 3 5 7 3 }T

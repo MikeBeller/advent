@@ -53,11 +53,15 @@ defmodule M do
       _ -> find1(nys, ox, i + 1)
     end
   end
+
+  def bench(n, data) do
+    Enum.each(1..n, fn _n -> part2(data) end)
+  end
 end
 
 {:ok, input} = File.read("input.txt")
 
-td =
+_td =
   M.parse("""
   00100
   11110
@@ -78,3 +82,5 @@ data = M.parse(input)
 
 IO.puts("PART1: #{M.part1(data)}")
 IO.puts("PART2: #{M.part2(data)}")
+
+M.bench(1000, data)
