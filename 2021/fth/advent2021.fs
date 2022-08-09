@@ -1,4 +1,5 @@
-include  ../fth/t_tools.fth
+require ../fth/ttester.fs
+require ../fth/vec.fs
 
 create ffl-buf 1024 allot \ single global buffer for foreach-file-line
 variable ffl-fid
@@ -39,5 +40,6 @@ variable ffl-nlines
   0 0 2swap >number
   2drop drop ;
 
-\ T{ s" 123" >num }T{ 123 }T
+T{ s" 123" >num -> 123 }T
 
+: binary 2 base ! ;

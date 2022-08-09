@@ -2,7 +2,7 @@
 \ structure is 
 \  maxlen curlen < maxlen cells >
 
-include  ../fth/t_tools.fth
+require  ../fth/ttester.fs
 
 : vec ( maxlen "name" -- ) create
     dup , ( maxlen )
@@ -70,10 +70,10 @@ include  ../fth/t_tools.fth
   loop
   p vc vec>len! ;
 
-T{ gt1 vec>len gt1 vec>max }T{ 0 3 }T
-T{ 3 gt1 vec, 5 gt1 vec, 0 gt1 vec@ 1 gt1 vec@ gt1 vec>len }T{ 3 5 2 }T
-T{ gt1 vec>clear 3 gt1 vec, 5 gt1 vec, 99 gt1 vec>fill 0 gt1 vec@ 1 gt1 vec@ gt1 vec>len }T{ 99 99 2 }T
-T{ test-read-after-end swap drop }T{ 99 }T
-T{ gt1 vec>clear 5 7 9 3 gt1 vec#, 0 gt1 vec@ 1 gt1 vec@ 2 gt1 vec@ gt1 vec>len }T{ 5 7 9 3 }T
+T{ gt1 vec>len gt1 vec>max -> 0 3 }T
+T{ 3 gt1 vec, 5 gt1 vec, 0 gt1 vec@ 1 gt1 vec@ gt1 vec>len -> 3 5 2 }T
+T{ gt1 vec>clear 3 gt1 vec, 5 gt1 vec, 99 gt1 vec>fill 0 gt1 vec@ 1 gt1 vec@ gt1 vec>len -> 99 99 2 }T
+T{ test-read-after-end swap drop -> 99 }T
+T{ gt1 vec>clear 5 7 9 3 gt1 vec#, 0 gt1 vec@ 1 gt1 vec@ 2 gt1 vec@ gt1 vec>len -> 5 7 9 3 }T
 
-T{ gt1 vec>clear 6 0 9 3 gt1 vec#, ' 0<> gt1 vec>filter gt1 vec>len }T{ 2 }T
+T{ gt1 vec>clear 6 0 9 3 gt1 vec#, ' 0<> gt1 vec>filter gt1 vec>len -> 2 }T
