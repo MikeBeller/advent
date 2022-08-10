@@ -1,3 +1,5 @@
+\ old -- this code is for pforth not updated to gforth
+
 : hello ." hello" cr ;
 : rep 0 postpone literal postpone do ; immediate
 : bar rep hello loop ;
@@ -5,8 +7,8 @@
 hello
 
 
-create ffl-buf 1024 allot ; 
-variable ffl-fid ;
+create ffl-buf 1024 allot
+variable ffl-fid
 
 \ open a file for reading and put fid in ffl-fid
 : ffl-open-file ( addr u -- fid )

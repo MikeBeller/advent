@@ -1,17 +1,16 @@
-include  ../fth/advent2021.fth
+include  ../fth/advent2021.fs
 
 variable pos
 variable dep
-trace-include off
 
-: parse-num bl parse-word >num ;
+: parse-num parse-word >num ;
 
 : forward ( n -- ) parse-num pos +! ;
 : down ( n -- ) parse-num dep +! ;
 : up ( n -- ) parse-num negate dep +! ;
 
-T{ forward 5 pos @ }T{ 5 }T
-T{ forward 7 pos @ }T{ 12 }T
+T{ forward 5 pos @ -> 5 }T
+T{ forward 7 pos @ -> 12 }T
 
 : part1 ( addr u -- u )
     0 pos !
@@ -20,7 +19,7 @@ T{ forward 7 pos @ }T{ 12 }T
     pos @ dep @ *
     ;
 
-T{ s" tinput.txt" part1 }T{ 150 }T
+T{ s" tinput.txt" part1 -> 150 }T
 ." PART1: " s" input.txt" part1 . cr
 
 variable aim
@@ -39,5 +38,8 @@ variable aim
     pos @ dep @ *
     ;
 
-T{ s" tinput.txt" part2 }T{ 900 }T
-." PART2: " s" input.txt" part2 . cr
+T{ s" tinput.txt" part2 -> 900 }T
+s" input.txt" part2
+." PART2: " . cr
+
+bye
