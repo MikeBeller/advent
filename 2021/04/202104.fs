@@ -76,6 +76,36 @@ T{ 0 1 1 board-get 2 4 4 board-get -> 2 7 }T
 T{ 0 1 1 board-mark 0 1 1 board-get dup marked? swap unmark  -> true 2 }T
 T{ 2 4 4 board-mark 2 4 4 board-marked? 2 4 4 board-unmark 2 4 4 board-marked? -> true false }T
 
+: find-in-row 0 0 { n b r c found? -- c found? }
+    begin
+        b r c board-get
+        n = if
+            true to found?
+        then
+        c 4 = found? or invert
+    while
+        c 1+ to c
+    repeat
+    c found? ;
+
+T{ 14 0 2 find-in-row -> 2 -1 }T
+T{ 14 1 2 find-in-row -> 4 0 }T
+
+: find-in-board 0 0 0 { n b r c found? -- r c t/f }
+    begin
+        n b r find-in-row ( c t/f )
+        swap to c
+        if
+            true to found?
+        then
+        r 4 = found? or invert
+    while
+        r 1+ to r
+    repeat
+    r c found? ;
+
+T{ 26 2 find-in-board -> 2 3 -1 }T
+T{ 26 1 find-in-board -> 4 4 0 }T
 
 
 bye
