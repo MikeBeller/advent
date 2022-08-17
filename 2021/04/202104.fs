@@ -4,7 +4,14 @@ include  ../fth/advent2021.fs
 max-len vec data
 variable ndraws 0 ndraws !
 variable nboards 0 nboards !
-100 constant mark-offset
+128 constant mark-mask
+mark-mask invert constant mark-unmask
+
+: mark mark-mask or ;
+: unmark mark-unmask and ;
+: marked? mark-mask and 0<> ;
+
+T{ 7 mark dup marked? swap unmark marked? -> true false }T
 
 : draw ( i -- n )
     dup 0 ndraws @ within invert abort" draw index out of bounds"
@@ -21,27 +28,25 @@ variable nboards 0 nboards !
     c + ;
 
 : board-get ( b r c -- n )
-    board-index data vec@
-    ;
+    board-index data vec@ ;
 
 : board-set ( n b r c -- )
     board-index data vec! ;
 
-: marked? ( b r c -- t/f )
-    board-get mark-offset >= ;
+: board-marked? ( b r c -- t/f )
+    board-get marked? ;
 
-: mark { b r c -- }
-    b r c marked? invert if
-        b r c board-get
-        mark-offset +
-        b r c board-set
-    then ;
+: board-mark ( b r c -- )
+    board-index
+    dup data vec@
+    mark ( index v )
+    swap data vec! ;
 
-: get-unmarked { b r c -- n }
-    b r c board-get
-    dup mark-offset >= if
-        mark-offset -
-    then ;
+: board-unmark ( b r c -- )
+    board-index
+    dup data vec@
+    unmark
+    swap data vec! ;
 
 \ Append all numbers on a line to the 'data' vector
 : read-nums ( buf len )
@@ -68,6 +73,9 @@ variable nboards 0 nboards !
 T{ s" tinput.txt" read-data ndraws @ nboards @ data vec>len -> 27 3 102 }T
 T{ 0 1 1 board-index -> 33 }T
 T{ 0 1 1 board-get 2 4 4 board-get -> 2 7 }T
-T{ 0 1 1 mark 0 1 1 board-get 0 1 1 get-unmarked 0 1 1 marked? -> 102 2 -1 }T
+T{ 0 1 1 board-mark 0 1 1 board-get dup marked? swap unmark  -> true 2 }T
+T{ 2 4 4 board-mark 2 4 4 board-marked? 2 4 4 board-unmark 2 4 4 board-marked? -> true false }T
+
+
 
 bye
