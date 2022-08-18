@@ -107,5 +107,61 @@ T{ 14 1 2 find-in-row -> 4 0 }T
 T{ 26 2 find-in-board -> 2 3 -1 }T
 T{ 26 1 find-in-board -> 4 4 0 }T
 
+: row-full? { b r -- t/f }
+    -1
+    5 0 do
+        b r i board-marked? and
+    loop ;
+
+T{ 2 3 0 board-mark 2 3 1 board-mark 2 3 2 board-mark 2 3 3 board-mark 2 3 4 board-mark
+    2 3 row-full?
+    2 3 1 board-unmark 2 3 row-full?  -> -1 0 }T
+
+
+: column-full? { b c -- t/f }
+    -1
+    5 0 do
+        b i c board-marked? and
+    loop ;
+
+: winner? { b r c -- t/f }
+    b r row-full?
+    b c column-full?
+    or ;
+
+T{ 2 3 0 swap board-mark 2 3 1 swap board-mark 2 3 2 swap board-mark 2 3 3 swap board-mark 2 3 4 swap board-mark
+    2 3 column-full?
+    2 3 1 swap board-unmark 2 3 column-full? -> -1 0 }T
+
+: do-draw { n - b r c t/f }
+    nboards @ 0 do
+        i
+        n draw i find-in-board ( b r c found? )
+        if ( b r c )
+            2 pick over row-full?
+            2 pick swap column-full?
+            or if
+                true leave ( b r c true )
+            then
+        then ( b r c )
+        i nboards @ = if
+            false leave ( b r c false )
+        then ( b r c )
+        2drop drop ( )
+    loop ;
+
+: part1 { fname flen -- b }
+    read-data
+    ndraws @ 0 do
+        i do-draw .s cr
+        if ( b r c )
+            ." winner " rot . ." on draw " i . cr
+        then
+    loop ;
+
+s" tinput.txt" part1 .s 
 
 bye
+
+\\ need to complete do-draw
+\\ probably should create 'mark-row' and 'mark-column' to simplify testing
