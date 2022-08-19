@@ -113,10 +113,14 @@ T{ 26 1 find-in-board -> 4 4 0 }T
         b r i board-marked? and
     loop ;
 
-T{ 2 3 0 board-mark 2 3 1 board-mark 2 3 2 board-mark 2 3 3 board-mark 2 3 4 board-mark
-    2 3 row-full?
-    2 3 1 board-unmark 2 3 row-full?  -> -1 0 }T
 
+\ for testing
+: mark-row ( b r -- ) 5 0 do 2dup i board-mark loop 2drop ;
+: unmark-row ( b r -- ) 5 0 do 2dup i board-unmark loop 2drop ;
+: mark-column ( b c -- ) 5 0 do 2dup i swap board-mark loop 2drop ;
+: unmark-column ( b c -- ) 5 0 do 2dup i swap board-unmark loop 2drop ;
+
+T{ 2 3 mark-row 2 3 row-full? 2 3 1 board-unmark 2 3 row-full? -> -1 0 }T
 
 : column-full? { b c -- t/f }
     -1
@@ -129,33 +133,33 @@ T{ 2 3 0 board-mark 2 3 1 board-mark 2 3 2 board-mark 2 3 3 board-mark 2 3 4 boa
     b c column-full?
     or ;
 
-T{ 2 3 0 swap board-mark 2 3 1 swap board-mark 2 3 2 swap board-mark 2 3 3 swap board-mark 2 3 4 swap board-mark
-    2 3 column-full?
-    2 3 1 swap board-unmark 2 3 column-full? -> -1 0 }T
+T{ 2 3 mark-column 2 3 column-full? 2 1 3 board-unmark 2 3 column-full? -> -1 0 }T
 
-: do-draw { n - b r c t/f }
-    nboards @ 0 do
-        i
-        n draw i find-in-board ( b r c found? )
-        if ( b r c )
-            2 pick over row-full?
-            2 pick swap column-full?
-            or if
-                true leave ( b r c true )
-            then
-        then ( b r c )
-        i nboards @ = if
-            false leave ( b r c false )
-        then ( b r c )
-        2drop drop ( )
-    loop ;
+: check-win { b r c -- win? }
+    b r row-full?
+    b c column-full?
+    or ;
+
+: do-draw draw 0 0 0 0 { x b r c win? -- b r c t/f }
+    begin
+        x b find-in-board ( r c found? )
+        if
+            to c to r
+            b r c check-win to win?
+        then
+        b 1+ to b
+        b nboards @ = win? or
+    until
+    b r c win? ;
 
 : part1 { fname flen -- b }
-    read-data
+    fname flen read-data
     ndraws @ 0 do
         i do-draw .s cr
         if ( b r c )
             ." winner " rot . ." on draw " i . cr
+        else
+            drop drop drop
         then
     loop ;
 
@@ -164,4 +168,4 @@ s" tinput.txt" part1 .s
 bye
 
 \\ need to complete do-draw
-\\ probably should create 'mark-row' and 'mark-column' to simplify testing
+
