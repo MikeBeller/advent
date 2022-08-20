@@ -140,32 +140,59 @@ T{ 2 3 mark-column 2 3 column-full? 2 1 3 board-unmark 2 3 column-full? -> -1 0 
     b c column-full?
     or ;
 
+: print-board { b -- }
+    5 0 do
+        5 0 do
+            b j i board-get .
+        loop
+        cr
+    loop ;
+
 : do-draw draw 0 0 0 0 { x b r c win? -- b r c t/f }
     begin
         x b find-in-board ( r c found? )
         if
             to c to r
+            b r c board-mark
             b r c check-win to win?
+        else
+            2drop
         then
         b 1+ to b
         b nboards @ = win? or
     until
-    b r c win? ;
+    b 1 - r c win? ;
+
+: calc-score { b d -- n }
+    0
+    5 0 do
+        5 0 do
+            b i j board-get
+            dup marked? invert if
+                +
+            else
+                drop
+            then
+        loop
+    loop
+    d draw * ;
 
 : part1 { fname flen -- b }
     fname flen read-data
     ndraws @ 0 do
-        i do-draw .s cr
+        i do-draw
         if ( b r c )
-            ." winner " rot . ." on draw " i . cr
+            drop drop i calc-score
+            leave
         else
             drop drop drop
         then
     loop ;
 
-s" tinput.txt" part1 .s 
+T{ s" tinput.txt" part1 -> 4512 }T
+
+." PART1: " s" input.txt" part1 . cr
 
 bye
 
-\\ need to complete do-draw
 
