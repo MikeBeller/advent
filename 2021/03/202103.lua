@@ -52,10 +52,10 @@ assert(part1(tdata, tnbits) == 198)
 data,nbits = read_data("input.txt")
 print("PART1:", part1(data, nbits))
 
-function rating(data, nbits, criterion)
+function rating(data, nbits, crit)
     for bn = nbits-1, 0, -1 do
         nzeros, nones = mcb(data, bn)
-        local keep = criterion(nzeros, nones, bn)
+        local keep = crit(nzeros, nones, bn)
         newdata = {}
         for i,v in ipairs(data) do
             if (1 << bn) & v == keep then
@@ -65,18 +65,28 @@ function rating(data, nbits, criterion)
         data = newdata
         if #data == 1 then break end
     end
-    return data
+    return data[1]
+end
+
+function criterion_o2(z, o, bn)
+    if o >= z then return 1 << bn else return 0 end
+end
+
+function criterion_co2(z, o, bn)
+    if z <= o then return 0 else return 1 << bn end
 end
 
 function o2rating(data, nbits)
-    return rating(data, nbits, function (z, o, bn)
-        if z <= o then
-            return 1 << bn
-        else
-            return 0
-        end
-    end)
+    return rating(data, nbits, criterion_o2)
 end
 
-print(o2rating(tdata, tnbits)[1])
+function co2rating(data, nbits)
+    return rating(data, nbits, criterion_co2)
+end
 
+function part1(data, nbits)
+    return o2rating(data, nbits) * co2rating(data, nbits)
+end
+
+-- print(o2rating(tdata, tnbits), co2rating(tdata, tnbits))
+assert(part1(tdata, tnbits) == 230)
