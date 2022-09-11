@@ -15,17 +15,25 @@ function read_data(path)
     return data, nbits
 end
 
+function mcb(data, bn)
+    local nzeros = 0
+    local nones = 0
+    for i,v in ipairs(data) do
+        if v & (1 << bn) ~= 0 then
+            nones = nones + 1
+        else
+            nzeros = nzeros + 1
+        end
+    end
+    return nzeros, nones
+end
+
 function gamma(data, nbits)
     local gamma = 0
     for bn = nbits-1, 0, -1 do
-        local c = 0
         gamma = gamma << 1
-        for i,v in ipairs(data) do
-            if v & (1 << bn) ~= 0 then
-                c = c + 1
-            end
-        end
-        if c >= #data/2 then
+        nzeros, nones = mcb(data, bn)
+        if nzeros > nones then
             gamma = gamma + 1
         end
     end
@@ -43,3 +51,32 @@ assert(part1(tdata, tnbits) == 198)
 
 data,nbits = read_data("input.txt")
 print("PART1:", part1(data, nbits))
+
+function rating(data, nbits, criterion)
+    for bn = nbits-1, 0, -1 do
+        nzeros, nones = mcb(data, bn)
+        local keep = criterion(nzeros, nones, bn)
+        newdata = {}
+        for i,v in ipairs(data) do
+            if (1 << bn) & v == keep then
+                table.insert(newdata, v)
+            end
+        end
+        data = newdata
+        if #data == 1 then break end
+    end
+    return data
+end
+
+function o2rating(data, nbits)
+    return rating(data, nbits, function (z, o, bn)
+        if z <= o then
+            return 1 << bn
+        else
+            return 0
+        end
+    end)
+end
+
+print(o2rating(tdata, tnbits)[1])
+
