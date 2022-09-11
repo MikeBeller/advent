@@ -1,10 +1,3 @@
-
-function ptable(t)
-    for k,v in ipairs(t) do
-        print(k, v)
-    end
-end
-
 function read_data(path)
     local data = {}
     local nbits = nil
@@ -15,7 +8,7 @@ function read_data(path)
     return data, nbits
 end
 
-function mcb(data, bn)
+function bitcounts(data, bn)
     local nzeros = 0
     local nones = 0
     for i,v in ipairs(data) do
@@ -32,7 +25,7 @@ function gamma(data, nbits)
     local gamma = 0
     for bn = nbits-1, 0, -1 do
         gamma = gamma << 1
-        nzeros, nones = mcb(data, bn)
+        nzeros, nones = bitcounts(data, bn)
         if nzeros > nones then
             gamma = gamma + 1
         end
@@ -52,10 +45,18 @@ assert(part1(tdata, tnbits) == 198)
 data,nbits = read_data("input.txt")
 print("PART1:", part1(data, nbits))
 
-function rating(data, nbits, crit)
+function criterion_o2(z, o, bn)
+    if o >= z then return 1 << bn else return 0 end
+end
+
+function criterion_co2(z, o, bn)
+    if z <= o then return 0 else return 1 << bn end
+end
+
+function rating(data, nbits, criterion)
     for bn = nbits-1, 0, -1 do
-        nzeros, nones = mcb(data, bn)
-        local keep = crit(nzeros, nones, bn)
+        nzeros, nones = bitcounts(data, bn)
+        local keep = criterion(nzeros, nones, bn)
         newdata = {}
         for i,v in ipairs(data) do
             if (1 << bn) & v == keep then
@@ -68,25 +69,18 @@ function rating(data, nbits, crit)
     return data[1]
 end
 
-function criterion_o2(z, o, bn)
-    if o >= z then return 1 << bn else return 0 end
+function part2(data, nbits)
+    return rating(data, nbits, criterion_o2) * rating(data, nbits, criterion_co2)
 end
 
-function criterion_co2(z, o, bn)
-    if z <= o then return 0 else return 1 << bn end
+assert(part2(tdata, tnbits) == 230)
+
+print("PART2:", part2(data, nbits))
+
+function bench(n)
+    for i = 1, n do
+        part2(data, nbits)
+    end
 end
 
-function o2rating(data, nbits)
-    return rating(data, nbits, criterion_o2)
-end
-
-function co2rating(data, nbits)
-    return rating(data, nbits, criterion_co2)
-end
-
-function part1(data, nbits)
-    return o2rating(data, nbits) * co2rating(data, nbits)
-end
-
--- print(o2rating(tdata, tnbits), co2rating(tdata, tnbits))
-assert(part1(tdata, tnbits) == 230)
+bench(1000)

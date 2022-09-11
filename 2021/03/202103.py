@@ -1,18 +1,5 @@
 import numpy as np
 
-tds = """00100
-11110
-10110
-10111
-10101
-01111
-00111
-11100
-10000
-11001
-00010
-01010"""
-
 
 def parse(instr):
     return np.vstack([
@@ -20,7 +7,7 @@ def parse(instr):
         for s in instr.splitlines()])
 
 
-td = parse(tds)
+td = parse(open("tinput.txt").read())
 data = parse(open("input.txt").read())
 
 
