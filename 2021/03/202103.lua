@@ -1,3 +1,4 @@
+
 function read_data(path)
     local data = {}
     local nbits = nil
@@ -8,15 +9,18 @@ function read_data(path)
     return data, nbits
 end
 
+function bitn(n, bn)
+    return (n >> bn) & 1 -- lua 5.4
+    --return math.floor((n / (2 ^ bn) ) % 2)  -- luajit
+end
+
 function bitcounts(data, bn)
     local nzeros = 0
     local nones = 0
     for i,v in ipairs(data) do
-        if v & (1 << bn) ~= 0 then
-            nones = nones + 1
-        else
-            nzeros = nzeros + 1
-        end
+        local b = bitn(v, bn)
+        nones = nones + b
+        nzeros = nzeros + (1 - b)
     end
     return nzeros, nones
 end
@@ -24,9 +28,9 @@ end
 function gamma(data, nbits)
     local gamma = 0
     for bn = nbits-1, 0, -1 do
-        gamma = gamma << 1
+        gamma = gamma * 2
         nzeros, nones = bitcounts(data, bn)
-        if nzeros > nones then
+        if nones > nzeros then
             gamma = gamma + 1
         end
     end
@@ -34,8 +38,9 @@ function gamma(data, nbits)
 end
 
 function part1(data, nbits)
-    g = gamma(data, nbits)
-    e = g ~ ((1 << nbits) - 1)
+    local g = gamma(data, nbits)
+    --local e = math.floor((-g - 1) % (2 ^ nbits)) -- luajit
+    local e = ~g & ((1 << nbits) - 1)  -- lua 5.4
     return e * g
 end
 
@@ -45,21 +50,21 @@ assert(part1(tdata, tnbits) == 198)
 data,nbits = read_data("input.txt")
 print("PART1:", part1(data, nbits))
 
-function criterion_o2(z, o, bn)
-    if o >= z then return 1 << bn else return 0 end
+function criterion_o2(z, o)
+    if o >= z then return 1 else return 0 end
 end
 
-function criterion_co2(z, o, bn)
-    if z <= o then return 0 else return 1 << bn end
+function criterion_co2(z, o)
+    if z <= o then return 0 else return 1 end
 end
 
 function rating(data, nbits, criterion)
     for bn = nbits-1, 0, -1 do
-        nzeros, nones = bitcounts(data, bn)
-        local keep = criterion(nzeros, nones, bn)
-        newdata = {}
+        local nzeros, nones = bitcounts(data, bn)
+        local keep = criterion(nzeros, nones)
+        local newdata = {}
         for i,v in ipairs(data) do
-            if (1 << bn) & v == keep then
+            if bitn(v, bn) == keep then
                 table.insert(newdata, v)
             end
         end
