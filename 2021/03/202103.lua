@@ -10,8 +10,10 @@ function read_data(path)
 end
 
 function bitn(n, bn)
+    --local x = math.floor((n / (2 ^ bn) ) % 2)
     return (n >> bn) & 1 -- lua 5.4
     --return math.floor((n / (2 ^ bn) ) % 2)  -- luajit
+    --return bit.band(bit.rshift(n, bn), 1)
 end
 
 function bitcounts(data, bn)
@@ -39,8 +41,8 @@ end
 
 function part1(data, nbits)
     local g = gamma(data, nbits)
-    --local e = math.floor((-g - 1) % (2 ^ nbits)) -- luajit
-    local e = ~g & ((1 << nbits) - 1)  -- lua 5.4
+    local e = math.floor((-g - 1) % (2 ^ nbits)) -- luajit
+    --local e = ~g & ((1 << nbits) - 1)  -- lua 5.4
     return e * g
 end
 
