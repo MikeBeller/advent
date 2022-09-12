@@ -3,36 +3,38 @@ function read_data(path)
     local nbits = nil
     for line in io.lines(path) do
         if nbits == nil then nbits = #line end
-        data[#data + 1] = tonumber(line, 2)
+        local d = {}
+        for i = 1, nbits do
+            local c = string.byte(line, i) - 48
+            d[#d + 1] = c
+        end
+        data[#data + 1] = d
     end
     return data, nbits
-end
-
-if bit then
-    bitn = function (n, bn) return bit.band(bit.rshift(n, bn), 1) end
-else
-    local loadstring = load or loadstring
-    f,err = loadstring("return function (n, bn) return (n >> bn) & 1 end")
-    if not err then
-        bitn = f()
-    end 
 end
 
 function bitcounts(data, bn)
     local nzeros = 0
     local nones = 0
-    local bitn = bitn
-    for i,v in ipairs(data) do
-        local b = bitn(v, bn)
+    for i,d in ipairs(data) do
+        local b = d[bn]
         nones = nones + b
         nzeros = nzeros + (1 - b)
     end
     return nzeros, nones
 end
 
+function bin_to_num(d, nbits)
+    local r = 0
+    for i = 1,nbits do
+        r = r * 2 + d[i]
+    end
+    return r
+end
+
 function gamma(data, nbits)
     local gamma = 0
-    for bn = nbits-1, 0, -1 do
+    for bn = 1,nbits do
         gamma = gamma * 2
         nzeros, nones = bitcounts(data, bn)
         if nones > nzeros then
@@ -64,19 +66,19 @@ function criterion_co2(z, o)
 end
 
 function rating(data, nbits, criterion)
-    for bn = nbits-1, 0, -1 do
+    for bn = 1,nbits do
         local nzeros, nones = bitcounts(data, bn)
         local keep = criterion(nzeros, nones)
         local newdata = {}
         for i,v in ipairs(data) do
-            if bitn(v, bn) == keep then
+            if v[bn] == keep then
                 table.insert(newdata, v)
             end
         end
         data = newdata
         if #data == 1 then break end
     end
-    return data[1]
+    return bin_to_num(data[1], nbits)
 end
 
 function part2(data, nbits)
