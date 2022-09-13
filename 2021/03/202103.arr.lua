@@ -1,8 +1,10 @@
 -- use a binary table to represent each number, instead of the number itself
 -- this way we can use indexing instead of bitwise operators
--- 
+--
 -- this approach is 23% faster on lua 5.4, maybe a bit faster on luajit,
 -- but more of a 'push' there.
+-- note luajit is faster with NONLOCAL functions than with local ones,
+-- but it's a "push" for lua 5.4
 
 function read_data(path)
     local data = {}
@@ -22,7 +24,7 @@ end
 function bitcounts(data, bn)
     local nzeros = 0
     local nones = 0
-    for i,d in ipairs(data) do
+    for i, d in ipairs(data) do
         local b = d[bn]
         nones = nones + b
         nzeros = nzeros + (1 - b)
@@ -32,7 +34,7 @@ end
 
 function bin_to_num(d, nbits)
     local r = 0
-    for i = 1,nbits do
+    for i = 1, nbits do
         r = r * 2 + d[i]
     end
     return r
@@ -40,7 +42,7 @@ end
 
 function gamma(data, nbits)
     local gamma = 0
-    for bn = 1,nbits do
+    for bn = 1, nbits do
         gamma = gamma * 2
         nzeros, nones = bitcounts(data, bn)
         if nones > nzeros then
@@ -57,10 +59,10 @@ function part1(data, nbits)
     return e * g
 end
 
-tdata,tnbits = read_data("tinput.txt")
+tdata, tnbits = read_data("tinput.txt")
 assert(part1(tdata, tnbits) == 198)
 
-data,nbits = read_data("input.txt")
+data, nbits = read_data("input.txt")
 print("PART1:", part1(data, nbits))
 
 function criterion_o2(z, o)
@@ -72,11 +74,11 @@ function criterion_co2(z, o)
 end
 
 function rating(data, nbits, criterion)
-    for bn = 1,nbits do
+    for bn = 1, nbits do
         local nzeros, nones = bitcounts(data, bn)
         local keep = criterion(nzeros, nones)
         local newdata = {}
-        for i,v in ipairs(data) do
+        for i, v in ipairs(data) do
             if v[bn] == keep then
                 table.insert(newdata, v)
             end
