@@ -1,8 +1,7 @@
--- use a binary table to represent each number, instead of the number itself
--- this way we can use indexing instead of bitwise operators
--- 
--- this approach is 23% faster on lua 5.4, maybe a bit faster on luajit,
--- but more of a 'push' there.
+-- second approach using lua, uses a destructive process
+-- to compute the rating (rather than creating a new table on each pass)
+--
+-- no appreciable difference in performance on lua 5.4, but 2x WORSE on luajit
 
 function read_data(path)
     local data = {}
@@ -22,7 +21,7 @@ end
 function bitcounts(data, bn)
     local nzeros = 0
     local nones = 0
-    for i,d in ipairs(data) do
+    for _,d in pairs(data) do
         local b = d[bn]
         nones = nones + b
         nzeros = nzeros + (1 - b)
@@ -57,10 +56,10 @@ function part1(data, nbits)
     return e * g
 end
 
-tdata,tnbits = read_data("tinput.txt")
+local tdata,tnbits = read_data("tinput.txt")
 assert(part1(tdata, tnbits) == 198)
 
-data,nbits = read_data("input.txt")
+local data,nbits = read_data("input.txt")
 print("PART1:", part1(data, nbits))
 
 function criterion_o2(z, o)
@@ -71,20 +70,24 @@ function criterion_co2(z, o)
     if z <= o then return 0 else return 1 end
 end
 
-function rating(data, nbits, criterion)
+function rating(orig_data, nbits, criterion)
+    local data = table.move(orig_data, 1, #orig_data, 1, {})
+    local num = #data
+    local lasti = nil
     for bn = 1,nbits do
         local nzeros, nones = bitcounts(data, bn)
         local keep = criterion(nzeros, nones)
-        local newdata = {}
-        for i,v in ipairs(data) do
-            if v[bn] == keep then
-                table.insert(newdata, v)
+        for i,v in pairs(data) do
+            if v[bn] ~= keep then
+                data[i] = nil
+                num = num - 1
+            else
+                lasti = i
             end
         end
-        data = newdata
-        if #data == 1 then break end
+        if num == 1 then break end
     end
-    return bin_to_num(data[1], nbits)
+    return bin_to_num(data[lasti], nbits)
 end
 
 function part2(data, nbits)
@@ -95,10 +98,10 @@ assert(part2(tdata, tnbits) == 230)
 
 print("PART2:", part2(data, nbits))
 
-function bench(n)
+function bench(n, data, nbits)
     for i = 1, n do
         part2(data, nbits)
     end
 end
 
-bench(1000)
+bench(1000, data, nbits)
