@@ -7,4 +7,4 @@ def main(n):
     return t
 
 
-print(main(1000000000))
+print(main(100000000))

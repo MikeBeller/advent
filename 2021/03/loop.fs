@@ -6,5 +6,5 @@
     loop
 ;
 
-1000000000 tloop . cr
+100000000 tloop . cr
 bye
