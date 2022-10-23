@@ -7,6 +7,7 @@
 | rawset/rawget   |    26.8      |     22.4      |    1.6   |
 | table.unpack    |    13.8      |     10.2      |    2.7   |
 | metatables      |    49.0      |     43.1      |    2.5   |
+| luajit ffi      |    -         |     -         |    0.5   |
 |-----------------------------------------------------------|
 
 By comparison, python 3.8 is 8.3 seconds (better than all
@@ -20,3 +21,5 @@ In general
   but not in luajit
 * Rawset/rawget is not meaningfully faster for tables (which don't have metatables)
 * table.unpack can help sometimes for non-jit lua, but hurts luajit
+
+Surprisingly -- directly using FFI arrays in luajit is super fast!!
