@@ -2,7 +2,7 @@ function Mem()
     local tbl = {}
     local mt = {
         __index = function(t, addr)
-            return rawget(tbl, addr + 1) or 0
+            return rawget(tbl, addr + 1)
         end,
         __newindex = function(t, addr, v)
             rawset(tbl, addr + 1, v)
@@ -18,12 +18,6 @@ local function parse_data(ins)
     end
     return r
 end
-
-local function tcmp(a, b) return table.concat(a, ",") == table.concat(b, ",") end
-
-local tdata = parse_data("1,9,10,3,2,3,11,0,99,30,40,50")
-assert(tcmp(tdata, { 1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50 }))
-
 
 local function run_intcode(mem)
     local pc = 0
@@ -61,6 +55,7 @@ local function part1(prog)
     return mem[0]
 end
 
+tdata = parse_data("1,9,10,3,2,3,11,0,99,30,40,50")
 assert((run_intcode(load_mem(tdata)))[0] == 3500, "intcode")
 
 local data = parse_data(io.open("input.txt"):read("*a"))

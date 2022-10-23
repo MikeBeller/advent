@@ -8,30 +8,16 @@ local function parse_data(ins)
     return r
 end
 
-local function tcmp(a, b) return table.concat(a, ",") == table.concat(b, ",") end
-
-local tdata = parse_data("1,9,10,3,2,3,11,0,99,30,40,50")
-assert(tcmp(tdata, { 1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50 }))
-
-
-local function get(mem, addr) return mem[addr + 1] or 0 end
-
-local function set(mem, addr, val) mem[addr + 1] = val end
-
-local function get_i(mem, addr) return get(mem, get(mem, addr)) end
-
-local function set_i(mem, addr, val) set(mem, get(mem, addr), val) end
-
 local function run_intcode(mem)
     local pc = 0
     local a, b, c = 0, 0, 0
     while true do
         local inst = mem[pc]
         if inst == 1 or inst == 2 then
-            a = mem[mem[pc + 1]] -- get_i(mem, pc + 1)
-            b = mem[mem[pc + 2]] -- get_i(mem, pc + 1)
+            a = mem[mem[pc + 1]]
+            b = mem[mem[pc + 2]]
             c = inst == 1 and a + b or a * b
-            mem[mem[pc + 3]] = c -- set_i(mem, pc + 3, c)
+            mem[mem[pc + 3]] = c
             pc = pc + 4
         elseif inst == 99 then
             break
@@ -44,6 +30,7 @@ end
 
 local function load_mem(prog)
     local mem = ffi.new("int[256]")
+    -- local mem = {}
     for a, v in ipairs(prog) do
         mem[a - 1] = v
     end
@@ -58,6 +45,7 @@ local function part1(prog)
     return mem[0]
 end
 
+tdata = parse_data("1,9,10,3,2,3,11,0,99,30,40,50")
 assert((run_intcode(load_mem(tdata)))[0] == 3500, "intcode")
 
 local data = parse_data(io.open("input.txt"):read("*a"))

@@ -2,24 +2,29 @@
 
 | program         |   lua5.1.5   |   lua 5.4.4   |   luajit |
 |-----------------|--------------|---------------|----------|
-| get/set funcs   |    26.8      |     19.2      |    1.6   |
-| direct array    |    18.6      |     13.1      |    1.6   |
-| rawset/rawget   |    26.8      |     22.4      |    1.6   |
-| table.unpack    |    13.8      |     10.2      |    2.7   |
-| metatables      |    49.0      |     43.1      |    2.5   |
-| luajit ffi      |    -         |     -         |    0.5   |
+| direct array    |     9.0      |     6.4       |    1.6   |
+| python3.8       |              |     8.3       |    0.3   |
+| with jit & ffi  |     -        |      -        |    0.5   |
+| metatables      |    49.0      |     39.0      |    2.5   |
 |-----------------------------------------------------------|
 
-By comparison, python 3.8 is 8.3 seconds (better than all
-non-luajit lua versions), and pypy3 is 0.36 seconds, better than
-the best luajit version.  What's up?
+Pypy is fastest.  Luajit is competitive though, and uses a fraction
+of the memory and is 500k in size vs 80MB (!)
 
 In general
 
-* Lua 5.4 is significantly faster than Lua 5.1, but luajit crushes them
+* Lua 5.4 is significantly faster than Lua 5.1, but luajit crushes them both
+
+Other things I noticed when "tooling around"
+
 * Function calls have a significant overhead (direct arrays are faster),
   but not in luajit
 * Rawset/rawget is not meaningfully faster for tables (which don't have metatables)
-* table.unpack can help sometimes for non-jit lua, but hurts luajit
+* table.unpack can help to grab consecutive values sometimes for non-jit
+  lua, but hurts w/ luajit
 
-Surprisingly -- directly using FFI arrays in luajit is super fast!!
+**metatables are slow**
+
+**Directly using integer FFI arrays in luajit is super fast!!**
+
+**integer for loops are significantly faster than ipairs!**
