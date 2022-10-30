@@ -16,5 +16,6 @@ function parse_data(instr)
     return data
 end
 
+
 tinput = io.open("test_input.txt"):read("*a")
 print(inspect(parse_data(tinput)))
