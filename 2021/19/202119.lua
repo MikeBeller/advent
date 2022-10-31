@@ -16,6 +16,25 @@ function parse_data(instr)
     return data
 end
 
+function parse(fpath)
+    local data = {}
+    local scanner = {}
+    for line in io.lines(fpath) do
+        if line:sub(1,3) == "---" then
+            scanner = {}
+            data[#data+1] = scanner
+        elseif line == "" then
+            -- pass
+        else
+            local xs,ys,zs = line:match("(-?%d+),(-?%d+),(-?%d+)")
+            print( line:gmatch("(-?%d+),(-?%d+),(-?%d+)"))
+            scanner[#scanner+1] = {tonumber(xs), tonumber(ys), tonumber(zs)}
+        end
+    end
+    return data
+end
 
-tinput = io.open("test_input.txt"):read("*a")
-print(inspect(parse_data(tinput)))
+
+
+print(inspect(parse("tinput.txt")))
+
