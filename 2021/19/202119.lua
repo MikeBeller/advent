@@ -11,7 +11,6 @@ function parse(fpath)
             -- pass
         else
             local xs,ys,zs = line:match("(-?%d+),(-?%d+),(-?%d+)")
-            print( line:gmatch("(-?%d+),(-?%d+),(-?%d+)"))
             scanner[#scanner+1] = {tonumber(xs), tonumber(ys), tonumber(zs)}
         end
     end
@@ -29,7 +28,8 @@ end
 function adjust_all(beacons, dx, dy, dz)
     local adjusted_beacons = {}
     for beacon in beacons do
-        adjusted_beacons[#adjusted_beacons + 1] = {beacon[1] - dx, beacon[2] - dy, beacon[3] - dz}
+        adjusted_beacons[#adjusted_beacons + 1] = {
+            beacon[1] - dx, beacon[2] - dy, beacon[3] - dz}
     end
     return adjusted_beacons
 end
@@ -53,7 +53,7 @@ end
 function rotate_all(scanner, rotation)
     -- must return a copy of the beacons, rotated (don't mutate)
     rotated = {}
-    for i,beacon in scanner do
+    for i,beacon in ipairs(scanner) do
         rotated[#rotated + 1] = rotate(beacon, rotation)
     end
     return rotated
@@ -62,13 +62,16 @@ end
 function align(aligned_scanner, scanner, rotation)
     local rotated_scanner = rotate_all(scanner, rotation)
     table.sort(rotated_scanner, point_lt)
-    for i = 1,#aligned_scanner-11 do
+    for i = 1,#aligned_scanner do
         local dx,dy,dz = diff(aligned_scanner[i], rotated_scanner[1])
+        print("trying", dx, dy, dz)
         local count = 1
         for j = 2, #rotated_scanner do
+            if i + j - 1 > #aligned_scanner then break end
             local dx2,dy2,dz2 = diff(aligned_scanner[i + j - 1], rotated_scanner[j])
             if dx == dx2 and dy == dy2 and dz == dz2 then
                 count = count + 1
+                print("count is", count)
                 if count >= 12 then
                     print("delta is", dx, dy, dz)
                     return true, adjust_all(rotated_scanner, dx, dy, dz)
@@ -80,8 +83,9 @@ function align(aligned_scanner, scanner, rotation)
 end
 
 function align_scanner(aligned_scanners, scanner)
-    for aligned_scanner in aligned_scanners do
+    for _,aligned_scanner in ipairs(aligned_scanners) do
         for rotation = 1,6 do
+            print("rotation", rotation)
             local ok, newly_aligned_scanner = align(aligned_scanner, scanner, rotation)
             if ok then
                 return ok, newly_aligned_scanner
@@ -132,4 +136,5 @@ function part1(scanners)
     return num_unique_beacons(aligned_scanners)
 end
 
-print(part1("tinput.txt"))
+local tdata = parse("tinput.txt")
+print(part1(tdata))
