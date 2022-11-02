@@ -25,9 +25,14 @@ function diff(p1, p2)
     return p1[1] - p2[1], p1[2] - p2[2], p1[3] - p2[3]
 end
 
+function point_eq(p1, p2)
+    return p1[1] - p2[1] == 0 and p1[2] - p2[2] == 0 and p1[3] - p2[3] == 0
+end
+
+
 function adjust_all(beacons, dx, dy, dz)
     local adjusted_beacons = {}
-    for beacon in beacons do
+    for _,beacon in ipairs(beacons) do
         adjusted_beacons[#adjusted_beacons + 1] = {
             beacon[1] - dx, beacon[2] - dy, beacon[3] - dz}
     end
@@ -59,24 +64,35 @@ function rotate_all(scanner, rotation)
     return rotated
 end
 
+function count_common_beacons(xs, ys)
+    -- xs and ys must be sorted lists of points
+    local count = 0
+    local xi, yi = 1, 1
+    while xi < #xs and yi < #ys do
+        if point_lt(xs[xi], ys[yi]) then
+            count = count + 1
+            xi = xi + 1
+            yi = yi + 1
+        elseif point_lt(xs[xi], ys[yi]) then
+            xi = xi + 1
+        else
+            yi = yi + 1
+        end
+    end
+    return count
+end
+
 function align(aligned_scanner, scanner, rotation)
     local rotated_scanner = rotate_all(scanner, rotation)
     table.sort(rotated_scanner, point_lt)
     for i = 1,#aligned_scanner do
         local dx,dy,dz = diff(aligned_scanner[i], rotated_scanner[1])
-        print("trying", dx, dy, dz)
-        local count = 1
-        for j = 2, #rotated_scanner do
-            if i + j - 1 > #aligned_scanner then break end
-            local dx2,dy2,dz2 = diff(aligned_scanner[i + j - 1], rotated_scanner[j])
-            if dx == dx2 and dy == dy2 and dz == dz2 then
-                count = count + 1
-                print("count is", count)
-                if count >= 12 then
-                    print("delta is", dx, dy, dz)
-                    return true, adjust_all(rotated_scanner, dx, dy, dz)
-                end
-            end
+        --print("trying", dx, dy, dz)
+        local adjusted_scanner = adjust_all(rotated_scanner, dx, dy, dz)
+        local count = count_common_beacons(aligned_scanner, rotated_scanner)
+        if count >= 12 then
+            print("delta is", dx, dy, dz)
+            return true, aligned_scanner
         end
     end
     return false, nil
@@ -85,7 +101,7 @@ end
 function align_scanner(aligned_scanners, scanner)
     for _,aligned_scanner in ipairs(aligned_scanners) do
         for rotation = 1,6 do
-            print("rotation", rotation)
+            --print("rotation", rotation)
             local ok, newly_aligned_scanner = align(aligned_scanner, scanner, rotation)
             if ok then
                 return ok, newly_aligned_scanner
