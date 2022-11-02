@@ -17,24 +17,20 @@ function parse(fpath)
     return data
 end
 
-function point_lt(p1, p2)
-    return p1[1] < p2[1] and p1[2] < p2[2] and p1[3] < p2[3]
+function serialize(p)
+    return string.format("%d,%d,%d", p[1], p[2], p[3])
 end
 
 function diff(p1, p2)
     return p1[1] - p2[1], p1[2] - p2[2], p1[3] - p2[3]
 end
 
-function point_eq(p1, p2)
-    return p1[1] - p2[1] == 0 and p1[2] - p2[2] == 0 and p1[3] - p2[3] == 0
-end
-
-
 function adjust_all(beacons, dx, dy, dz)
     local adjusted_beacons = {}
     for _,beacon in ipairs(beacons) do
         adjusted_beacons[#adjusted_beacons + 1] = {
-            beacon[1] - dx, beacon[2] - dy, beacon[3] - dz}
+            --beacon[1] - dx, beacon[2] - dy, beacon[3] - dz}
+            beacon[1] + dx, beacon[2] + dy, beacon[3] + dz}
     end
     return adjusted_beacons
 end
@@ -64,19 +60,15 @@ function rotate_all(scanner, rotation)
     return rotated
 end
 
-function count_common_beacons(xs, ys)
-    -- xs and ys must be sorted lists of points
+function count_intersection(xs, ys)
+    local tb = {}
     local count = 0
-    local xi, yi = 1, 1
-    while xi < #xs and yi < #ys do
-        if point_lt(xs[xi], ys[yi]) then
+    for _,x in ipairs(xs) do
+        tb[serialize(x)] = true
+    end
+    for _,y in ipairs(ys) do
+        if tb[serialize(y)] then
             count = count + 1
-            xi = xi + 1
-            yi = yi + 1
-        elseif point_lt(xs[xi], ys[yi]) then
-            xi = xi + 1
-        else
-            yi = yi + 1
         end
     end
     return count
@@ -84,15 +76,12 @@ end
 
 function align(aligned_scanner, scanner, rotation)
     local rotated_scanner = rotate_all(scanner, rotation)
-    table.sort(rotated_scanner, point_lt)
     for i = 1,#aligned_scanner do
         local dx,dy,dz = diff(aligned_scanner[i], rotated_scanner[1])
-        --print("trying", dx, dy, dz)
         local adjusted_scanner = adjust_all(rotated_scanner, dx, dy, dz)
-        local count = count_common_beacons(aligned_scanner, rotated_scanner)
+        local count = count_intersection(aligned_scanner, adjusted_scanner)
         if count >= 12 then
-            print("delta is", dx, dy, dz)
-            return true, aligned_scanner
+            return true, adjusted_scanner
         end
     end
     return false, nil
@@ -101,7 +90,6 @@ end
 function align_scanner(aligned_scanners, scanner)
     for _,aligned_scanner in ipairs(aligned_scanners) do
         for rotation = 1,6 do
-            --print("rotation", rotation)
             local ok, newly_aligned_scanner = align(aligned_scanner, scanner, rotation)
             if ok then
                 return ok, newly_aligned_scanner
@@ -132,14 +120,14 @@ function align_scanners(scanners)
     return aligned
 end
 
-function num_unique_beacons(scanners)
+function count_unique_beacons(scanners)
     local count = 0
-    local tab = {}
+    local tb = {}
     for _,scanner in ipairs(scanners) do
         for _,beacon in ipairs(beacons) do
-            local bs = table.concat(beacon, ",")
-            if not tab[bs] then
-                tab[bs] = true
+            local bs = serialize(beacon)
+            if not tb[bs] then
+                tb[bs] = true
                 count = count + 1
             end
         end
@@ -149,8 +137,25 @@ end
 
 function part1(scanners)
     local aligned_scanners = align_scanners(scanners)
-    return num_unique_beacons(aligned_scanners)
+    return count_unique_beacons(aligned_scanners)
 end
 
 local tdata = parse("tinput.txt")
+
+assert(#tdata == 5, "parse")
+
+function test1(ss)
+    local ok, ascan = align(ss[1], ss[2], 3)
+end
+
+function test2(ss)
+    for rotation = 1,6 do
+        local ok, ascan = align(ss[1], ss[2], rotation)
+        return
+    end
+    error("align test failed")
+end
+
+test2(tdata)
+
 print(part1(tdata))
