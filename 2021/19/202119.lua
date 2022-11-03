@@ -1,17 +1,18 @@
 inspect = require("inspect")
+local abs = math.abs
 
 function parse(fpath)
     local data = {}
-    local scanner = {}
+    local num = 0
     for line in io.lines(fpath) do
         if line:sub(1,3) == "---" then
-            scanner = {}
+            scanner = {num=num, beacons={}}
             data[#data+1] = scanner
         elseif line == "" then
             -- pass
         else
             local xs,ys,zs = line:match("(-?%d+),(-?%d+),(-?%d+)")
-            scanner[#scanner+1] = {tonumber(xs), tonumber(ys), tonumber(zs)}
+            scanner.beacons[#scanner.beacons+1] = {tonumber(xs), tonumber(ys), tonumber(zs)}
         end
     end
     return data
@@ -27,8 +28,8 @@ end
 
 function adjust_all(beacons, dx, dy, dz)
     local adjusted_beacons = {}
-    for _,beacon in ipairs(beacons) do
-        adjusted_beacons[#adjusted_beacons + 1] = {
+    for i,beacon in ipairs(beacons) do
+        adjusted_beacons[i] = {
             --beacon[1] - dx, beacon[2] - dy, beacon[3] - dz}
             beacon[1] + dx, beacon[2] + dy, beacon[3] + dz}
     end
@@ -51,11 +52,11 @@ function rotate(p, rotation)
     end
 end
 
-function rotate_all(scanner, rotation)
+function rotate_all(beacons, rotation)
     -- must return a copy of the beacons, rotated (don't mutate)
     rotated = {}
-    for i,beacon in ipairs(scanner) do
-        rotated[#rotated + 1] = rotate(beacon, rotation)
+    for i,beacon in ipairs(beacons) do
+        rotated[i] = rotate(beacon, rotation)
     end
     return rotated
 end
@@ -74,14 +75,14 @@ function count_intersection(xs, ys)
     return count
 end
 
-function align(aligned_scanner, rotated_scanner)
-    for i = 1,#aligned_scanner do
-        local dx,dy,dz = diff(aligned_scanner[i], rotated_scanner[1])
-        local adjusted_scanner = adjust_all(rotated_scanner, dx, dy, dz)
-        local count = count_intersection(aligned_scanner, adjusted_scanner)
+function align(aligned_beacons, rotated_beacons)
+    for i = 1,#aligned_beacons do
+        local dx,dy,dz = diff(aligned_beacons[i], rotated_beacons[1])
+        local adjusted_beacons = adjust_all(rotated_beacons, dx, dy, dz)
+        local count = count_intersection(aligned_beacons, adjusted_beacons)
         if count >= 12 then
             print("found offset:", serialize({dx,dy,dz}))
-            return true, adjusted_scanner
+            return true, adjusted_beacons, dx, dy, dz
         end
     end
     return false, nil
@@ -90,6 +91,7 @@ end
 
 function align_scanners(scanners)
     local aligned_scanners = {scanners[1]}
+    scanners[1].adjusted_beacons = scanners[1].beacons
     local unaligned_scanners = {unpack(scanners,2)}
     while #unaligned_scanners ~= 0 do
         print("num unaligned:", #unaligned_scanners)
@@ -97,17 +99,21 @@ function align_scanners(scanners)
         for ui = 1,#unaligned_scanners do
             local aligned = false
             for rotation = 1,6 do
-                local rotated_scanner = rotate_all(unaligned_scanners[ui], rotation)
+                print("rotation is", rotation)
+                local rotated_beacons = rotate_all(unaligned_scanners[ui].beacons, rotation)
                 for ai = 1,#aligned_scanners do
                     local reference_scanner = aligned_scanners[ai]
-                    local ok, newly_aligned_scanner = align(reference_scanner, rotated_scanner)
+                    local ok, adjusted_beacons = align(
+                        reference_scanner.beacons, rotated_beacons)
                     if ok then
-                        table.remove(unaligned_scanners, ui)
-                        aligned_scanners[#aligned_scanners + 1] = newly_aligned_scanner
+                        local scanner = table.remove(unaligned_scanners, ui)
+                        scanner.adjusted_beacons = adjusted_beacons
+                        aligned_scanners[#aligned_scanners + 1] = scanner
                         aligned = true
                         break
                     end
                 end
+                if aligned then break end
             end
             if aligned then break end
         end
@@ -149,7 +155,8 @@ end
 
 function test2(ss)
     for rotation = 1,6 do
-        local ok, ascan = align(ss[1], ss[2], rotation)
+        local rotated_beacons = rotate_all(ss[2].beacons, rotation)
+        local ok, ascan = align(ss[1], ss[2], rotated_beacons)
         return
     end
     error("align test failed")
