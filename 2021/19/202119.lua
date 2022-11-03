@@ -74,47 +74,46 @@ function count_intersection(xs, ys)
     return count
 end
 
-function align(aligned_scanner, scanner, rotation)
-    local rotated_scanner = rotate_all(scanner, rotation)
+function align(aligned_scanner, rotated_scanner)
     for i = 1,#aligned_scanner do
         local dx,dy,dz = diff(aligned_scanner[i], rotated_scanner[1])
         local adjusted_scanner = adjust_all(rotated_scanner, dx, dy, dz)
         local count = count_intersection(aligned_scanner, adjusted_scanner)
         if count >= 12 then
+            print("found offset:", serialize({dx,dy,dz}))
             return true, adjusted_scanner
         end
     end
     return false, nil
 end
 
-function align_scanner(aligned_scanners, scanner)
-    for _,aligned_scanner in ipairs(aligned_scanners) do
-        for rotation = 1,6 do
-            local ok, newly_aligned_scanner = align(aligned_scanner, scanner, rotation)
-            if ok then
-                return ok, newly_aligned_scanner
-            end
-        end
-    end
-    return false, nil
-end
 
 function align_scanners(scanners)
-    local aligned = {scanners[1]}
-    local unaligned = {}
-    for i = 2,#scanners do
-        unaligned[#unaligned + 1] = scanners[i]
-    end
-    while #unaligned ~= 0 do
-        print("num unaligned:", #unaligned)
-        for i,scanner in ipairs(unaligned) do
-            print("scanner:", i)
-            local ok, newly_aligned_scanner = align_scanner(aligned, scanner)
-            if ok then
-                table.remove(unaligned, i)
-                aligned[#aligned + 1] = newly_aligned_scanner
-                break
+    local aligned_scanners = {scanners[1]}
+    local unaligned_scanners = {unpack(scanners,2)}
+    while #unaligned_scanners ~= 0 do
+        print("num unaligned:", #unaligned_scanners)
+        local old_num_unaligned = #unaligned_scanners
+        for ui = 1,#unaligned_scanners do
+            local aligned = false
+            for rotation = 1,6 do
+                local rotated_scanner = rotate_all(unaligned_scanners[ui], rotation)
+                for ai = 1,#aligned_scanners do
+                    local reference_scanner = aligned_scanners[ai]
+                    local ok, newly_aligned_scanner = align(reference_scanner, rotated_scanner)
+                    if ok then
+                        table.remove(unaligned_scanners, ui)
+                        aligned_scanners[#aligned_scanners + 1] = newly_aligned_scanner
+                        aligned = true
+                        break
+                    end
+                end
             end
+            if aligned then break end
+        end
+        if #unaligned_scanners == old_num_unaligned then
+            error(string.format("num_unaligned remained %d for 2 iterations",
+                #unaligned_scanners))
         end
     end
     return aligned
