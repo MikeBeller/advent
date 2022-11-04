@@ -23,10 +23,13 @@ def get_rotations() -> list[np.ndarray]:
 
 ROTATIONS = get_rotations()
 
-for i, r in enumerate(ROTATIONS):
-    print(i)
-    print(r)
 
+a = np.vstack([r @ np.array([1, 2, 3]).T for r in ROTATIONS])
+t = [tuple(a[i,:]) for i in range(a.shape[0])]
+for r in sorted(t):
+    print(r)
+import sys
+sys.exit(0)
 
 class Scanner(NamedTuple):
     id: int
@@ -43,7 +46,7 @@ def parse(instr) -> list[Scanner]:
     return scs
 
 
-td = parse(open("test_input.txt").read())
+td = parse(open("tinput.txt").read())
 print(td)
 
 

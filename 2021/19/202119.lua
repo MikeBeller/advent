@@ -1,32 +1,61 @@
-inspect = require("inspect")
+local inspect = require("inspect")
 local abs = math.abs
+local function pi(x) print(inspect(x)); return x end
 
-function parse(fpath)
+local rotations = {
+{-3, -2, -1},
+{-3, -1, 2},
+{-3, 1, -2},
+{-3, 2, 1},
+{-2, -3, 1},
+{-2, -1, -3},
+{-2, 1, 3},
+{-2, 3, -1},
+{-1, -3, -2},
+{-1, -2, 3},
+{-1, 2, -3},
+{-1, 3, 2},
+{1, -3, 2},
+{1, -2, -3},
+{1, 2, 3},
+{1, 3, -2},
+{2, -3, -1},
+{2, -1, 3},
+{2, 1, -3},
+{2, 3, 1},
+{3, -2, 1},
+{3, -1, -2},
+{3, 1, 2},
+{3, 2, -1}
+}
+
+local function parse(fpath)
     local data = {}
     local num = 0
     for line in io.lines(fpath) do
         if line:sub(1,3) == "---" then
-            scanner = {num=num, beacons={}}
+            local scanner = {num=num, beacons={}}
             data[#data+1] = scanner
         elseif line == "" then
             -- pass
         else
             local xs,ys,zs = line:match("(-?%d+),(-?%d+),(-?%d+)")
+            local scanner = data[#data]
             scanner.beacons[#scanner.beacons+1] = {tonumber(xs), tonumber(ys), tonumber(zs)}
         end
     end
     return data
 end
 
-function serialize(p)
+local function serialize(p)
     return string.format("%d,%d,%d", p[1], p[2], p[3])
 end
 
-function diff(p1, p2)
+local function diff(p1, p2)
     return p1[1] - p2[1], p1[2] - p2[2], p1[3] - p2[3]
 end
 
-function adjust_all(beacons, dx, dy, dz)
+local function adjust_all(beacons, dx, dy, dz)
     local adjusted_beacons = {}
     for i,beacon in ipairs(beacons) do
         adjusted_beacons[i] = {
@@ -36,7 +65,7 @@ function adjust_all(beacons, dx, dy, dz)
     return adjusted_beacons
 end
 
-function rotate(p, rotation)
+local function rotate_old(p, rotation)
     if rotation == 1 then
         return {p[1], p[2], p[3]}
     elseif rotation == 2 then
@@ -52,16 +81,28 @@ function rotate(p, rotation)
     end
 end
 
-function rotate_all(beacons, rotation)
+local function rotate(p, rotation)
+    local rv = rotations[rotation]
+    local rp = {0, 0, 0}
+    for i = 1,3 do
+        rp[i] = p[abs(rv[i])]
+        if rv[i] < 0 then
+            rp[i] = -rp[i]
+        end
+    end
+    return rp
+end
+
+local function rotate_all(beacons, rotation)
     -- must return a copy of the beacons, rotated (don't mutate)
-    rotated = {}
+    local rotated = {}
     for i,beacon in ipairs(beacons) do
         rotated[i] = rotate(beacon, rotation)
     end
     return rotated
 end
 
-function count_intersection(xs, ys)
+local function count_intersection(xs, ys)
     local tb = {}
     local count = 0
     for _,x in ipairs(xs) do
@@ -75,7 +116,7 @@ function count_intersection(xs, ys)
     return count
 end
 
-function align(aligned_beacons, rotated_beacons)
+local function align(aligned_beacons, rotated_beacons)
     for i = 1,#aligned_beacons do
         local dx,dy,dz = diff(aligned_beacons[i], rotated_beacons[1])
         local adjusted_beacons = adjust_all(rotated_beacons, dx, dy, dz)
@@ -89,7 +130,7 @@ function align(aligned_beacons, rotated_beacons)
 end
 
 
-function align_scanners(scanners)
+local function align_scanners(scanners)
     local aligned_scanners = {scanners[1]}
     scanners[1].adjusted_beacons = scanners[1].beacons
     local unaligned_scanners = {unpack(scanners,2)}
@@ -98,7 +139,7 @@ function align_scanners(scanners)
         local old_num_unaligned = #unaligned_scanners
         for ui = 1,#unaligned_scanners do
             local aligned = false
-            for rotation = 1,6 do
+            for rotation = 1,#rotations do
                 print("rotation is", rotation)
                 local rotated_beacons = rotate_all(unaligned_scanners[ui].beacons, rotation)
                 for ai = 1,#aligned_scanners do
@@ -122,14 +163,14 @@ function align_scanners(scanners)
                 #unaligned_scanners))
         end
     end
-    return aligned
+    return aligned_scanners
 end
 
-function count_unique_beacons(scanners)
+local function count_unique_beacons(scanners)
     local count = 0
     local tb = {}
     for _,scanner in ipairs(scanners) do
-        for _,beacon in ipairs(beacons) do
+        for _,beacon in ipairs(scanner.adjusted_beacons) do
             local bs = serialize(beacon)
             if not tb[bs] then
                 tb[bs] = true
@@ -140,7 +181,7 @@ function count_unique_beacons(scanners)
     return count
 end
 
-function part1(scanners)
+local function part1(scanners)
     local aligned_scanners = align_scanners(scanners)
     return count_unique_beacons(aligned_scanners)
 end
@@ -149,15 +190,18 @@ local tdata = parse("tinput.txt")
 
 assert(#tdata == 5, "parse")
 
-function test1(ss)
-    local ok, ascan = align(ss[1], ss[2], 3)
+local function test1(ss)
+    local rp = pi(rotate({5, 6, 7}, 8))
+    assert(rp[1] == -6 and rp[2] == 7 and rp[3] == -5, "test1")
 end
 
-function test2(ss)
-    for rotation = 1,6 do
+test1()
+
+local function test2(ss)
+    for rotation = 1,#rotations do
         local rotated_beacons = rotate_all(ss[2].beacons, rotation)
-        local ok, ascan = align(ss[1], ss[2], rotated_beacons)
-        return
+        local ok, ascan = align(ss[1].beacons, rotated_beacons)
+        if ok then return end
     end
     error("align test failed")
 end
