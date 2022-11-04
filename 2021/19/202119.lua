@@ -65,22 +65,6 @@ local function adjust_all(beacons, dx, dy, dz)
     return adjusted_beacons
 end
 
-local function rotate_old(p, rotation)
-    if rotation == 1 then
-        return {p[1], p[2], p[3]}
-    elseif rotation == 2 then
-        return {-p[3], p[2], p[1]}
-    elseif rotation == 3 then
-        return {-p[1], p[2], -p[3]}
-    elseif rotation == 4 then
-        return {p[3], p[2], -p[1]}
-    elseif rotation == 5 then
-        return {-p[1], -p[2], p[3]}
-    elseif rotation == 6 then
-        return {p[3], -p[2], p[1]}
-    end
-end
-
 local function rotate(p, rotation)
     local rv = rotations[rotation]
     local rp = {0, 0, 0}
@@ -117,13 +101,15 @@ local function count_intersection(xs, ys)
 end
 
 local function align(aligned_beacons, rotated_beacons)
-    for i = 1,#aligned_beacons do
-        local dx,dy,dz = diff(aligned_beacons[i], rotated_beacons[1])
-        local adjusted_beacons = adjust_all(rotated_beacons, dx, dy, dz)
-        local count = count_intersection(aligned_beacons, adjusted_beacons)
-        if count >= 12 then
-            print("found offset:", serialize({dx,dy,dz}))
-            return true, adjusted_beacons, dx, dy, dz
+    for ai = 1,#aligned_beacons do
+        for bi = 1,#rotated_beacons do
+            local dx,dy,dz = diff(aligned_beacons[ai], rotated_beacons[bi])
+            local adjusted_beacons = adjust_all(rotated_beacons, dx, dy, dz)
+            local count = count_intersection(aligned_beacons, adjusted_beacons)
+            if count >= 12 then
+                print("found offset:", serialize({dx,dy,dz}))
+                return true, adjusted_beacons, dx, dy, dz
+            end
         end
     end
     return false, nil
@@ -140,7 +126,7 @@ local function align_scanners(scanners)
         for ui = 1,#unaligned_scanners do
             local aligned = false
             for rotation = 1,#rotations do
-                print("rotation is", rotation)
+                -- print("rotation is", rotation)
                 local rotated_beacons = rotate_all(unaligned_scanners[ui].beacons, rotation)
                 for ai = 1,#aligned_scanners do
                     local reference_scanner = aligned_scanners[ai]
@@ -175,6 +161,7 @@ local function count_unique_beacons(scanners)
             if not tb[bs] then
                 tb[bs] = true
                 count = count + 1
+                print(bs)
             end
         end
     end
@@ -209,3 +196,7 @@ end
 test2(tdata)
 
 print(part1(tdata))
+
+-- local data = parse("input.txt")
+-- local ans = part1(data)
+-- print("PART1:", ans)
