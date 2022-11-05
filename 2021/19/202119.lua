@@ -186,6 +186,7 @@ test1()
 
 local function test2(ss)
     for rotation = 1,#rotations do
+        print(rotation)
         local rotated_beacons = rotate_all(ss[2].beacons, rotation)
         local ok, ascan = align(ss[1].beacons, rotated_beacons)
         if ok then return end
@@ -195,7 +196,7 @@ end
 
 test2(tdata)
 
-print(part1(tdata))
+--print(part1(tdata))
 
 -- local data = parse("input.txt")
 -- local ans = part1(data)
