@@ -82,10 +82,10 @@ def align_all(scanners):
     aligned = set([scanners[0]._replace(loc=Point(0,0,0))])
     unaligned = set(scanners[1:])
     while unaligned:
-        newly_aligned_beacon, old_beacon = align_one(aligned, unaligned)
-        assert newly_aligned_beacon, "no alignment found"
-        unaligned.remove(old_beacon)
-        aligned.add(newly_aligned_beacon)
+        newly_aligned_scanner, old_scanner = align_one(aligned, unaligned)
+        assert newly_aligned_scanner, "no alignment found"
+        unaligned.remove(old_scanner)
+        aligned.add(newly_aligned_scanner)
     return aligned
 
 
