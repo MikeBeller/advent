@@ -1,73 +1,117 @@
-import numpy as np
-from scipy.spatial.transform import Rotation as R
-from typing import NamedTuple
+from collections import Counter
+from typing import NamedTuple, List
 
 
-def get_rotations() -> list[np.ndarray]:
-    base_rotations = [('z', [0]), ('z', [180])]
-    for xr in [0, 90, 180, 270]:
-        base_rotations.append(('zx', [90, xr]))
-    all_rotations = []
-    for br in base_rotations:
-        for yr in [0, 90, 180, 270]:
-            axs, angs = br
-            r = (axs + 'y', angs + [yr])
-            all_rotations.append(r)
-    return [
-        (R.from_euler(axs, angs, degrees=True)
-          .as_matrix()
-          .round(10)
-          .astype(int))
-        for axs, angs in all_rotations]
+def cmp(a, b):
+    return (a > b) - (a < b)
 
 
-ROTATIONS = get_rotations()
+rotation_codes = ((-3, -2, -1), (-3, -1, 2), (-3, 1, -2), (-3, 2, 1), (-2, -3, 1), (-2, -1, -3), (-2, 1, 3), (-2, 3, -1), (-1, -3, -2), (-1, -2, 3), (-1, 2, -3),
+                  (-1, 3, 2), (1, -3, 2), (1, -2, -3), (1, 2, 3), (1, 3, -2), (2, -3, -1), (2, -1, 3), (2, 1, -3), (2, 3, 1), (3, -2, 1), (3, -1, -2), (3, 1, 2), (3, 2, -1))
+rotations = [
+    ((abs(x)-1, abs(y)-1, abs(z)-1), (cmp(x, 0), cmp(y, 0), cmp(z, 0)))
+    for x, y, z in rotation_codes]
 
 
-a = np.vstack([r @ np.array([1, 2, 3]).T for r in ROTATIONS])
-t = [tuple(a[i,:]) for i in range(a.shape[0])]
-for r in sorted(t):
-    print(r)
-import sys
-sys.exit(0)
+class Point(NamedTuple):
+    x: int
+    y: int
+    z: int
+
 
 class Scanner(NamedTuple):
-    id: int
-    beacons: np.ndarray
+    num: int
+    beacons: List[Point]
+    loc: Point = None
 
 
-def parse(instr) -> list[Scanner]:
-    scs = []
-    for scstr in instr.split("\n\n"):
-        lines = scstr.splitlines()
-        nid = int(lines[0].split()[2])
-        pts = np.loadtxt(lines[1:], delimiter=',', dtype=int)
-        scs.append(Scanner(id=nid, beacons=pts))
-    return scs
+def parse(instr):
+    scanners = []
+    for num, scanstr in enumerate(instr.split("\n\n")):
+        beacons = frozenset(
+            tuple(int(f) for f in line.strip().split(","))
+            for line in scanstr.splitlines()[1:])
+        scanners.append(Scanner(num, beacons, None))
+    return scanners
 
 
-td = parse(open("tinput.txt").read())
-print(td)
+tdata = parse(open("tinput.txt").read())
 
 
-# def part1(data):
-#     rotations = get_rotations()
-#     for sc1 in data[:-1]:
-#         for sc2 in data[i:]:
-#             sc2rl = find_orientation(sc1, sc2, rotations)
-#             if sc2rl is not None:
-#                 oriented_scanners.append(sc2rl)
-#     # find all overlaps of oriented scanners?
-#     assert False, "finish me"
+def align(adj, unadj):
+    counter = Counter(
+        (x1 - x2, y1 - y2, z1 - z2)
+        for x1, y1, z1 in adj
+        for x2, y2, z2 in unadj)
+    [(delta, num)] = counter.most_common(1)
+    return delta if num >= 12 else None
 
 
-# def find_orientation(sc1, sc2, rotations):
-#     for i, r in rotations:
-#         sc2r = rotate(sc2, r)
-#         for p1 in sc1.list:
-#             for p2 in sc2.list:
-#                 delta = diff(p1, p2)
-#                 sc2rl = translate(sc2r, delta)
-#                 if num_overlapping(sc1, sc2rl) >= 12:
-#                     return
-#     return None
+def rotate(b, rotation):
+    ((mx, my, mz), (sx, sy, sz)) = rotation
+    return tuple([sx * b[mx], sy * b[my], sz * b[mz]])
+
+
+def rotate_all(bs, rotation):
+    return frozenset(rotate(b, rotation) for b in bs)
+
+
+assert rotate((5, 6, 7), rotations[7]) == (-6, 7, -5)
+
+rotated_beacons = rotate_all(tdata[1].beacons, rotations[10])
+assert align(tdata[0].beacons, rotated_beacons) == (68, -1246, -43), "align"
+
+
+def align_one(aligned, unaligned):
+    for u in unaligned:
+        for rotation in rotations:
+            rotated_beacons = rotate_all(u.beacons, rotation)
+            for a in aligned:
+                delta = align(a.beacons, rotated_beacons)
+                if delta:
+                    dx, dy, dz = delta
+                    adjusted_beacons = frozenset(
+                        (b[0] + dx, b[1] + dy, b[2] + dz)
+                        for b in rotated_beacons
+                    )
+                    return Scanner(u.num, adjusted_beacons, delta), u
+    return None
+
+
+def align_all(scanners):
+    aligned = set([scanners[0]._replace(loc=Point(0,0,0))])
+    unaligned = set(scanners[1:])
+    while unaligned:
+        newly_aligned_beacon, old_beacon = align_one(aligned, unaligned)
+        assert newly_aligned_beacon, "no alignment found"
+        unaligned.remove(old_beacon)
+        aligned.add(newly_aligned_beacon)
+    return aligned
+
+
+def part1(scanners):
+    aligned = align_all(scanners)
+    all_beacons = {b for s in aligned for b in s.beacons}
+    return len(all_beacons), aligned
+
+nscan, test_aligned_scanners = part1(tdata)
+assert nscan == 79
+
+def mdist(s1: Scanner, s2: Scanner):
+    return sum(abs(a - b) for  a,b in zip(s1.loc, s2.loc))
+
+def part2(scanners):
+    dists = [mdist(s1, s2)
+        for s1 in scanners
+        for s2 in scanners]
+    return max(dists)
+
+assert part2(test_aligned_scanners) == 3621
+
+data = parse(open("input.txt").read())
+
+nscan, aligned_scanners = part1(data)
+print("PART1:", nscan)
+
+ans = part2(aligned_scanners)
+print("PART2:", ans)
