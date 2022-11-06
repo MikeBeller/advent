@@ -30,14 +30,53 @@ def align(adj, unadj):
     return delta if num >= 12 else None
 
 def rotate(b, rotation):
-    ((mx, my, mz), (sx,sy,sz)) = rotations[rotation]
+    ((mx, my, mz), (sx,sy,sz)) = rotation
     return tuple([sx * b[mx], sy * b[my], sz * b[mz]])
 
 
 def rotate_all(bs, rotation):
     return frozenset(rotate(b, rotation) for b in bs)
 
-assert rotate((5,6,7), 7) == (-6, 7, -5)
+assert rotate((5,6,7), rotations[7]) == (-6, 7, -5)
 
-rotated_beacons = rotate_all(tdata[1].beacons, 10)
-print(align(tdata[0].beacons, rotated_beacons))
+rotated_beacons = rotate_all(tdata[1].beacons, rotations[10])
+assert align(tdata[0].beacons, rotated_beacons) == (68, -1246, -43), "align"
+
+def align_one(aligned, unaligned):
+    for u in unaligned:
+        for rotation in rotations:
+            rotated_beacons = rotate_all(u.beacons, rotation)
+            for a in aligned:
+                delta = align(a.beacons, rotated_beacons)
+                if delta:
+                    dx, dy, dz = delta
+                    adjusted_beacons = frozenset(
+                        (b[0] + dx, b[1] + dy, b[2] + dz)
+                        for b in rotated_beacons
+                    )
+                    return Scanner(u.num, adjusted_beacons), u
+    return None
+
+def align_all(scanners):
+    aligned = set([scanners[0]])
+    unaligned = set(scanners[1:])
+    while unaligned:
+        newly_aligned_beacon, old_beacon = align_one(aligned, unaligned)
+        assert newly_aligned_beacon, "no alignment found"
+        unaligned.remove(old_beacon)
+        aligned.add(newly_aligned_beacon)
+    return aligned
+
+def part1(scanners):
+    aligned = align_all(scanners)
+    all_beacons = {b for s in scanners for b in s.beacons}
+    print(all_beacons)
+    return len(all_beacons)
+
+print(part1(tdata))
+
+data = parse(open("input.txt").read())
+
+print("PART1:", part1(data))
+
+
