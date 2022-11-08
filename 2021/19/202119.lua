@@ -1,5 +1,6 @@
 local inspect = require("inspect")
 local abs = math.abs
+local unpack = unpack or table.unpack
 local function pi(x) print(inspect(x)); return x end
 
 local function sgn(x)
@@ -49,7 +50,8 @@ local function parse(fpath)
 end
 
 local function serialize(p)
-    return string.format("%d,%d,%d", p[1], p[2], p[3])
+    --return string.format("%d,%d,%d", p[1], p[2], p[3])
+    return (((p[1] + 5000) * 10000) + (p[2] + 5000)) * 10000 + p[3] + 5000
 end
 
 local function diff(p1, p2)
@@ -176,11 +178,18 @@ end
 
 test2(tdata)
 
+
+-- local profiler = require("profiler")
+-- profiler.start()
+
 local ans_t, aligned_t = part1(tdata)
 assert(ans_t == 79, "part1")
+
+
+
+-- profiler.stop()
+-- profiler.report("profiler.log")
 
 local data = parse("input.txt")
 local ans1, aligned = part1(data)
 print("PART1:", ans1)
-
-
