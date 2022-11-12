@@ -3,23 +3,16 @@ def cvt(c):
     return 1 if c == '#' else 0
 
 
-def minmax(xs):
-    xs = list(xs)
-    return min(xs), max(xs)
+def expand(field, margin):
+    min_r, max_r, min_c, max_c = field
+    return min_r - margin, max_r + margin, min_c - margin, max_c + margin
 
 
-def ranges(img):
-    keys = [k for k, v in img.items() if v == 1]
-    rmn, rmx = minmax(r for (r, _) in keys)
-    cmn, cmx = minmax(c for (_, c) in keys)
-    return range(rmn - 2, rmx + 3), range(cmn - 2, cmx + 3)
-
-
-def show(img):
-    rrange, crange = ranges(img)
-    for r in rrange:
+def show(img, field):
+    min_r, max_r, min_c, max_c = field
+    for r in range(min_r, max_r+1):
         print(f"{r:03} ", sep="", end="")
-        for c in crange:
+        for c in range(min_c, max_c+1):
             ch = '#' if img.get((r, c), 0) else "."
             print(ch, sep='', end='')
         print()
@@ -29,40 +22,64 @@ def show(img):
 def parse(instr):
     alg_s, img_s = instr.split("\n\n")
     alg = [cvt(c) for c in alg_s]
+    assert len(alg) == 512, "alglen"
     img = {}
-    for r, line in enumerate(img_s.splitlines()):
+    lines = img_s.splitlines()
+    max_r = len(lines)
+    max_c = len(lines[0])
+    assert all(len(s) == max_c for s in lines), "grid"
+    for r, line in enumerate(lines):
         for c, ch in enumerate(line):
             v = cvt(ch)
             img[(r, c)] = v
-    return alg, img
+    return alg, img, (0, max_r, 0, max_c)
 
 
-talg, timg = parse(open("tinput.txt").read())
+talg, timg, tfield = parse(open("tinput.txt").read())
 
 
-def enhance(alg, img):
+def enhance(alg, img, field, round_n):
+    min_r, max_r, min_c, max_c = field
     img2 = {}
-    rrange, crange = ranges(img)
-    for r in rrange:
-        for c in crange:
+    for r in range(min_r, max_r + 1):
+        for c in range(min_c, max_c + 1):
             n = 0
             for ri in range(-1, 2):
                 for ci in range(-1, 2):
-                    n = 2 * n + img.get((r + ri, c + ci), 0)
+                    rr = r + ri
+                    cc = c + ci
+                    default = 1 if alg[0] == 1 and round_n % 2 == 1 and ((rr < min_r or rr >= max_r) or (
+                        cc < min_c or cc >= max_c)) else 0
+                    n = 2 * n + img.get((r + ri, c + ci), default)
             p = alg[n]
             img2[(r, c)] = p
     return img2
 
 
-def part1(alg, img):
-    show(img)
-    img2 = enhance(alg, img)
-    show(img2)
-    img3 = enhance(alg, img2)
-    show(img3)
-    return sum(img3.values())
+def do_enhancement(alg, img, field, n_rounds):
+    show(img, field)
+    for i in range(n_rounds):
+        img = enhance(alg, img, field, i)
+    show(img, field)
+    return img
 
 
-assert part1(talg, timg) == 35
-alg, img = parse(open("input.txt").read())
-print("PART1:", part1(alg, img))
+def part1(alg, img, field):
+    field = expand(field, 4)
+    enhanced_img = do_enhancement(alg, img, field, 2)
+    return sum(enhanced_img.values())
+
+
+assert part1(talg, timg, tfield) == 35
+alg, img, field = parse(open("input.txt").read())
+print("PART1:", part1(alg, img, field))
+
+
+def part2(alg, img, field):
+    field = expand(field, 55)
+    enhanced_img = do_enhancement(alg, img, field, 50)
+    return sum(enhanced_img.values())
+
+
+assert part2(talg, timg, tfield) == 3351
+print("PART2:", part2(alg, img, field))
