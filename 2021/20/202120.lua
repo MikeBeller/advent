@@ -1,33 +1,54 @@
-local inspect = require("inspect")
+local stringx = require('pl.stringx')
+local List = require('pl.List')
+local unpack = unpack or table.unpack
+local array2d = require('pl.array2d')
+
+local function cvt(c)
+    return c == "#" and 1 or 0
+end
 
 local function read_data(fpath)
     local instr = io.open(fpath):read("*a")
-    local alg_s, img_s = string.match(instr, "(%S+)\n\n(.+)$")
-    local alg = {}
-    for i = 1, #alg_s do
-        alg[i - 1] = (string.byte(alg_s, i) == 35) and 1 or 0
-    end
-    local img = {}
-    local r, c = 0, 0
-    img[r] = {}
-    local n = 1
-    print("LEN", #img_s, img_s)
-    while n <= #img_s do
-        local ch = string.byte(img_s, n)
-        --print(n, ch)
-        if ch == 35 or ch == 46 then
-            img[r][c] = (ch == 35) and 1 or 0
-            c = c + 1
-        elseif ch == 10 then
-            r = r + 1
-            img[r] = {}
-            c = 0
-        end
-        n = n + 1
-    end
+    local alg_s, img_s = unpack(stringx.split(instr, "\n\n"))
+    local alg = List(alg_s):map(cvt)
+    local lines = stringx.splitlines(img_s)
+    local img = lines:map(function(line)
+        return List(line):map(cvt)
+    end)
     return alg, img
 end
 
-local alg, img = read_data("tinput.txt")
-print("ALG", inspect(alg))
-print("IMG", inspect(img))
+local talg, timg = read_data("tinput.txt")
+
+local function pad(img, n)
+end
+
+local function enhance(alg, o_img, n_rounds)
+    local img = pad(o_img, n_rounds + 1)
+    for round = 1, n_rounds do
+        local img2 = {}
+        for r = 1, #img do
+            img2[r] = {}
+            local n = 0
+            for c = 1, #img[1] do
+                for ri = -1, 1 do
+                    for ci = -1, 1 do
+                        local rr = r + ri
+                        local cc = c + ci
+                        local default = (alg[1] == 1 and round % 2 == 1 and
+                            ((rr < 1 or rr > #img) or (cc < 1 or cc > max_c)))
+                            and 1 or 0
+                    end
+                end
+                img2[r][c] = alg[n + 1]
+            end
+        end
+    end
+end
+
+local function part1(alg, img)
+    local enhanced_image = enhance(alg, img, 2)
+    return array2d.flatten(enhanced_img):reduce("+")
+end
+
+print(part1(talg, timg))
