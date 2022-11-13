@@ -2,6 +2,10 @@ local stringx = require('pl.stringx')
 local List = require('pl.List')
 local unpack = unpack or table.unpack
 local array2d = require('pl.array2d')
+-- local pretty = require('pl.pretty')
+-- local function pp(x)
+--     print(pretty.write(x))
+-- end
 
 local function cvt(c)
     return c == "#" and 1 or 0
@@ -21,34 +25,58 @@ end
 local talg, timg = read_data("tinput.txt")
 
 local function pad(img, n)
+    local nr, nc = #img + 2 * n, #(img[1]) + 2 * n
+    local pimg = array2d.new(nr, nc, 0)
+    array2d.move(pimg, n + 1, n + 1, img)
+    return pimg
 end
 
 local function enhance(alg, o_img, n_rounds)
     local img = pad(o_img, n_rounds + 1)
+    local nr, nc = array2d.size(img)
     for round = 1, n_rounds do
-        local img2 = {}
-        for r = 1, #img do
-            img2[r] = {}
-            local n = 0
-            for c = 1, #img[1] do
+        -- print("ROUND", round)
+        --print(array2d.write(img))
+        local default_val = (alg[1] == 1 and round % 2 == 1) and 1 or 0
+        local eimg = array2d.new(nr, nc, 0)
+        for r = 1, nr do
+            for c = 1, nc do
+                local n = 0
                 for ri = -1, 1 do
                     for ci = -1, 1 do
                         local rr = r + ri
                         local cc = c + ci
-                        local default = (alg[1] == 1 and round % 2 == 1 and
-                            ((rr < 1 or rr > #img) or (cc < 1 or cc > max_c)))
-                            and 1 or 0
+                        local p = default_val
+                        if rr >= 1 and rr <= nr and cc >= 1 and cc <= nc then
+                            p = img[rr][cc]
+                        end
+                        n = 2 * n + p
                     end
                 end
-                img2[r][c] = alg[n + 1]
+                eimg[r][c] = alg[n + 1]
             end
         end
+        img = eimg
     end
+    return img
 end
 
 local function part1(alg, img)
-    local enhanced_image = enhance(alg, img, 2)
+    local enhanced_img = enhance(alg, img, 2)
     return array2d.flatten(enhanced_img):reduce("+")
 end
 
-print(part1(talg, timg))
+assert(part1(talg, timg) == 35, "part1")
+
+local alg, img = read_data("input.txt")
+
+print("PART1:", part1(alg, img))
+
+
+local function part2(alg, img)
+    local enhanced_img = enhance(alg, img, 50)
+    return array2d.flatten(enhanced_img):reduce("+")
+end
+
+assert(part2(talg, timg) == 3351, "part2")
+print("PART2:", part2(alg, img))
