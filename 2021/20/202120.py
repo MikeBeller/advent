@@ -54,9 +54,9 @@ talg, timg = parse(open("tinput.txt").read())
 
 def enhance(alg, img, n_rounds):
     nr, nc = isize(img)
-    default_val = 1 if alg[0] == 1 and round % 2 == 1 else 0
-    eimg = [[0] * nc for _ in range(nr)]
     for round in range(n_rounds):
+        eimg = [[0] * nc for _ in range(nr)]
+        default_val = 1 if alg[0] == 1 and round % 2 == 1 else 0
         for r in range(nr):
             for c in range(nc):
                 n = 0
@@ -82,7 +82,7 @@ def part1(alg, img):
 
 assert part1(talg, timg) == 35
 alg, img = parse(open("input.txt").read())
-print("PART1:", part1(alg, img, field))
+print("PART1:", part1(alg, img))
 
 
 def part2(alg, img):
@@ -91,5 +91,5 @@ def part2(alg, img):
     return sum(sum(r) for r in enhanced_img)
 
 
-assert part2(talg, timg, tfield) == 3351
-print("PART2:", part2(alg, img, field))
+assert part2(talg, timg) == 3351
+print("PART2:", part2(alg, img))

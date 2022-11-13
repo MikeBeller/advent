@@ -32,7 +32,7 @@ local function enhance(alg, img, n_rounds)
     for round = 1, n_rounds do
         -- print("ROUND", round)
         --print(array2d.write(img))
-        local default_val = (alg[1] == 1 and round % 2 == 1) and 1 or 0
+        local default_val = (alg[1] == 1 and round % 2 == 0) and 1 or 0
         local eimg = array2d.new(nr, nc, 0)
         for r = 1, nr do
             for c = 1, nc do
@@ -67,7 +67,6 @@ assert(part1(talg, timg) == 35, "part1")
 local alg, img = read_data("input.txt")
 
 print("PART1:", part1(alg, img))
-
 
 local function part2(alg, img)
     local img = pad(img, 55)
