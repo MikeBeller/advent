@@ -2,10 +2,6 @@ local stringx = require('pl.stringx')
 local List = require('pl.List')
 local unpack = unpack or table.unpack
 local array2d = require('pl.array2d')
--- local pretty = require('pl.pretty')
--- local function pp(x)
---     print(pretty.write(x))
--- end
 
 local function cvt(c)
     return c == "#" and 1 or 0
@@ -31,8 +27,7 @@ local function pad(img, n)
     return pimg
 end
 
-local function enhance(alg, o_img, n_rounds)
-    local img = pad(o_img, n_rounds + 1)
+local function enhance(alg, img, n_rounds)
     local nr, nc = array2d.size(img)
     for round = 1, n_rounds do
         -- print("ROUND", round)
@@ -62,6 +57,7 @@ local function enhance(alg, o_img, n_rounds)
 end
 
 local function part1(alg, img)
+    local img = pad(img, 4)
     local enhanced_img = enhance(alg, img, 2)
     return array2d.flatten(enhanced_img):reduce("+")
 end
@@ -74,6 +70,7 @@ print("PART1:", part1(alg, img))
 
 
 local function part2(alg, img)
+    local img = pad(img, 55)
     local enhanced_img = enhance(alg, img, 50)
     return array2d.flatten(enhanced_img):reduce("+")
 end
