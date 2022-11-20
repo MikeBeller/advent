@@ -1,4 +1,3 @@
-require "pl.strict"
 local utils = require("pl.utils")
 local List = require("pl.List")
 local stringx = require "pl.stringx"
@@ -6,6 +5,7 @@ local pw = require("pl.pretty").write
 local unpack = unpack or table.unpack
 stringx.import()
 utils.import('pl.func')
+require "pl.strict"
 
 local function parse(instr)
     return (List(instr:lines())
