@@ -7,7 +7,7 @@ local unpack = unpack or table.unpack
 stringx.import()
 utils.import('pl.func')
 
-function parse(instr)
+local function parse(instr)
     return (List(instr:lines())
         :map(_1:split(" ", 5)[5])
         :map(tonumber))
@@ -54,45 +54,62 @@ local ptable = (function()
     return t
 end)()
 
-local function ser(st)
-    return st:join(",")
+local format = string.format
+local function ser(p1, p2, s1, s2)
+    return format("%d,%d,%d,%d", p1, p2, s1, s2)
 end
 
+local byte = string.byte
 local function deser(s)
-    return s:split(","):map(tonumber)
+    return unpack(s:split(","):map(tonumber))
 end
 
+-- Game state is {p1, p2, s1, s2} = pl 1 pos, pl 2 pos, pl 1 score, pl2 score
+-- Score is 0 - 30 (since the max is to have score 20 + end up on square 10)
+-- Pos is 1-10
 local function part2(ps)
-    local p1, p2 = unpack(ps)
-    local s1, s2 = 0, 0
     local counts = {}
     local wp1, wp2 = 0, 0
-    for trn = 1, 14 do
+    counts[ser(ps[1], ps[2], 0, 0)] = 1
+    local trn = 1
+    while true do
+        local newcounts = {}
         for ss, c in pairs(counts) do
-            p1, p2, s1, s2 = unpack(deser(ss))
-            local np1, np2, ns1, ns2
-            for roll, freq in pairs(ptable) do
-                if trn % 2 == 1 then
+            local p1, p2, s1, s2 = deser(ss)
+            local np1, np2, ns1, ns2, nss
+            if trn % 2 == 1 then
+                for roll, freq in pairs(ptable) do
                     np1 = (((p1 + roll) - 1) % 10) + 1
                     ns1 = s1 + np1
-                    nss = ser({ np1, p2, ns1, s2 })
-                    counts[nss] = (counts[nss] or 0) + freq
-                    if counts[nss] >= 21 then
-                        wp1 = wp1 + counts[nss]
+                    nss = ser(np1, p2, ns1, s2)
+                    newcounts[nss] = (newcounts[nss] or 0) + freq * c
+                    if ns1 >= 21 then
+                        wp1 = wp1 + newcounts[nss]
+                        newcounts[nss] = nil
                     end
-                else
+                end
+            else
+                for roll, freq in pairs(ptable) do
                     np2 = (((p2 + roll) - 1) % 10) + 1
                     ns2 = s2 + np2
-                    nss = ser({ p1, np2, s1, ns2 })
-                    counts[nss] = (counts[nss] or 0) + freq
-                    if counts[nss] >= 21 then
-                        wp2 = wp2 + counts[nss]
+                    nss = ser(p1, np2, s1, ns2)
+                    newcounts[nss] = (newcounts[nss] or 0) + freq * c
+                    if ns2 >= 21 then
+                        wp2 = wp2 + newcounts[nss]
+                        newcounts[nss] = nil
                     end
                 end
             end
         end
+        if next(newcounts) == nil then
+            break
+        end
+        counts = newcounts
+        trn = trn + 1
     end
-    return wp1, wp2
+    --print(format("%.0f, %.0f", wp1, wp2))
+    return math.max(wp1, wp2)
 end
 
-print(part2(tinput))
+assert(part2(tinput) == 444356092776315)
+print(format("PART2: %.0f", part2(input)))
