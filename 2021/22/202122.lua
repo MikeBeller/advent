@@ -20,31 +20,26 @@ local min = math.min
 local max = math.max
 
 local function p1ind(x, y, z)
-    return (((x + 50) * 1000) + (y + 50)) * 1000 + z
+    return (((x + 50) * 101) + (y + 50)) * 101 + z
 end
 
 local function part1(inp)
-    local m = {}
+    local m = List({})
     for item in inp:iter() do
         local cmd, xmin, xmax, ymin, ymax, zmin, zmax = unpack(item)
         local d = (cmd == "on") and 1 or nil
         for x = max(xmin, -50), min(xmax, 50) do
-            m[x] = m[x] or {}
             for y = max(ymin, -50), min(ymax, 50) do
-                m[x][y] = m[x][y] or {}
                 for z = max(zmin, -50), min(zmax, 50) do
-                    m[x][y][z] = d
+                    local ind = p1ind(x, y, z)
+                    m[ind] = d
                 end
             end
         end
     end
     local sm = 0
-    for _, xt in pairs(m) do
-        for _, yt in pairs(xt) do
-            for _, z in pairs(yt) do
-                sm = sm + z
-            end
-        end
+    for _, v in pairs(m) do
+        sm = sm + v
     end
     return sm
 end
