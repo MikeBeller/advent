@@ -84,11 +84,11 @@ local function boot(inp)
         local cmd, xmin, xmax, ymin, ymax, zmin, zmax = unpack(item)
         local d = (cmd == "on") and 1 or 0
         for x = xind[xmin], (xind[xmax] - 1) do
-            local x1 = (x == xind[xmax]) and 1 or 0
+            local x1 = (x + 1 == xind[xmax]) and 1 or 0
             for y = yind[ymin], (yind[ymax] - 1) do
-                local y1 = (y == yind[ymax]) and 1 or 0
+                local y1 = (y + 1 == yind[ymax]) and 1 or 0
                 for z = zind[zmin], (zind[zmax] - 1) do
-                    local z1 = (z == zind[zmax]) and 1 or 0
+                    local z1 = (z + 1 == zind[zmax]) and 1 or 0
                     m[key(x, y, z)] = d * (xs[x + 1] - xs[x] + x1) * (ys[y + 1] - ys[y] + y1) * (zs[z + 1] - zs[z] + z1)
                 end
             end
