@@ -2,7 +2,6 @@ local stringx = require('pl.stringx')
 stringx.import()
 local List = require('pl.List')
 local Map = require('pl.Map')
-local seq = require('pl.seq')
 local unpack = table.unpack
 local format = string.format
 require "pl.strict"
@@ -22,39 +21,7 @@ local tinput = parse(io.input("tinput.txt"):read("*a"))
 local min = math.min
 local max = math.max
 
-local function p1ind(x, y, z)
-    return (((x + 50) * 101) + (y + 50)) * 101 + z
-end
-
-local function part1(inp)
-    local m = List({})
-    for item in inp:iter() do
-        local cmd, xmin, xmax, ymin, ymax, zmin, zmax = unpack(item)
-        local d = (cmd == "on") and 1 or nil
-        for x = max(xmin, -50), min(xmax, 50) do
-            for y = max(ymin, -50), min(ymax, 50) do
-                for z = max(zmin, -50), min(zmax, 50) do
-                    local ind = p1ind(x, y, z)
-                    m[ind] = d
-                end
-            end
-        end
-    end
-    local sm = 0
-    for _, v in pairs(m) do
-        sm = sm + v
-    end
-    return sm
-end
-
-assert(part1(tinput) == 590784)
-
 local input = parse(io.input("input.txt"):read("*a"))
-print("PART1:", part1(input))
-
-local function key(x, y, z)
-    return format("%d,%d,%d", x, y, z)
-end
 
 local function index(ns)
     local ind = {}
@@ -64,13 +31,15 @@ local function index(ns)
     return Map(ind)
 end
 
-local function boot(inp)
+local function boot(inp_raw)
     local xs, ys, zs = List(), List(), List()
-    for item in inp:iter() do
+    local inp = List()
+    for item in inp_raw:iter() do
         local cmd, xmin, xmax, ymin, ymax, zmin, zmax = unpack(item)
-        xs:extend({ xmin, xmax })
-        ys:extend({ ymin, ymax })
-        zs:extend({ zmin, zmax })
+        xs:extend({ xmin, xmax + 1 })
+        ys:extend({ ymin, ymax + 1 })
+        zs:extend({ zmin, zmax + 1 })
+        inp:append({ cmd, xmin, xmax + 1, ymin, ymax + 1, zmin, zmax + 1 })
     end
     xs:sort()
     ys:sort()
@@ -84,20 +53,29 @@ local function boot(inp)
         local cmd, xmin, xmax, ymin, ymax, zmin, zmax = unpack(item)
         local d = (cmd == "on") and 1 or 0
         for x = xind[xmin], (xind[xmax] - 1) do
-            local x1 = (x + 1 == xind[xmax]) and 1 or 0
+            local mx = m[x] or {}
+            m[x] = mx
             for y = yind[ymin], (yind[ymax] - 1) do
-                local y1 = (y + 1 == yind[ymax]) and 1 or 0
+                local mxy = mx[y] or {}
+                m[x][y] = mxy
                 for z = zind[zmin], (zind[zmax] - 1) do
-                    local z1 = (z + 1 == zind[zmax]) and 1 or 0
-                    m[key(x, y, z)] = d * (xs[x + 1] - xs[x] + x1) * (ys[y + 1] - ys[y] + y1) * (zs[z + 1] - zs[z] + z1)
+                    mxy[z] = d * (xs[x + 1] - xs[x]) * (ys[y + 1] - ys[y]) * (zs[z + 1] - zs[z])
                 end
             end
         end
     end
-    return seq(m:values()):sum()
+    local sm = 0
+    for _, mx in pairs(m) do
+        for _, mxy in pairs(mx) do
+            for _, zv in pairs(mxy) do
+                sm = sm + zv
+            end
+        end
+    end
+    return sm
 end
 
-local function part1b(inp)
+local function part1(inp)
     local inp2 = List()
     for item in inp:iter() do
         local cmd, xmin, xmax, ymin, ymax, zmin, zmax = unpack(item)
@@ -108,4 +86,14 @@ local function part1b(inp)
     return boot(inp2)
 end
 
-print(part1b(tinput))
+assert(part1(tinput) == 590784)
+print("PART1:", part1(input))
+
+local tinput2 = parse(io.input("tinput2.txt"):read("*a"))
+
+local function part2(inp)
+    return boot(inp)
+end
+
+assert(part2(tinput2) == 2758514936282235)
+print(format("PART2: %.0f", part2(input)))
