@@ -1,6 +1,8 @@
 require 'pl'
+require 'pl.strict'
 stringx.import()
 local unpack = table.unpack
+local floor = math.floor
 
 local function parg(s)
     return tonumber(s) or s
@@ -23,19 +25,27 @@ local function resolve(st, op)
     return (type(op) == "number") and op or st[op]
 end
 
-local function run(insts, inp_iter)
-    local st = { w = 0, x = 0, y = 0, z = 0 }
-    for inst in insts:iter() do
+local function istream(ls)
+    return coroutine.wrap(function ()
+        for _,v in ipairs(ls) do
+            coroutine.yield(v)
+        end
+    end)
+end
 
-        cmd, op1, op2 = unpack(inst)
+local function run(insts, inp_stream)
+    local st = Map { w = 0, x = 0, y = 0, z = 0 }
+    for inst in insts:iter() do
+        -- print(st, inst)
+        local cmd, op1, op2 = unpack(inst)
         if cmd == "inp" then
-            st[op1] = next(inp_iter)
+            st[op1] = inp_stream()
         elseif cmd == "add" then
             st[op1] = st[op1] + resolve(st, op2)
         elseif cmd == "mul" then
             st[op1] = st[op1] * resolve(st, op2)
         elseif cmd == "div" then
-            st[op1] = st[op1] / resolve(st, op2)
+            st[op1] = floor(st[op1] / resolve(st, op2))
         elseif cmd == "mod" then
             st[op1] = st[op1] % resolve(st, op2)
         elseif cmd == "eql" then
@@ -48,4 +58,4 @@ local function run(insts, inp_iter)
 end
 
 local tinput = parse(io.input("tinput.txt"):read("*a"))
-print(run(tinput, seq({ 7 })))
+assert(run(tinput, istream({ 11 })) == Map{w=1,x=0,y=1,z=1})
