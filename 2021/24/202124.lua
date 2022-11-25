@@ -33,6 +33,12 @@ local function istream(ls)
     end)
 end
 
+local function model_num(mns)
+    return istream(
+        seq(mns):map(tonumber)
+    )
+end
+
 local function run(insts, inp_stream)
     local st = Map { w = 0, x = 0, y = 0, z = 0 }
     for inst in insts:iter() do
@@ -59,3 +65,5 @@ end
 
 local tinput = parse(io.input("tinput.txt"):read("*a"))
 assert(run(tinput, istream({ 11 })) == Map{w=1,x=0,y=1,z=1})
+
+print(List(model_num("12345678")))
