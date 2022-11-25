@@ -26,8 +26,8 @@ local function resolve(st, op)
 end
 
 local function istream(ls)
-    return coroutine.wrap(function ()
-        for _,v in ipairs(ls) do
+    return coroutine.wrap(function()
+        for _, v in ipairs(ls) do
             coroutine.yield(v)
         end
     end)
@@ -35,7 +35,7 @@ end
 
 local function model_num(mns)
     return istream(
-        seq(mns):map(tonumber)
+        seq(List.iterate(mns)):map(tonumber):copy()
     )
 end
 
@@ -64,6 +64,8 @@ local function run(insts, inp_stream)
 end
 
 local tinput = parse(io.input("tinput.txt"):read("*a"))
-assert(run(tinput, istream({ 11 })) == Map{w=1,x=0,y=1,z=1})
+assert(run(tinput, istream({ 11 })) == Map { w = 1, x = 0, y = 1, z = 1 })
 
-print(List(model_num("12345678")))
+local input = parse(io.input("input.txt"):read("*a"))
+print(run(input, model_num("13579246899999")))
+print(run(input, model_num("13579246900000")))
