@@ -30,19 +30,17 @@ local function sgn(x)
 end
 
 local mtab = seq(seq.range(0, 13)):map(function(x) return 10 ^ x end):copy()
-print(mtab)
+--print(mtab)
 
 local function run(prog, input)
-    --print("START")
     local iind = 14
     local st = Map { w = 0, x = 0, y = 0, z = 0 }
     local tmp
     for inst in prog:iter() do
-        -- print(st, inst)
         local cmd, op1, op2 = unpack(inst)
         if cmd == "inp" then
             local v = floor(input / mtab[iind]) % 10
-            print(inst, st, v)
+            --print(inst, st, v)
             if v == 0 then
                 return false, st
             end
@@ -53,14 +51,27 @@ local function run(prog, input)
         elseif cmd == "mul" then
             st[op1] = st[op1] * resolve(st, op2)
         elseif cmd == "div" then
-            tmp = st[op1] / resolve(st, op2)
+            tmp = resolve(st, op2)
+            if tmp == 0 then
+                --error("div by zero")
+                return false
+            end
+            tmp = st[op1] / tmp
             st[op1] = floor(abs(tmp)) * sgn(tmp)
         elseif cmd == "mod" then
+            tmp = resolve(st, op2)
+            if st[op1] < 0 or tmp <= 0 then
+                -- error("illegal mod op")
+                return false
+            end
             st[op1] = fmod(st[op1], resolve(st, op2))
         elseif cmd == "eql" then
             st[op1] = (st[op1] == resolve(st, op2)) and 1 or 0
         else
             error("invalid op", cmd)
+        end
+        if iind == 12 and st.x == 0 then
+            print(input, st, iind)
         end
     end
     return true, st
@@ -72,31 +83,21 @@ local tinput = parse(io.input("tinput.txt"):read("*a"))
 local prog = parse(io.input("input.txt"):read("*a"))
 --print(model_num("12345678912345"))
 --assert(select(2, run(prog, 13579246899999)).z == 25910832)
-print(run(prog, 11111111111111))
---print(run(prog, model_num("99999999999999")))
+
 
 local function part1(prog)
-    local prefix = 0
     local ok, st
-    for d = 0, 13 do
-        local mpy = 10 ^ (13 - d)
-        local found = false
-        for i = 1, 9 do
-            local mn = (prefix * 10 + i) * mpy
-            ok, st = run(prog, mn)
-            if st.z == 0 then
-                print("locked in:", i, st)
-                prefix = 10 * prefix + i
-                found = true
-                break
-            end
+    for d = 111, 999 do
+        local mn = d * 10 ^ 11 + 11111111111
+        ok, st = run(prog, mn)
+        if ok then
+            --print(mn, st.z)
         end
-        if not found then
-            print("NOT FOUND", st)
-            return false, st
-        end
+        -- if ok and st.z == 0 then
+        --     print("FOUND", mn)
+        -- end
     end
-    return prefix, st
 end
 
+--print(run(prog, 34611111111642))
 part1(prog)
