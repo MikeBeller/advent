@@ -33,19 +33,20 @@ local mtab = seq(seq.range(0, 13)):map(function(x) return 10 ^ x end):copy()
 --print(mtab)
 
 local function run(prog, input)
-    local iind = 14
+    local dind = 1
     local st = Map { w = 0, x = 0, y = 0, z = 0 }
     local tmp
     for inst in prog:iter() do
         local cmd, op1, op2 = unpack(inst)
         if cmd == "inp" then
-            local v = floor(input / mtab[iind]) % 10
-            --print(inst, st, v)
-            if v == 0 then
-                return false, st
+            if dind > #input then
+                return (st.z==0), st
             end
-            iind = iind - 1
+            local v = input[dind]
+            --print(inst, st, v)
+            assert(v ~= 0)
             st[op1] = v
+            dind = dind + 1
         elseif cmd == "add" then
             st[op1] = st[op1] + resolve(st, op2)
         elseif cmd == "mul" then
@@ -70,9 +71,6 @@ local function run(prog, input)
         else
             error("invalid op", cmd)
         end
-        if iind == 12 and st.x == 0 then
-            print(input, st, iind)
-        end
     end
     return true, st
 end
@@ -87,11 +85,13 @@ local prog = parse(io.input("input.txt"):read("*a"))
 
 local function part1(prog)
     local ok, st
-    for d = 111, 999 do
-        local mn = d * 10 ^ 11 + 11111111111
-        ok, st = run(prog, mn)
-        if ok then
-            --print(mn, st.z)
+    local inp = List()
+    for d = 1,14 do
+        inp:append(1)
+        for v = 1,9 do
+            inp[d] = v
+            ok, st = run(prog, inp)
+            print(ok, st)
         end
         -- if ok and st.z == 0 then
         --     print("FOUND", mn)
