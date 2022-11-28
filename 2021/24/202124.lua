@@ -104,5 +104,5 @@ local function part1(prog)
     end
 end
 
---print(run(prog, 34611111111642))
+--print(run(prog, {1,1,1,9}))
 part1(prog)
