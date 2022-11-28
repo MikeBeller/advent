@@ -1,6 +1,7 @@
 require 'pl'
 require 'pl.strict'
 stringx.import()
+local copy = tablex.copy
 local unpack = table.unpack
 local floor, fmod, abs = math.floor, math.fmod, math.abs
 
@@ -40,7 +41,7 @@ local function run(prog, input)
         local cmd, op1, op2 = unpack(inst)
         if cmd == "inp" then
             if dind > #input then
-                return (st.z==0), st
+                return st
             end
             local v = input[dind]
             --print(inst, st, v)
@@ -54,25 +55,23 @@ local function run(prog, input)
         elseif cmd == "div" then
             tmp = resolve(st, op2)
             if tmp == 0 then
-                --error("div by zero")
-                return false
+                error("div by zero")
             end
             tmp = st[op1] / tmp
             st[op1] = floor(abs(tmp)) * sgn(tmp)
         elseif cmd == "mod" then
             tmp = resolve(st, op2)
             if st[op1] < 0 or tmp <= 0 then
-                -- error("illegal mod op")
-                return false
+                error("illegal mod instruction")
             end
             st[op1] = fmod(st[op1], resolve(st, op2))
         elseif cmd == "eql" then
             st[op1] = (st[op1] == resolve(st, op2)) and 1 or 0
         else
-            error("invalid op", cmd)
+            error("invalid instruction", cmd)
         end
     end
-    return true, st
+    return st
 end
 
 local tinput = parse(io.input("tinput.txt"):read("*a"))
@@ -82,20 +81,26 @@ local prog = parse(io.input("input.txt"):read("*a"))
 --print(model_num("12345678912345"))
 --assert(select(2, run(prog, 13579246899999)).z == 25910832)
 
+local function copy_map(m)
+    return Map({}):update(m:items())
+end
 
 local function part1(prog)
     local ok, st
     local inp = List()
     for d = 1,14 do
         inp:append(1)
+        local results = List()
         for v = 1,9 do
             inp[d] = v
-            ok, st = run(prog, inp)
-            print(ok, st)
+            st = Map(copy(run(prog,inp)))
+            st.inp = List(inp)
+            print(st)
+            results:append(st)
         end
-        -- if ok and st.z == 0 then
-        --     print("FOUND", mn)
-        -- end
+        results:sort(function (a,b) return a.x < b.x or a.z < b.z end)
+        print("BEST:", results[1])
+        inp = results[1].inp
     end
 end
 
