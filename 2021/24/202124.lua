@@ -33,12 +33,20 @@ end
 local mtab = seq(seq.range(0, 13)):map(function(x) return 10 ^ x end):copy()
 --print(mtab)
 
-local function run(prog, input)
+local function run(prog, input, start_digit, start_z)
+    local start_digit = start_digit or 1
+    local start_z = start_z or 0
     local dind = 1
-    local st = Map { w = 0, x = 0, y = 0, z = 0 }
+    assert(18 == #prog / 14)
+    local iind = (start_digit - 1) * 18 + 1
+    local st = Map { w = 0, x = 0, y = 0, z = start_z }
     local tmp
-    for inst in prog:iter() do
-        local cmd, op1, op2 = unpack(inst)
+    for ii = iind, iind + (#input*18) - 1 do
+        if prog[ii] == nil then
+            print(ii, #prog, prog[ii], iind, #input)
+            error("wtf")
+        end
+        local cmd, op1, op2 = unpack(prog[ii])
         if cmd == "inp" then
             if dind > #input then
                 return st
@@ -81,28 +89,64 @@ local prog = parse(io.input("input.txt"):read("*a"))
 --print(model_num("12345678912345"))
 --assert(select(2, run(prog, 13579246899999)).z == 25910832)
 
-local function copy_map(m)
-    return Map({}):update(m:items())
-end
 
-local function part1(prog)
-    local ok, st
-    local inp = List()
-    for d = 1,14 do
-        inp:append(1)
-        local results = List()
-        for v = 1,9 do
-            inp[d] = v
-            st = Map(copy(run(prog,inp)))
-            st.inp = List(inp)
-            print(st)
-            results:append(st)
+function gen_digits(nd)
+    local digits = seq.copy(seq.range(1,nd)):map(function (x) return 1 end)
+    digits[nd] = 0
+    return function()
+        local di = nd
+        while digits[di] == 9 do
+            digits[di] = 1
+            di = di - 1
+            if di == 0 then
+                return nil
+            end
         end
-        results:sort(function (a,b) return a.x < b.x or a.z < b.z end)
-        print("BEST:", results[1])
-        inp = results[1].inp
+        digits[di] = digits[di] + 1
+        return digits
     end
 end
 
---print(run(prog, {1,1,1,9}))
+local function digits_to_num(digits)
+    return digits:reduce(function (acc, d) return acc * 10 + d end)
+end
+
+-- return a map of all input,output.z pairs for a set of digits of the machine
+function run_group(prog, start_digit, num_digits, start_z)
+    local r = List()
+    for digits in gen_digits(num_digits) do
+        local st = run(prog, digits, start_digit, start_z)
+        r:append(List{digits_to_num(digits), st.z})
+    end
+    return r:sorted(function (a,b) return a[2] < b[2] end)
+end
+
+print(run_group(prog, 1, 4, 0):slice(1,10))
+--part1(prog)
+
+function part1(prog)
+    local g1 = run_group(prog, 1, 5, 0)
+    local zs = seq(g1:map(function (st) return st[2] end)):unique():copy()
+    -- for i2 = 1,10 do
+    --      local g2 = run_group(prog, 6, 6, zs[i2])
+    --      print(g1[i2], g2:slice(1,5))
+    -- end
+    local Z3 = MultiMap()
+    for z3 = 1,100 do
+        local g3 = run_group(prog, 12, 3, z3)
+        if g3[1][2] == 0 then
+            g3:filter(function (item) return item[2] == 0 end):foreach(function (item) Z3:set(z3,item[1]) end)
+        end
+    end
+    print(Z3)
+
+    local Z2 = MultiMap()
+    for k,v in pairs(Z3) do
+        for z2 = 1,100 do
+            local g2 = run_group(prog, 6, 6, z2)
+            print(g2:slice(1,10))
+        end
+    end
+end
+
 part1(prog)
