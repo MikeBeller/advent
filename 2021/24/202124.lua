@@ -121,16 +121,20 @@ function run_group(prog, start_digit, num_digits, start_z)
     return r:sorted(function (a,b) return a[2] < b[2] end)
 end
 
-print(run_group(prog, 1, 4, 0):slice(1,10))
+--print(run_group(prog, 1, 4, 0):slice(1,10))
 --part1(prog)
 
 function part1(prog)
     local g1 = run_group(prog, 1, 5, 0)
-    local zs = seq(g1:map(function (st) return st[2] end)):unique():copy()
-    -- for i2 = 1,10 do
-    --      local g2 = run_group(prog, 6, 6, zs[i2])
-    --      print(g1[i2], g2:slice(1,5))
-    -- end
+    local Z1 = MultiMap()
+    for item in g1:iter() do
+        local digs,z1 = unpack(item)
+        if z1 < 80 then
+            Z1:set(z1, digs)
+        end
+    end
+    print(Z1)
+
     local Z3 = MultiMap()
     for z3 = 1,100 do
         local g3 = run_group(prog, 12, 3, z3)
@@ -141,12 +145,17 @@ function part1(prog)
     print(Z3)
 
     local Z2 = MultiMap()
-    for k,v in pairs(Z3) do
-        for z2 = 1,100 do
-            local g2 = run_group(prog, 6, 6, z2)
-            print(g2:slice(1,10))
+    for z2,v in pairs(Z1) do
+        print("trying:", z2, v)
+        local g2 = run_group(prog, 6, 6, z2)
+        for item in g2:iter() do
+            local digs, z3 = unpack(item)
+            if Z3[z3] then
+                Z2:set(z2,List({digs, z2, z3}))
+            end
         end
     end
+    print(Z2)
 end
 
 part1(prog)
