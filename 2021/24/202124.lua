@@ -125,37 +125,41 @@ end
 --part1(prog)
 
 function part1(prog)
-    local g1 = run_group(prog, 1, 5, 0)
-    local Z1 = MultiMap()
-    for item in g1:iter() do
+    local gr1 = run_group(prog, 1, 5, 0)
+    local G1 = MultiMap()
+    for item in gr1:iter() do
         local digs,z1 = unpack(item)
         if z1 < 80 then
-            Z1:set(z1, digs)
+            G1:set(z1, digs)
         end
     end
-    print(Z1)
+    print(G1:keys())
 
-    local Z3 = MultiMap()
-    for z3 = 1,100 do
-        local g3 = run_group(prog, 12, 3, z3)
-        if g3[1][2] == 0 then
-            g3:filter(function (item) return item[2] == 0 end):foreach(function (item) Z3:set(z3,item[1]) end)
+    local G3 = MultiMap()
+    for z2 = 1,100 do
+        local gr3 = run_group(prog, 12, 3, z2)
+        if gr3[1][2] == 0 then
+            gr3:filter('|x| x[2] == 0'):foreach(function (item) G3:set(z2,item[1]) end)
         end
     end
-    print(Z3)
+    print(G3:keys())
 
-    local Z2 = MultiMap()
-    for z2,v in pairs(Z1) do
-        print("trying:", z2, v)
-        local g2 = run_group(prog, 6, 6, z2)
-        for item in g2:iter() do
-            local digs, z3 = unpack(item)
-            if Z3[z3] then
-                Z2:set(z2,List({digs, z2, z3}))
+    local G2 = MultiMap()
+    for z1 in G1:keys():iter() do
+        --print("trying:", z1)
+        if z1 == 10 then -- only one that works
+            local gr2 = run_group(prog, 6, 6, z1)
+            for item in gr2:iter() do
+                local digs, z2 = unpack(item)
+                if G3[z2] then
+                    local ls = List{digs, z1}
+                    print("Found:", ls)
+                    G2:set(z2,ls)
+                end
             end
         end
     end
-    print(Z2)
+    print(G2)
 end
 
 part1(prog)
