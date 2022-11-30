@@ -1,7 +1,7 @@
-require 'pl'
 require 'pl.strict'
-stringx.import()
-local copy = tablex.copy
+require('pl.stringx').import()
+local pl = require 'pl.import_into' ()
+local seq, List, Map, MultiMap = pl.seq, pl.List, pl.Map, pl.MultiMap
 local unpack = table.unpack
 local floor, fmod, abs = math.floor, math.fmod, math.abs
 
@@ -111,7 +111,7 @@ local function digits_to_num(digits)
     return digits:reduce(function (acc, d) return acc * 10 + d end)
 end
 
--- return a map of all input,output.z pairs for a set of digits of the machine
+-- return a map of all input_digits,output_z pairs for a set of digits of the machine
 function run_group(prog, start_digit, num_digits, start_z)
     local r = List()
     for digits in gen_digits(num_digits) do
@@ -133,33 +133,52 @@ function part1(prog)
             G1:set(z1, digs)
         end
     end
-    print(G1:keys())
+    print("Valid inputs to second group:", G1:keys())
 
     local G3 = MultiMap()
     for z2 = 1,100 do
         local gr3 = run_group(prog, 12, 3, z2)
-        if gr3[1][2] == 0 then
-            gr3:filter('|x| x[2] == 0'):foreach(function (item) G3:set(z2,item[1]) end)
+        for item in gr3:iter() do
+            local digs, z3 = unpack(item)
+            if z3 ~= 0 then break end
+            G3:set(z2, digs)
         end
     end
-    print(G3:keys())
+    print("Valid inputs to third group:", G3:keys())
 
-    local G2 = MultiMap()
+    --local G2 = MultiMap()
+    local L2 = List()
     for z1 in G1:keys():iter() do
         --print("trying:", z1)
-        if z1 == 10 then -- only one that works
+        if z1 == 9 or z1 == 10 then -- only ones that work
             local gr2 = run_group(prog, 6, 6, z1)
             for item in gr2:iter() do
                 local digs, z2 = unpack(item)
                 if G3[z2] then
-                    local ls = List{digs, z1}
-                    print("Found:", ls)
-                    G2:set(z2,ls)
+                    --local ls = List{digs, z1}
+                    --print("Found:", digs, z1)
+                   -- G2:set({z2,digs)
+                    L2:append(List{z1,digs,z2})
                 end
             end
         end
     end
-    print(G2)
+    --print(L2)
+    local codes = List()
+    for link in L2:iter() do
+        local z1,digs2,z2 = unpack(link)
+        for digs1 in G1[z1]:iter() do
+            for digs3 in G3[z2]:iter() do
+                local code = digs1 * 1000000000 + digs2 * 1000 + digs3
+                codes:append(code)
+            end
+        end
+    end
+    local scodes = seq(codes):unique():copy():sorted()
+    print("Total number of valid boot codes:", #scodes)
+    return scodes[1], scodes[#scodes]
 end
 
-part1(prog)
+local p2, p1 = part1(prog)
+print("PART1:", p1)
+print("PART2:", p2)
