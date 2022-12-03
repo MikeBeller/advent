@@ -1,3 +1,5 @@
+local bit = bit or bit32
+local unpack = unpack or table.unpack
 
 function priority(c)
     if string.match(c,'%l') then
@@ -27,9 +29,8 @@ function common(groups)
         tgm = tgm + gm
         for ci = 1, #gr do
             local x = string.sub(gr, ci, ci)
-            count[x] = (count[x] or 0) + gm
+            count[x] = bit.bor(count[x] or 0, gm)
             if gi == #groups and count[x] == tgm then
-                print(require('pl.pretty').write(count), tgm, count[x], x)
                 return x
             end
         end
@@ -42,17 +43,24 @@ function part1(data)
     for _,s in ipairs(data) do
         local ln2 = #s/2
         local cm = common({string.sub(s, 1,ln2), string.sub(s, ln2+1)})
-        print(cm)
         score = score + priority(cm)
     end
     return score
 end
 
 local tinput = read_data("tinput.txt")
-print(part1(tinput))
--- assert(part1(tinput) == 157)
--- local input = read_data("input.txt")
--- print("PART1:", part1(input))
+assert(part1(tinput) == 157)
+local input = read_data("input.txt")
+print("PART1:", part1(input))
 
--- function part2(data)
--- end
+function part2(data)
+    local score = 0
+    for di = 1, #data-2, 3 do
+        local cm = common({unpack(data, di, di+2)})
+        score = score + priority(cm)
+    end
+    return score
+end
+
+assert(part2(tinput) == 70)
+print("PART2:", part2(input))
