@@ -1,5 +1,6 @@
 require 'pl'
 require 'pl.strict'
+stringx.import()
 
 local alphas = List("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 local priority = tablex.index_map(alphas)
