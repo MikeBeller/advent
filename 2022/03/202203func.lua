@@ -8,7 +8,7 @@ T.invert = function(tbl)
     for k,v in pairs(tbl) do
         res[v] = k
     end
-    return res 
+    return res
 end
 
 T.from_iter = function (itr)
@@ -18,14 +18,6 @@ T.from_iter = function (itr)
     end
     return res
 end
-
-S.splitchars = function(str)
-    return T.from_iter(string.gmatch(str, '.'))
-end
-
-local priority = T.invert(S.splitchars(alpha))
-
-assert(priority['a'] == 1 and priority['L'] == 38)
 
 T.common = function (xs, ys)
     local pres = {}
@@ -40,6 +32,14 @@ T.common = function (xs, ys)
     end
     return res
 end
+
+S.splitchars = function(str)
+    return T.from_iter(string.gmatch(str, '.'))
+end
+
+local priority = T.invert(S.splitchars(alpha))
+
+assert(priority['a'] == 1 and priority['L'] == 38)
 
 function part1(data)
     local score = 0
