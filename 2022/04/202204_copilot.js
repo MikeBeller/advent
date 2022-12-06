@@ -40,4 +40,25 @@ console.assert(part1(tinput) === 2);
 // compute part1(input) and print it
 console.log(part1(input));
 
+// overlap
+// return 1 if the range represented by the first two numbers in "command"
+// overlaps with the range represented by the second two numbers in "command",
+// return 0 otherwise
+function overlap(command) {
+    let [a, b, c, d] = command;
+    return (a <= c && c <= b) || (c <= a && a <= d);
+}
+
+// part2
+// Return the number of commands where the range represented by the first two numbers
+// overlaps with the range represented by the second two numbers
+function part2(commands) {
+    return commands.reduce((count, command) => count + overlap(command), 0);
+}
+
+// assert that part2(tinput) returns 4
+console.assert(part2(tinput) === 4);
+
+// compute part2(input) and print it
+console.log(part2(input));
 
