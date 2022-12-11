@@ -1,3 +1,4 @@
+package.path = "../lua/?.lua;" .. package.path
 local M = require('ml').Array
 
 function parse(line)
