@@ -1,18 +1,18 @@
 package.path = "../lua/?.lua;" .. package.path
-local M = require('ml')
-local ts = M.tstring
+local ml = require('mikelib')
+local List = ml.List
 
 function chars(s)
-    return M.collect(string.gmatch(s, "."))
+    return List(string.gmatch(s, "."))
 end
 
-local priority = M.invert(chars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))
-local tinput = M.collect(io.lines("tinput.txt"))
-local input = M.collect(io.lines("input.txt"))
+local priority = chars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"):invert()
+local tinput = List(io.lines("tinput.txt"))
+local input = List(io.lines("input.txt"))
 
-function common(s1, s2)
-    local in_s1 = M.map2fun(M.invert(s1))
-    return M.ifilter(s2, in_s1)
+function common(lst1, lst2)
+    local mp = lst1:invert()
+    return lst2:filter(function (v) return mp[v] end)
 end
 
 function part1(data)
