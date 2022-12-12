@@ -11,7 +11,6 @@ local tinput = List(io.lines("tinput.txt")):map(parse)
 local input = List(io.lines("input.txt")):map(parse)
 
 local function either_contains(ranges)
-    print(ranges)
     local a1,a2,b1,b2 = unpack(ranges)
     return (a1 <= b1 and a2 >= b2) or (b1 <= a1 and b2 >= a2)
 end
@@ -20,7 +19,6 @@ local function part1(ranges)
     return ranges:count(either_contains)
 end
 
-print(part1(tinput))
 assert(part1(tinput) == 2)
 print(part1(input))
 
