@@ -1,32 +1,36 @@
 package.path = "../lua/?.lua;" .. package.path
-local M = require('ml').Array
+local ml = require('mikelib')
+local String, List = ml.String, ml.List
+local unpack = table.unpack or unpack
 
 function parse(line)
-    return M.split(line, "[,%-]"):map(tonumber)
+    return String.split(line, "[,%-]"):map(tonumber)
 end
 
-local tinput = M.collect(io.lines("tinput.txt")):map(parse)
-local input = M.collect(io.lines("input.txt")):map(parse)
+local tinput = List(io.lines("tinput.txt")):map(parse)
+local input = List(io.lines("input.txt")):map(parse)
 
-local function either_contains(pair)
-    local a1,a2,b1,b2 = unpack(pair)
+local function either_contains(ranges)
+    print(ranges)
+    local a1,a2,b1,b2 = unpack(ranges)
     return (a1 <= b1 and a2 >= b2) or (b1 <= a1 and b2 >= a2)
 end
 
-local function part1(pairs)
-    return #(pairs:mapfilter(either_contains))
+local function part1(ranges)
+    return ranges:count(either_contains)
 end
 
+print(part1(tinput))
 assert(part1(tinput) == 2)
 print(part1(input))
 
-local function overlaps(pair)
-    local a1,a2,b1,b2 = unpack(pair)
+local function overlaps(ranges)
+    local a1,a2,b1,b2 = unpack(ranges)
     return (a1 <= b1 and a2 >= b1) or (b1 <= a1 and b2 >= a1)
 end
 
-local function part2(pairs)
-    return #(pairs:mapfilter(overlaps))
+local function part2(ranges)
+    return ranges:count(overlaps)
 end
 
 assert(part2(tinput) == 4)
