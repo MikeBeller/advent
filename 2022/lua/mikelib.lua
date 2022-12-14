@@ -76,6 +76,12 @@ local function list_filter(itbl, fcn)
     return lst
 end
 
+-- list_append - append a value to a list
+local function list_append(itbl, val)
+    insert(itbl, val)
+    return itbl
+end
+
 local function identity(x)
     return x
 end
@@ -125,6 +131,23 @@ local function list_invert(itbl)
     return mp
 end
 
+local function list_pop(itbl)
+    return table.remove(itbl)
+end 
+
+local function list_join(itbl, sep)
+    sep = sep or ""
+    return table.concat(itbl, sep)
+end
+
+local function list_copy(itbl)
+    local lst = List({})
+    for _,v in ipairs(itbl) do
+        insert(lst, v)
+    end
+    return lst
+end
+
 List.__index = List -- why?
 List.__tostring = list_to_string
 List.__eq = lists_equal
@@ -132,6 +155,11 @@ List.map = list_map
 List.count = list_count
 List.invert = list_invert
 List.filter = list_filter
+List.append = list_append
+List.pop = list_pop
+List.join = list_join
+List.copy = list_copy
+
 -- Below is to make it so that List({1,2,3}) returns a new List
 setmetatable(List, {
     __call=function(klass, obj) return tolist(obj) end
