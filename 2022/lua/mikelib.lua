@@ -261,6 +261,7 @@ local String = {
 local ml = {
     List=List,
     String=String,
+    split=string_split,
 }
 
 -- tests
