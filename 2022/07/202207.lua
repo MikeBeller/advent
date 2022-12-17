@@ -1,8 +1,9 @@
 package.path = "../lua/?.lua;" .. package.path
 local ml = require("mikelib")
+local split = ml.String.split
 
 local function parse_line(line)
-    return ml.split(line, " ")
+    return split(line, " ")
 end
 
 local function parse(input)
