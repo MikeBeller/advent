@@ -51,3 +51,12 @@ assert(part2("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw") == 26)
 
 print("Part 2:", part2(input))
 
+local function bench(n)
+    local t = os.clock()
+    for i = 1, n do
+        part2(input)
+    end
+    return os.clock() - t
+end
+
+print("Time:", bench(1000))
