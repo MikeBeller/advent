@@ -238,7 +238,7 @@ setmetatable(Map, {
     __call=function(klass, obj) return tomap(obj) end
 })
 
-function string_split(str, pat)
+local function string_split(str, pat)
     local lst = List{}
     local p = 1
     while p <= #str do
