@@ -148,6 +148,17 @@ local function list_copy(itbl)
     return lst
 end
 
+local function list_sub(itbl, i, j)
+    local i = i or 1
+    local j = j or #itbl
+    local lst = List({})
+    for k = i,j do
+        list_append(lst, itbl[k])
+    end
+    return lst
+end
+
+
 List.__index = List -- why?
 List.__tostring = list_to_string
 List.__eq = lists_equal
@@ -159,6 +170,7 @@ List.append = list_append
 List.pop = list_pop
 List.join = list_join
 List.copy = list_copy
+List.sub = list_sub
 
 -- Below is to make it so that List({1,2,3}) returns a new List
 setmetatable(List, {
@@ -239,6 +251,7 @@ setmetatable(Map, {
 })
 
 local function string_split(str, pat)
+    pat = pat or "%s+"
     local lst = List{}
     local p = 1
     while p <= #str do

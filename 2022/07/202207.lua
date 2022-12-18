@@ -5,14 +5,17 @@ local unpack = unpack or table.unpack
 
 local function parse_cmd(cmd_str)
     local lines = split(cmd_str, "\n")
+    print(cmd_str, lines)
     local cmd = split(lines[1], " ")
-    local args = lines:sub(2):map(function(line)
-        return split(line, " ")
-    end)
+    if cmd[1] == "ls" then
+      local args = lines:sub(2):map(split)
+      cmd[2] = args
+    end
+    return cmd
 end
 
 local function parse(input)
-  local cmd_strs = split(input, "$ ")
+  local cmd_strs = split(input, "$ "):sub(2)
   return cmd_strs:map(parse_cmd)
 end
 
