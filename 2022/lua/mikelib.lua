@@ -158,6 +158,14 @@ local function list_sub(itbl, i, j)
     return lst
 end
 
+local function list_reversed(itbl)
+    local lst = List({})
+    for i = #itbl,1,-1 do
+        insert(lst, itbl[i])
+    end
+    return lst
+end
+
 
 List.__index = List -- why?
 List.__tostring = list_to_string
@@ -171,6 +179,7 @@ List.pop = list_pop
 List.join = list_join
 List.copy = list_copy
 List.sub = list_sub
+List.reversed = list_reversed
 
 -- Below is to make it so that List({1,2,3}) returns a new List
 setmetatable(List, {
