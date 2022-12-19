@@ -166,6 +166,21 @@ local function list_reversed(itbl)
     return lst
 end
 
+local function list_extend(itbl, items)
+    for _,v in ipairs(items) do
+        insert(itbl, v)
+    end
+    return itbl
+end
+
+local function list_sum(itbl)
+    local sum = 0
+    for _,v in ipairs(itbl) do
+        sum = sum + v
+    end
+    return sum
+end
+
 
 List.__index = List -- why?
 List.__tostring = list_to_string
@@ -180,6 +195,8 @@ List.join = list_join
 List.copy = list_copy
 List.sub = list_sub
 List.reversed = list_reversed
+List.extend = list_extend
+List.sum = list_sum
 
 -- Below is to make it so that List({1,2,3}) returns a new List
 setmetatable(List, {
