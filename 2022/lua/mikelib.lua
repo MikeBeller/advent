@@ -181,6 +181,14 @@ local function list_sum(itbl)
     return sum
 end
 
+local function list_sorted(itbl, fcn)
+    local lst = List({})
+    for _,v in ipairs(itbl) do
+        insert(lst, v)
+    end
+    table.sort(lst, fcn)
+    return lst
+end
 
 List.__index = List -- why?
 List.__tostring = list_to_string
@@ -197,6 +205,7 @@ List.sub = list_sub
 List.reversed = list_reversed
 List.extend = list_extend
 List.sum = list_sum
+List.sorted = list_sorted
 
 -- Below is to make it so that List({1,2,3}) returns a new List
 setmetatable(List, {

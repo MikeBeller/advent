@@ -89,3 +89,22 @@ end
 
 assert(part1(tinput) == 95437)
 print(part1(input))
+
+local function part2(input)
+  local data = input:reversed()
+  local tree = Map{["/"]=Map{}}
+  generate_tree(data, tree)
+  add_sizes(tree)
+  local sdirs = find_dirs(tree, math.huge)
+    :map(function(d) return d[2] end)
+    :sorted()
+  local target = 30000000 - (70000000 - sdirs[#sdirs])
+  for _,d in ipairs(sdirs) do
+    if d >= target then
+      return d
+    end
+  end
+end
+
+assert(part2(tinput) == 24933642)
+print(part2(input))
