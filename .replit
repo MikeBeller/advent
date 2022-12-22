@@ -1,0 +1,4 @@
+run = "cd 2022/07; python 202207.py"
+
+[nix]
+channel = "stable-22_11"
