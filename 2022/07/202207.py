@@ -15,3 +15,10 @@ tinput = parse_input(open('tinput.txt', 'r').read())
 
 print(tinput)
 
+def build_tree(t, cmds):
+  if cmds == []:
+    return t
+  else:
+    cmd = cmds.pop()
+    if cmd['cmd'] == 'cd':
+      
