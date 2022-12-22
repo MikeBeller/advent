@@ -36,16 +36,16 @@ def build_tree(cmds):
   return tree
 
 def sizes(tree):
-  """For each directory, add a 'size' field containing
-  the total size of all files in the directory, and all files
-  in subdirectories."""
-  tree['size'] = 0
-  for _, v in tree.items():
-    if isinstance(v, int):
-      tree['size'] += v
+  """create a list containing the size of
+  each directory in the tree, inculding
+  all subdirectories"""
+  sizes = []
+  for k, v in tree.items():
+    if isinstance(v, dict):
+      sizes.append(sizes(v))
     else:
-      sizes(v)
-      tree['size'] += v['size']
+      pass
+  return sizes
 
 
 def part1(cmds):
