@@ -12,47 +12,55 @@ def parse_input(input_str):
   return [parse_cmd(x) for x in input_str.split('$ ')[1:]]
 
 tinput = parse_input(open('tinput.txt', 'r').read())
+input = parse_input(open('input.txt', 'r').read())
 
-print(tinput)
-
-def build_tree(cmds):
-  cmds = list(reversed(cmds[1:]))
-  tree = {}
-  path = [tree]
+def find(cmds):
+  cmds = list(reversed(cmds))
+  nodes = []
+  path = []
   while cmds:
     cmd = cmds.pop()
     match cmd:
       case {'cmd': 'cd', 'args': ".."}:
         path.pop()
       case {'cmd': 'cd', 'args': d}:
-        path.append(path[-1][d])
+        path.append(d)
       case {'cmd': 'ls', 'args': items}:
+        tsz = 0
         for item in items:
           match item:
             case ['dir', d]:
-              path[-1][d] = {}
+              pass
             case [sz, nm]:
-              path[-1][nm] = int(sz)
+              tsz += int(sz)
+        nodes.append((tuple(path), tsz))
+  return nodes
+
+def build_tree(nodes):
+  tree = {}
+  for path,val in nodes:
+    t = tree
+    for p in path:
+      t.setdefault(p, {})
+      t = t[p]
+    t['_size'] = t.get('_size', 0) + val
   return tree
 
 def sizes(tree):
-  """create a list containing the size of
-  each directory in the tree, inculding
-  all subdirectories"""
-  sizes = []
-  for k, v in tree.items():
-    if isinstance(v, dict):
-      sizes.append(sizes(v))
-    else:
-      pass
-  return sizes
-
+  print(tree, list(tree.items()))
+  tree['_size'] = sum(sizes(v) for k,v in tree.items() if k!='_size')
 
 def part1(cmds):
-  tree = build_tree(cmds)
+  nodes = find(cmds)
+  tree = build_tree(nodes)
+  print(tree)
   sizes(tree)
-  return tree
+  print(tree)
+  #return sum(s for s in sz if s < 100000)
 
-print(part1(tinput))
+r = part1(tinput)
+
+
+
 
       
