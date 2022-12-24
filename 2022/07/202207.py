@@ -1,4 +1,3 @@
-
 def parse_cmd(cstr):
   lines = cstr.splitlines()
   words = lines[0].split()
@@ -46,21 +45,34 @@ def build_tree(nodes):
     t['_size'] = t.get('_size', 0) + val
   return tree
 
-def sizes(tree):
-  print(tree, list(tree.items()))
-  tree['_size'] = sum(sizes(v) for k,v in tree.items() if k!='_size')
+def sizes(tree, szs):
+  if type(tree) == int:
+    return tree
+  else:
+    sz = sum(sizes(v, szs) for k,v in tree.items())
+    szs.append(sz)
+    return sz
 
 def part1(cmds):
   nodes = find(cmds)
   tree = build_tree(nodes)
-  print(tree)
-  sizes(tree)
-  print(tree)
-  #return sum(s for s in sz if s < 100000)
+  szs = []
+  sizes(tree, szs)
+  return sum(s for s in szs if s < 100000)
 
-r = part1(tinput)
+assert part1(tinput) == 95437
 
+print(part1(input))
 
+def part2(cmds):
+  nodes = find(cmds)
+  tree = build_tree(nodes)
+  szs = []
+  sizes(tree, szs)
+  szs.sort(reverse=True)
+  needed = 30000000 - (70000000 - szs[0])
+  big_enough = [x for x in szs if x >= needed]
+  return big_enough[-1]
 
-
-      
+assert part2(tinput) == 24933642
+print(part2(input))
