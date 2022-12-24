@@ -4,8 +4,9 @@ defmodule Advent07 do
     case String.split(cstr, " ") do
       ["cd", dir] -> %{cmd: :cd, args: dir}
       ["ls"] -> %{cmd: :ls, args:
-        (for line <- rest, !String.starts_with?(line, "dir") do
+        (for line <- rest do
           case String.split(line)do
+            ["dir", v] -> ["dir:" <> v, 0]
             [k, v] -> [v, String.to_integer(k)]
           end
         end)
@@ -35,24 +36,31 @@ defmodule Advent07 do
     end
   end
 
-  def apply_cmds(cmds), do: cmds |> Enum.reduce(%{path: ["/"], nodes: %{}}, &apply_cmd/2)
+  def apply_cmds(cmds), do: cmds |> Enum.reduce(%{path: ["dir:/"], nodes: %{}}, &apply_cmd/2)
 
   def rollup(nodes) do
     keys = Map.keys(nodes) |> Enum.sort_by(&length/1, :desc)
-    IO.inspect(keys)
-    keys |> Enum.reduce(%{}, fn key, acc ->
+    keys |> Enum.reduce(nodes, fn key, nodes ->
       case key do
-        [name] -> Map.put(acc, name, nodes[key])
-        [name | rest] ->
-          Map.put(acc, name, nodes[key] + Map.get(acc, rest, 0))
+        [_name | rest] ->
+          Map.put(nodes, rest, nodes[key] + Map.get(nodes, rest, 0))
       end
     end)
+  end
+
+  def part1(input) do
+    input
+    |> apply_cmds()
+    |> Map.get(:nodes)
+    |> IO.inspect()
+    |> rollup()
+    |> IO.inspect()
+    |> Enum.filter(fn {[k1|_r],v} -> String.starts_with?(k1, "dir:") && v < 100000 end)
+    |> Enum.map(fn {_k,v} -> v end)
+    |> Enum.sum()
   end
 end
 
 alias Advent07, as: A
 tinput = A.parse_input(File.read!("tinput.txt"))
-#IO.inspect(tinput)
-st = tinput |> A.apply_cmds()
-IO.inspect(st)
-IO.inspect(A.rollup(st.nodes))
+IO.inspect(A.part1(tinput))
