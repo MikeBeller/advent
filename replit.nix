@@ -1,6 +1,6 @@
 { pkgs }: {
     deps = [
-      pkgs.python39Full
+      pkgs.python311
       pkgs.luajit
       pkgs.luajitPackages.luarocks-nix
       pkgs.luajitPackages.penlight
