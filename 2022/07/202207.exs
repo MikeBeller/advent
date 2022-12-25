@@ -54,6 +54,7 @@ defmodule Advent07 do
     |> Map.get(:nodes)
 
     dir_keys = nodes |> Enum.filter(fn {_k,v} -> v == 0 end) |> Enum.map(fn {k,_v} -> k end)
+    dir_keys = [["/"] | dir_keys ]
 
     nodes
     |> rollup()
@@ -83,4 +84,4 @@ input = A.parse_input(File.read!("input.txt"))
 95437 = A.part1(tinput)
 IO.puts(A.part1(input))
 
-IO.puts(A.part2(tinput))
+IO.inspect(A.part2(tinput))
