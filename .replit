@@ -1,4 +1,4 @@
-run = "cd 2022/07; python 202207.py"
+run = "cd 2022/07; elixir 202207.exs"
 
 [nix]
 channel = "stable-22_11"
