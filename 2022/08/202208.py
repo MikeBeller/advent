@@ -1,51 +1,38 @@
-
 def parse(instr):
-  g = {(r,c): int(ch)
-            for r,line in enumerate(instr.splitlines())
-            for c,ch in enumerate(line)
-      }
-  nr = max(r for r,c in g.keys()) + 1
-  nc = max(c for r,c in g.keys()) + 1
-  g['nr'], g['nc'] = nr, nc
-  return g
+    return [
+        [int(ch) for ch in line]
+        for line in instr.splitlines()]
 
-def viz(g, v, nr, nc):
-  for r in range(nr):
-    for c in range(nc):
-      ch = g[r,c] if v.get((r,c)) else '.'
-      print(ch, end='')
-    print()
-  print()
 
-def part1(g):
-    nr, nc = g['nr'], g['nc']
-    visible = {}
+def part1(gr):
+    nr, nc = len(gr), len(gr[0])
+    vis = {}
     for r in range(nr):
+        mx = -1
         for c in range(nc):
-            if g[r,c] > g.get((r,c-1),-1):
-                visible[r,c] = True
-            else:
-                break
-        for c in range(nc-1,-1,-1):
-            if g[r,c] > g.get((r, c+1), -1):
-                visible[r,c] = True
-            else:
-                break
+            if gr[r][c] > mx:
+                vis[r,c] = True
+                mx = gr[r][c]
+        mx = -1
+        for c in range(nc-1, -1, -1):
+            if gr[r][c] > mx:
+                vis[r,c] = True
+                mx = gr[r][c]
     for c in range(nc):
+        mx = -1
         for r in range(nr):
-            if g[r,c] > g.get((r-1, c),-1):
-                visible[r,c] = True
-            else:
-                break
-        for r in range(nr-1,-1,-1):
-            if g[r,c] > g.get((r+1, c), -1):
-                visible[r,c] = True
-            else:
-                break
-    viz(g, visible, g['nr'], g['nc'])
-    return len(visible)
+            if gr[r][c] > mx:
+                vis[r,c] = True
+                mx = gr[r][c]
+        mx = -1
+        for r in range(nr-1, -1, -1):
+            if gr[r][c] > mx:
+                vis[r,c] = True
+                mx = gr[r][c]
+    return len(vis)
+
 
 tinput = parse(open('tinput.txt').read())
-print(part1(tinput))
-
-
+assert part1(tinput) == 21
+input = parse(open('input.txt').read())
+print(part1(input))
