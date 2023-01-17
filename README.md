@@ -1,10 +1,24 @@
 Advent of Code
 ==============
 
-Solutions in several languages
+I've been working Advent of Code for a few years to
+as a relaxing passtime, and as a vehicle to learn new kanguages. 
+I don't try to do them quickly or keep up with the 
+competitive programmers so no solutions will be posted
+here before the leaderboard of AoC is long past full. 
 
+Solutions are in whatever language i was interested
+in at the time -- and often in several. 
 
-You can run using the default codespace -- just add
+most common are:
+python, julia, elixir, lua, janet (a lisp dialect )
+Some in gforth, rust, some in Go, maybe a few in JavaScript 
+
+Many thanks to Eric Wastl who runs AoC for this wonderful project. 
+
+## Notes
+
+You can run many using the default github codespace -- just add
 
 ```sh
 sudo apt update
@@ -26,8 +40,4 @@ sudo apt-get update
 sudo apt-get install elixir
 ```
 
-# for typescript
-
-```sh
-npm install typescript
-```
+Others...
