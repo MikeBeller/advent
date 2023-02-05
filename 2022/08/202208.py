@@ -35,4 +35,4 @@ def part1(gr):
 tinput = parse(open('tinput.txt').read())
 assert part1(tinput) == 21
 input = parse(open('input.txt').read())
-print(part1(input))
+print("PART1:", part1(input))
