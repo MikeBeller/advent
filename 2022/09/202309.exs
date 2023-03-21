@@ -10,7 +10,7 @@ defmodule Advent09 do
   end
 
   def touching({hr, hc}, {tr, tc}) do
-    abs(hr - tr) + abs(hc - tc) <= 1
+    abs(hr - tr) <= 1 and  abs(hc - tc) <= 1
   end
 
   def catch_up({hr, hc}, {tr, tc}) do
@@ -96,9 +96,14 @@ defmodule AdventO9Test do
   test "move diagonal" do
     assert move(:D, %{h: {1, 1}, t: {0, 0}, visited: MapSet.new([{0, 0}])})
       == %{h: {2, 1}, t: {1, 1}, visited: MapSet.new([{0, 0}, {1, 1}])}
+    assert move(:L, %{h: {1, -1}, t: {0, 0}, visited: MapSet.new([{0, 0}])})
+      == %{h: {1, -2}, t: {1, -1}, visited: MapSet.new([{0, 0}, {1, -1}])}
   end
 
   test "tinput" do
-    assert part1("tinput.txt") == 13
+    assert 13 == part1("tinput.txt")
   end
 end
+
+part1 = Advent09.part1("input.txt")
+IO.puts("Part 1: #{part1}")
