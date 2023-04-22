@@ -1,4 +1,6 @@
-run = "cd 2022/08; python 202208.py"
+run = "cd 2022/01; python 202201.py"
+
+entrypoint = "2022/01/202201.py"
 
 [nix]
 channel = "stable-22_11"
