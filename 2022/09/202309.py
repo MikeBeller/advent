@@ -13,22 +13,24 @@ def move(p, s, t):
         case 'R': return (r, c+t)
 
 
+def move_tail(H, T):
+    match (H[0] - T[0], H[1] - T[1]):
+        case (dr, dc) if abs(dr) < 2 and abs(dc) < 2: return T
+        case (d, 0) if abs(d) == 2: return (T[0] + d//2, T[1])
+        case (0, d) if abs(d) == 2: return (T[0], T[1] + d//2)
+        case _:
+            # move T one step diagonally towards H
+            dr = 1 if H[0] > T[0] else -1
+            dc = 1 if H[1] > T[1] else -1
+            return (T[0] + dr, T[1] + dc)
+
+
 def part1(data):
-    visited = set()
+    visited = set((0, 0))
     H = T = (0, 0)
     for s, t in data:
         H = move(H, s, t)
-        if abs(H[0] - T[0]) == 2:
-            T = (T[0] + (H[0] - T[0])//2, T[1])
-        elif abs(H[1] - T[1]) == 2:
-            T = (T[0], T[1] + (H[1] - T[1])//2)
-        elif abs(H[0] - T[0]) <= 1 and abs(H[1] - T[1]) <= 1:
-            pass
-        else:
-            # move T one step diagonally towards H
-            d0 = 1 if H[0] > T[0] else -1
-            d1 = 1 if H[1] > T[1] else -1
-            T = (T[0] + d0, T[1] + d1)
+        T = move_tail(H, T)
         visited.add(T)
     return len(visited)
 
