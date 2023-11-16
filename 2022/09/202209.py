@@ -24,14 +24,32 @@ def move_tail(H, T):
             dc = 1 if H[1] > T[1] else -1
             return (T[0] + dr, T[1] + dc)
 
+def dump(H, T, visited):
+  for r in range(min(H[0], T[0])-1, max(H[0], T[0])+2):
+      for c in range(min(H[1], T[1])-1, max(H[1], T[1])+2):
+          if (r, c) == H:
+            print('H', end='')
+          elif (r, c) == T:
+            print('T', end='')
+          elif (r, c) in visited:
+            print('#', end='')
+            # print(f'{r} {c}', end='')
+          else:
+            print('•', end='')
+      print()
+  print()
+
+            
 
 def part1(data):
     visited = set((0, 0))
     H = T = (0, 0)
+    dump(H,T,visited)
     for s, t in data:
         H = move(H, s, t)
         T = move_tail(H, T)
         visited.add(T)
+        dump(H,T,visited)
     return len(visited)
 
 
