@@ -46,10 +46,13 @@ def part1(data):
     H = T = (0, 0)
     dump(H,T,visited)
     for s, t in data:
-        H = move(H, s, t)
-        T = move_tail(H, T)
-        visited.add(T)
-        dump(H,T,visited)
+        print(s, t)
+        for i in range(t):
+          H = move(H, s, 1)
+          dump(H,T,visited)
+          T = move_tail(H, T)
+          visited.add(T)
+          dump(H,T,visited)
     return len(visited)
 
 
