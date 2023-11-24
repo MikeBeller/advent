@@ -11,7 +11,8 @@ def move(p, s, t):
         case 'D': return (r+t, c)
         case 'L': return (r, c-t)
         case 'R': return (r, c+t)
-
+          
+assert (-1, 0) == move((0, 0), 'U', 1)
 
 def move_tail(H, T):
     match (H[0] - T[0], H[1] - T[1]):
@@ -24,39 +25,44 @@ def move_tail(H, T):
             dc = 1 if H[1] > T[1] else -1
             return (T[0] + dr, T[1] + dc)
 
+assert move_tail((0, 0), (0, 2)) == (0, 1)
+assert move_tail((2, 2), (2, 1)) == (2, 1)
+assert move_tail((1, 1), (-1, 2)) == (0, 1)
+
 def dump(H, T, visited):
-  for r in range(min(H[0], T[0])-1, max(H[0], T[0])+2):
-      for c in range(min(H[1], T[1])-1, max(H[1], T[1])+2):
-          if (r, c) == H:
-            print('H', end='')
-          elif (r, c) == T:
-            print('T', end='')
-          elif (r, c) in visited:
-            print('#', end='')
-            # print(f'{r} {c}', end='')
-          else:
-            print('•', end='')
-      print()
+  # for r in range(min(H[0], T[0])-1, max(H[0], T[0])+2):
+  #     for c in range(min(H[1], T[1])-1, max(H[1], T[1])+2):
+  for r in range(-5,6):
+    for c in range(-5, 6):
+      if (r, c) == T:
+        print('T', end='')
+      elif (r, c) == H:
+        print('H', end='')
+      elif (r, c) in visited:
+        print('#', end='')
+        # print(f'{r} {c}', end='')
+      else:
+        print('•', end='')
+    print()
   print()
 
             
 
 def part1(data):
-    visited = set((0, 0))
+    visited = set([(0, 0)])
     H = T = (0, 0)
-    dump(H,T,visited)
-    for s, t in data:
-        print(s, t)
+    for i,(s, t) in enumerate(data):
+        #print("STEP:", i, s, t)
         for i in range(t):
           H = move(H, s, 1)
-          dump(H,T,visited)
           T = move_tail(H, T)
           visited.add(T)
-          dump(H,T,visited)
+          #dump(H,T,visited)
     return len(visited)
 
 
-assert (-1, 0) == move((0, 0), 'U', 1)
 
 tinput = parse_input(open("tinput.txt").read())
-print(part1(tinput))
+assert part1(tinput) == 13
+input = parse_input(open("input.txt").read())
+print("PART1:", part1(input))
