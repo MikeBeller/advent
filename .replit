@@ -1,4 +1,4 @@
-run = "cd 2022/09; python 202209.py"
+run = "cd 2022/10; python 202210.py"
 
 entrypoint = "2022/09/202209.py"
 
