@@ -1,4 +1,4 @@
-run = "cd 2023/01; python 202301.py"
+run = "cd 2023/01; gforth 202301.fs"
 
 [nix]
 channel = "stable-22_11"

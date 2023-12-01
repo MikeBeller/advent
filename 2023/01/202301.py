@@ -24,6 +24,6 @@ def ld(line):
 def part2(input):
   return sum(fd(line) * 10 + ld(line) for line in input)
 
-tinput = open("tinput.txt").read().splitlines()
+tinput = open("tinput2.txt").read().splitlines()
 assert (part2(tinput)) == 281
 print("PART2:", part2(input))

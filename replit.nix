@@ -1,5 +1,6 @@
 { pkgs }: {
     deps = [
+      pkgs.gforth
       pkgs.python311
       pkgs.luajit
       pkgs.luajitPackages.luarocks-nix
