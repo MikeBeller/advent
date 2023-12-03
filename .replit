@@ -1,4 +1,6 @@
-run = "cd 2023/01; gforth 202301.fs"
+run = "cd 2023/02; lua 202302.lua"
+
 
 [nix]
-channel = "stable-22_11"
+#channel = "stable-22_11"
+channel = "stable-23_05"
