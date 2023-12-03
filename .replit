@@ -1,4 +1,4 @@
-run = "cd 2023/02; lua 202302.lua"
+run = "cd 2023/02; python 202302.py"
 
 
 [nix]

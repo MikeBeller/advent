@@ -6,7 +6,7 @@ local C,P,R,Cc,Cf = lpeg.C, lpeg.P, lpeg.R, lpeg.Cc, lpeg.Cf
 function pair(v, k) return {k, tonumber(v)} end
 function merge(t1,t2)
   local t = t1[1] and {[t1[1]]=t1[2]} or t1
-  t[t2[1]] = t2[2]
+  if t2 then t[t2[1]] = t2[2] end
   return t
 end
 function tblize(...) return {...} end
