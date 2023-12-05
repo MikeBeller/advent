@@ -1,5 +1,7 @@
 run = "cd 2023/03; python 202303.py"
 
+entrypoint = "2023/03/202303.py"
+
 [env]
 PYTHONPATH="/home/runner/advent/2023/lib"
 
