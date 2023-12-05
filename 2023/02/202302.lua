@@ -1,7 +1,7 @@
 -- use lpeg so you learn it -- not needed actually
 local dump = (require "pl.pretty").dump
 local lpeg = require "lpeg"
-local C,P,R,Cc,Cf = lpeg.C, lpeg.P, lpeg.R, lpeg.Cc, lpeg.Cf
+local C,P,R,Cf = lpeg.C, lpeg.P, lpeg.R, lpeg.Cf
 
 function pair(v, k) return {k, tonumber(v)} end
 function merge(t1,t2)
