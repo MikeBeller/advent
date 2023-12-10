@@ -1,13 +1,22 @@
 on games inp do
+  tbl: table ("game","red","green","blue") dict 4 take list ()
+  "game" "red" "green" "blue" table ()
   each game in "Game %i:%s" parse "\n" split inp
     each draw in ";" split game[1]
-      dr:("red","green","blue") dict ()
+      dr:("game", "red","green","blue") dict (game[0])
       each cpair in "," split draw
         c:" %[num]i %[col]s" parse cpair
         dr[c.col]: c.num
+        tbl: tbl, table dr
   end end end
+  tbl
 end
-gs:games[read["tinput.txt"]]
-show[gs]
-    
+gs:games[read["input.txt"]]
+mxgs:select gm:(first game) r:(max red) g:(max green) b:(max blue) by game from gs
+show[
+  sum extract gm where (r < 13) & (g < 14) & (b < 15) from mxgs
+]
+show[
+  sum extract r * g * b from mxgs
+]
   
