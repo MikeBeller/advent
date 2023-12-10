@@ -9,6 +9,9 @@
       pkgs.elixir_1_14
       pkgs.jq
       pkgs.janet
+      pkgs.SDL2
+      pkgs.SDL2_image
+      pkgs.xxd
       pkgs.cowsay
     ];
 }

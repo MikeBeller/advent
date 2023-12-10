@@ -2,8 +2,8 @@ def lines(fpath):
   with open(fpath) as infile:
     return infile.read().splitlines()
 
-def ints(strs):
-  return [int(s) for s in strs.strip()]
+def ints(s):
+  return [int(f.strip()) for f in s.split()]
 
 def rows(strs, format, sep=None):
   rows = []

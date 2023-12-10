@@ -1,0 +1,5 @@
+print["hello, world!"]
+inp: "\n" split read["tinput1.txt"]
+show[inp]
+pr: "%.1r023" parse "02xyz3n5"
+show[pr]

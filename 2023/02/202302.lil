@@ -1,0 +1,13 @@
+on games inp do
+  each game in "Game %i:%s" parse "\n" split inp
+    each draw in ";" split game[1]
+      dr:("red","green","blue") dict ()
+      each cpair in "," split draw
+        c:" %[num]i %[col]s" parse cpair
+        dr[c.col]: c.num
+  end end end
+end
+gs:games[read["tinput.txt"]]
+show[gs]
+    
+  
