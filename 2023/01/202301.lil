@@ -4,3 +4,18 @@ show[sum(each line in inp
   "" fuse (first nums) , ( last nums)
 end)]
 
+inp: "\n" split read["tinput2.txt"]
+words: (" " split "one two three four five six seven eight nine") dict 1 + range 10
+digs: "123456789" dict 1 + range 10
+pats: digs, words
+
+on match_any pats line do
+  each pat in keys pats
+    p: "" fuse pat, "%m"
+    if (p parse line) pat end
+  end
+end
+
+each line in inp
+  show[match_any[pats line]]
+end
