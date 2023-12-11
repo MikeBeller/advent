@@ -1,6 +1,6 @@
-run = "cd 2023/02; lilt 202302.lil"
+run = "cd 2023/01; lilt 202301.lil"
 
-entrypoint = "2023/02/202302.lil"
+entrypoint = "2023/01/202301.lil"
 
 [env]
 PYTHONPATH="/home/runner/advent/2023/lib"

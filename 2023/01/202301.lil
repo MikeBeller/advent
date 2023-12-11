@@ -1,5 +1,6 @@
-print["hello, world!"]
-inp: "\n" split read["tinput1.txt"]
-show[inp]
-pr: "%.1r023" parse "02xyz3n5"
-show[pr]
+inp: "\n" split read["input.txt"]
+show[sum(each line in inp
+  nums: "" drop "%.9r123456789" parse "" split line
+  "" fuse (first nums) , ( last nums)
+end)]
+
