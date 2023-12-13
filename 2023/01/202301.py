@@ -1,4 +1,5 @@
 import re
+def p(x): print(x); return x
 def ins(x): print(x); return x
 input = open("input.txt").read().splitlines()
 print(sum(

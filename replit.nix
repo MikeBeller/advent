@@ -1,5 +1,6 @@
 { pkgs }: {
     deps = [
+      pkgs.lsof
       pkgs.gforth
       pkgs.python311
       pkgs.luajit
