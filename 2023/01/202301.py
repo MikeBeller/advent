@@ -1,6 +1,4 @@
 import re
-def p(x): print(x); return x
-def ins(x): print(x); return x
 input = open("input.txt").read().splitlines()
 print(sum(
   int(g[0]+g[-1])
