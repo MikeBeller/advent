@@ -1,4 +1,4 @@
-from advent import *
+from advent import lines
 from collections import defaultdict
 
 tinput = lines("tinput.txt") 
