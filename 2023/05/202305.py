@@ -26,22 +26,36 @@ def range_partition(x, y):
   return range(x.start, fst), range(fst,lst), range(lst, x.stop)
 
 def coalesce(ranges):
-  return set([r for r in ranges if len(r) > 0])
+  ranges.sort(key=lambda a: a.start)
+  new_ranges = [ranges[0]]
+  for i in range(1,len(ranges)):
+    r , nr = ranges[i], new_ranges[-1]
+    if nr.stop > r.start:
+      new_ranges[-1] = range(nr.start,max(nr.stop, r.stop))
+    else:
+      new_ranges.append(r)
+  return new_ranges
 
 seed_ranges = [range(seeds[i],seeds[i]+seeds[i+1]) for i in range(0,len(seeds)-1, 2)]
+print(seed_ranges)
+print(coalesce(seed_ranges))
+
+
+assert set(seed_ranges) == set(coalesce(seed_ranges))
 seed_ranges = coalesce(seed_ranges)
 print(seed_ranges)
-for map in maps:
-  for to,frm,n in map:
-    y = range(frm, frm+n)
-    delta = to - frm
-    new_ranges = []
-    for seed_range in seed_ranges:
-      before,during,after = range_partition(seed_range, y)
-      new_during = range(during.start+delta, during.stop+delta)
-      #print(seed_range, (to,frm,n), [before,new_during,after])
-      new_ranges.extend(coalesce([before, new_during, after]))
-    seed_ranges = coalesce(new_ranges)
+# for map in maps:
+#   new_ranges = []
+#   for to,frm,n in map:
+#     for seed_range in seed_ranges:
+#       y = range(frm, frm+n)
+#       delta = to - frm
+#       before,during,after = range_partition(seed_range, y)
+#       new_during = range(during.start+delta, during.stop+delta)
+#       #print(seed_range, (to,frm,n), [before,new_during,after])
+#       new_ranges.extend(
+#         coalesce([before, new_during, after]))
+#   seed_ranges = coalesce(new_ranges)
 
-print(seed_ranges)
-print(min(r.start for r in seed_ranges))
+# print(seed_ranges)
+# print(min(r.start for r in seed_ranges))
