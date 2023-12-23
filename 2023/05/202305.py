@@ -19,48 +19,72 @@ def seed_to_loc(maps, seed):
 
 print(min(seed_to_loc(maps, s) for s in seeds))
 
+def intersects(x,y):
+  return max(x.start, y.start) < min(x.stop, y.stop)
+
 def range_partition(x, y):
   "split range x into before, in, after y"
   fst = max(x.start, y.start)
   lst = min(x.stop, y.stop)
-  return range(x.start, fst), range(fst,lst), range(lst, x.stop)
-
+  return range(x.start, fst), range(fst,lst), range(lst, y.stop)
+  
 def coalesce(ranges):
-  ranges.sort(key=lambda a: a.start)
-  new_ranges = [ranges[0]]
+  ranges = sorted([r for r in ranges if len(r) > 0], key=lambda a: a.start)
+  if len(ranges) == 0: return []
+  coalesced = [ranges[0]]
   for i in range(1,len(ranges)):
-    r , nr = ranges[i], new_ranges[-1]
-    if nr.stop > r.start:
-      new_ranges[-1] = range(nr.start,max(nr.stop, r.stop))
+    r, cr = ranges[i], coalesced[-1]
+    if cr.stop > r.start:
+      coalesced[-1] = range(cr.start,max(cr.stop, r.stop))
     else:
-      new_ranges.append(r)
-  return new_ranges
+      coalesced.append(r)
+  return coalesced
+
+assert coalesce([range(1,5),range(3,9)]) == [range(1,9)]
+assert coalesce([range(7,10),range(90,90),range(1,3),range(3,9)]) == [range(1,3),range(3,10)]
 
 seed_ranges = [range(seeds[i],seeds[i]+seeds[i+1]) for i in range(0,len(seeds)-1, 2)]
 
 assert set(seed_ranges) == set(coalesce(seed_ranges))
 seed_ranges = coalesce(seed_ranges)
 
-def apply_stage(map, ranges):
-  new_ranges = []
-  for to,frm,n in map:
-    y = range(frm, frm+n)
-    delta = to - frm
-    skipped_ranges = []
-    for r in ranges:
+def apply_item(to, frm, n, ranges):
+  y = range(frm, frm+n)
+  delta = to - frm
+  unmapped_ranges = []
+  mapped_ranges = []
+  for r in ranges:
+    if intersects(r,y):
       before, during, after = range_partition(r, y)
       if len(during) > 0:
-        new_ranges.append(range(during.start+delta, during.stop+delta))
-      skipped_ranges.extend((before, after))
-    ranges = skipped_ranges
-  new_ranges.extend(skipped_ranges)
-  cranges = coalesce(new_ranges)
-  return cranges
+        mapped_ranges.append(
+          range(during.start+delta, during.stop+delta))
+        unmapped_ranges.extend([x for x in [before, after] if len(x) > 0])
+    else:
+      unmapped_ranges.append(r)
+  print("Mapped", mapped_ranges)
+  print("Unmapped", unmapped_ranges)
+  return coalesce(mapped_ranges), coalesce(unmapped_ranges)
 
-ranges = seed_ranges.copy()
-print(ranges)
-for map in maps:
-  ranges = apply_stage(map, ranges)
+def apply_stage(map, ranges):
+  mapped_ranges = []
+  unmapped_ranges = ranges.copy()
+  for to,frm,n in map:
+    print(to, frm, n)
+    mr,ur = apply_item(to,frm,n,unmapped_ranges)
+    print(mr, ur)
+    mapped_ranges.extend(mr)
+    unmapped_ranges.extend(ur)
+  ranges = coalesce(mapped_ranges + unmapped_ranges)
+  return ranges
+
+def part2(maps, seed_ranges):
+  ranges = seed_ranges.copy()
   print(ranges)
-  
-print(min(r.start for r in ranges))
+  for map in maps:
+    ranges = apply_stage(map, ranges)
+    print(ranges)
+    #break
+  print(min(r.start for r in ranges))
+
+part2(maps, seed_ranges)
