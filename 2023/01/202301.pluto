@@ -1,32 +1,49 @@
+
+table.reduce = function(t, f, x)
+    local a = x
+    for t as v do
+        a = f(a, v)
+    end
+    return a
+end
+
 input = io.open("input.txt"):read("a"):strip():split("\n")
-sm = 0
+
 ans = input
   :map(|ln| -> ln:split("")
     :filter(|c| -> c >= "0" and c <= "9")
     :reorder())
   :map(|ds| -> ds[1] .. ds[#ds])
-  :foreach(function (n) sm += n end)
-print(sm)
---[[
-words = ("one two three four five six seven eight nine"):split(" ")
+  :reduce(|s,x| -> s + x, 0)
+print(ans)
+
+local words = {}
+for i,w in ipairs("one two three four five six seven eight nine":split(" ")) do words[w] = i end
+for i,w in ipairs("123456789":split("")) do words[w] = i end
+-- print(dumpvar(words))
+
 function num(s, i)
-  x = s:match("^(%d)",i)
-  if x then return x end
-  for n,w in ipairs(words) do
+  for w,n in pairs(words) do
     if s:match("^" .. w,i) then return n end
   end
   return nil
 end
 
-input = file.read("input.txt"):splitlines()
+input = io.open("input.txt"):read("a"):split("\n")
 function nums(line)
-  nms = List()
+  local fst = nil
   for i = 1,line:len() do
     nm = num(line, i)
-    if nm then nms:append(nm) end
+    if nm then fst = nm break end
   end
-  return nms[1] * 10 + nms[#nms]
+  local lst = nil
+  for i = line:len(),1,-1 do
+    nm = num(line, i)
+    if nm then lst = nm break end
+  end
+  -- print(fst,lst)
+  return fst .. lst
 end
-ans = seq(input):map(nums):sum()
+
+ans = input:map(nums):reduce(|s,x| -> s + x, 0)
 print(ans)
-]]--
