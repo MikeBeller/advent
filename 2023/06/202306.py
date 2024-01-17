@@ -1,3 +1,4 @@
+from functools import reduce
 
 def parse(s):
   ts,ds = s.splitlines()
@@ -5,8 +6,23 @@ def parse(s):
     [int(x) for x in ts.strip().split()[1:]],
     [int(x) for x in ds.strip().split()[1:]]))
 
-tinput = parse("""
-Time:      7  15   30
-Distance:  9  40  200""".strip())
+tinput = parse(open("tinput.txt").read())
+input = parse(open("input.txt").read())
 
-print(tinput)
+def dt(t,n):
+  assert n > 0 and n < t
+  return n * (t - n)
+
+def ng(t,d):
+  return sum(1 for n in range(1,t-1)
+            if dt(t,n) > d)
+
+assert ng(7,9) == 4
+assert ng(15,40) == 8
+assert ng(30, 200) == 9
+
+def part1(inp):
+  return reduce(lambda a,x: a * ng(*x), inp, 1)
+
+assert part1(tinput) == 288
+print(part1(input))

@@ -1,6 +1,6 @@
 
-run = "cd 2023/06; python 202306.py"
-entrypoint = "2023/06/202306.py"
+run = "cd 2023/01; pluto 202301.pluto"
+entrypoint = "2023/01/202301.pluto"
 
 [env]
 PYTHONPATH="/home/runner/advent/2023/lib"
@@ -9,4 +9,4 @@ PATH="/home/runner/advent/bin"
 
 [nix]
 #channel = "stable-22_11"
-channel = "stable-23_05"
+channel = "stable-23_11"
