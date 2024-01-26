@@ -16,6 +16,7 @@ def run(inp, scorer):
   data = [(scorer(code), code, weight)
           for code, weight in inp]
   data.sort()
+  #print(data)
   return sum((i+1) * weight
     for i,(hand,code,weight) in enumerate(data))
 
@@ -26,7 +27,7 @@ assert part1(tinput) == 6440
 print(part1(input))
 
 def hand_score_2(code):
-  cc = code.replace("J", "")
+  cc = code.replace("1", "")
   nj = 5 - len(cc)
   if nj == 5:
     return (5,)
@@ -36,6 +37,7 @@ def hand_score_2(code):
     return tuple(sc)
 
 def part2(inp):
+  inp = [(c.replace("J","1"),w) for c,w in inp]
   return run(inp, hand_score_2)
 
 assert part2(tinput) == 5905
