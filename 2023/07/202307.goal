@@ -1,0 +1,6 @@
+parse:{q:" " csv x
+       (sub["K" "A" "T"; "R" "Z" "D"] q[0]) ! ("i"$ q[1])}
+
+tin:parse (read "tinput.txt")
+xin:parse (read "input.txt")
+say tin
