@@ -1,6 +1,10 @@
-parse:{q:" " csv x
-       (sub["K" "A" "T"; "R" "Z" "D"] q[0]) ! ("i"$ q[1])}
+parse:{[inp] (ss;ws):" " csv inp
+  +((sub["K" "A" "T"; "R" "Z" "D"] ss); ("i"$ ws))}
 
-tin:parse (read "tinput.txt")
-xin:parse (read "input.txt")
-say tin
+tinput:parse (read "tinput.txt")
+input:parse (read "input.txt")
+
+score:{|^ =% ""\ x}
+data: |^ {(score(x[0]); x[0]; x[1])}' tinput
+
+say data

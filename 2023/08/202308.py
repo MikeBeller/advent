@@ -1,3 +1,5 @@
+from math import lcm
+
 def parse(inp):
   path,rest = inp.strip().split("\n\n")
   mp = {}
@@ -28,21 +30,20 @@ print(part1(input))
 tinput3 = parse(open("tinput3.txt").read())
 
 def part2(data):
-	path,mp = data
-	ghosts = [s for s in mp.keys()
-	  if s.endswith("A")]
-	count = 0
-	steps = 0
-	rpath = repeat(path)
-	while count < len(ghosts):
-		count = 0
-		d = next(rpath)
-		for i,g in enumerate(ghosts):
-			ghosts[i] = mp[g][0] if d == "L" else mp[g][1]
-			if ghosts[i].endswith("Z"):
-				count += 1
-		steps += 1
-	return steps
-			
+  path,mp = data
+  ghosts = [s for s in mp.keys()
+    if s.endswith("A")]
+  counts = []
+  for ghost in ghosts:
+    c = 0
+    g = ghost
+    p = repeat(path)
+    while not g.endswith("Z"):
+      d = next(p)
+      g = mp[g][0] if d == "L" else mp[g][1]
+      c += 1
+    counts.append(c)
+  return lcm(*counts)
+    
 assert part2(tinput3) == 6
 print(part2(input))
