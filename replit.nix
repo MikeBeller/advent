@@ -6,9 +6,11 @@
       pkgs.lsof
       pkgs.gforth
       pkgs.python311
-      pkgs.lua54Packages.lua
-      pkgs.lua54Packages.penlight
-      pkgs.lua54Packages.lpeg      pkgs.elixir_1_14
+      pkgs.python311Packages.numpy
+      pkgs.luaPackages.lua
+      pkgs.luaPackages.penlight
+      pkgs.luaPackages.lpeg
+      pkgs.elixir_1_14
       pkgs.jq
       pkgs.janet
       pkgs.SDL2
