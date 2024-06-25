@@ -47,4 +47,20 @@ sudo apt-get update
 sudo apt-get install elixir
 ```
 
-Others...
+# for prolog:
+
+```
+wget https://github.com/mthom/scryer-prolog/releases/download/v0.9.3/scryer-prolog_ubuntu-20.04.zip
+unzip unzip scryer-prolog_ubuntu-20.04.zip
+sudo cp scryer-prolog_ubuntu-20.04_x86_64-unknown-linux-gnu/scryer-prolog /usr/local/bin
+sudo chmod +x /usr/local/bin/scryer-prolog
+```
+
+And put the following in your .scryerrc in your home directory:
+
+```
+:- use_module(library(lists)).
+:- use_module(library(clpz)).
+:- use_module(library(pio)).
+:- use_module(library(dcgs)).
+```
