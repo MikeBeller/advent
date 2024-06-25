@@ -1,0 +1,12 @@
+
+run = "cd 2023/07; goal 202307.goal"
+entrypoint = "2023/07/202307.goal"
+
+[env]
+PYTHONPATH="/home/runner/advent/2023/lib"
+PATH="/home/runner/advent/bin"
+
+
+[nix]
+#channel = "stable-22_11"
+channel = "stable-23_05"

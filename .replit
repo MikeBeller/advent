@@ -1,6 +1,12 @@
-run = "cd 2022/01; python 202201.py"
 
-entrypoint = "2022/01/202201.py"
+run = "cd 2023/09; python 202309.py"
+entrypoint = "2023/09/202309.py"
+
+[env]
+PYTHONPATH = "/home/runner/advent/2023/lib"
+PATH = "/home/runner/advent/bin"
+
 
 [nix]
-channel = "stable-22_11"
+#channel = "stable-22_11"
+channel = "stable-23_05"

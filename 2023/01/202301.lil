@@ -1,0 +1,25 @@
+inp: "\n" split read["input.txt"]
+show[sum(each line in inp
+  nums: "" drop "%.9r123456789" parse "" split line
+  "" fuse (first nums) , ( last nums)
+end)]
+
+inp: "\n" split read["input.txt"]
+words: (" " split "one two three four five six seven eight nine") dict 1 + range 10
+digs: "123456789" dict 1 + range 10
+pats: digs, words
+
+on match_any pats line do
+  max each pat in keys pats
+    if (("" fuse pat, "%m") parse line) pat else "" end
+  end
+end
+
+show[
+ sum each line in inp
+  nums: (list "") drop each i in range count line
+    match_any[pats (i drop line)]
+  end
+  "" fuse pats @ (first nums), (last nums)
+end
+]

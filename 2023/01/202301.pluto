@@ -1,0 +1,49 @@
+
+table.reduce = function(t, f, x)
+    local a = x
+    for t as v do
+        a = f(a, v)
+    end
+    return a
+end
+
+input = io.open("input.txt"):read("a"):strip():split("\n")
+
+ans = input
+  :map(|ln| -> ln:split("")
+    :filter(|c| -> c >= "0" and c <= "9")
+    :reorder())
+  :map(|ds| -> ds[1] .. ds[#ds])
+  :reduce(|s,x| -> s + x, 0)
+print(ans)
+
+local words = {}
+for i,w in ipairs("one two three four five six seven eight nine":split(" ")) do words[w] = i end
+for i,w in ipairs("123456789":split("")) do words[w] = i end
+-- print(dumpvar(words))
+
+function num(s, i)
+  for w,n in pairs(words) do
+    if s:match("^" .. w,i) then return n end
+  end
+  return nil
+end
+
+input = io.open("input.txt"):read("a"):split("\n")
+function nums(line)
+  local fst = nil
+  for i = 1,line:len() do
+    nm = num(line, i)
+    if nm then fst = nm break end
+  end
+  local lst = nil
+  for i = line:len(),1,-1 do
+    nm = num(line, i)
+    if nm then lst = nm break end
+  end
+  -- print(fst,lst)
+  return fst .. lst
+end
+
+ans = input:map(nums):reduce(|s,x| -> s + x, 0)
+print(ans)

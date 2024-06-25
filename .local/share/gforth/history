@@ -1,0 +1,17 @@
+bye
+bye
+create input cell allot
+"tinput.txt" input $[]slurp-file
+input $[].
+bye
+: isdig { c - 1/0 }
+  c 48 >=
+  c 57 <=
+  and ;
+48 isdig
+: isdig dup 48 >= 57 <= and ;
+48 isdig
+assert( 1 1 + 2 = )
+assert0( 1 1 + 2 = )
+words
+browse "assert"

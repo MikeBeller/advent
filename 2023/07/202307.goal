@@ -1,0 +1,10 @@
+parse:{[inp] (ss;ws):" " csv inp
+  +((sub["K" "A" "T"; "R" "Z" "D"] ss); ("i"$ ws))}
+
+tinput:parse (read "tinput.txt")
+input:parse (read "input.txt")
+
+score:{|^ =% ""\ x}
+data: |^ {(score(x[0]); x[0]; x[1])}' tinput
+
+say data

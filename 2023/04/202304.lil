@@ -1,0 +1,9 @@
+on scores inp do
+  each card in "Card %i: %s| %s" parse "\n" split inp
+    win: "%j" parse "" fuse "[", card[1], "]"
+    have: "%j" parse "" fuse "[", card[2], "]"
+    n:count win take have
+    if n > 0 then 2^(n-1) else 0 end
+  end
+end
+show[sum scores[read["input.txt"]]]
