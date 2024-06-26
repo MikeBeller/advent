@@ -3,6 +3,7 @@
 :- use_module(library(clpz)).
 :- use_module(library(charsio)).
 :- use_module(library(lists)).
+:- initialization(main).
 
 read_integers(F, Is) :-
     once(phrase_from_file(integer_list(Is), F)).
@@ -60,5 +61,6 @@ part2(Integers, Answer) :-
 main :-
     read_integers("input.txt", Integers),
     part1(Integers, Part1), write(Part1), nl,
-    once(part2(Integers, Part2)), write(Part2), nl,
+    %once(part2(Integers, Part2)), write(Part2), nl,
     halt.
+
