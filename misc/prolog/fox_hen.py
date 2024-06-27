@@ -35,13 +35,13 @@ assert move(INITIAL_STATE, 'hen') == ('home', 'market', 'home', 'market')
 def all_moves(state):
     return [move(state, whom) for whom in ['fox', 'hen', 'corn', 'farmer']]
 
-def solve(path):
-    if path[-1] == GOAL_STATE:
-        return path
-    for next_state in all_moves(path[-1]):
-        if valid_state(*next_state):
-            return solve(path + (next_state,))
-    assert False
+def solve():
+    path = (INITIAL_STATE,)
+    while path[-1] != GOAL_STATE:
 
-result = solve((INITIAL_STATE,))
-print(result)
+    else:
+        for next_state in all_moves(path[-1]):
+            if valid_state(*next_state) and next_state not in path:
+                return solve(path + (next_state,))
+
+print(solve())
