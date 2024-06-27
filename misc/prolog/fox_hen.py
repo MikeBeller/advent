@@ -1,34 +1,47 @@
-INITIAL_STATE = dict(fox='home', hen='home', corn='home', farmer='home')
-GOAL_STATE = dict(fox='market', hen='market', corn='market', farmer='market')
+import sys
+sys.setrecursionlimit(10000)
 
-def is_safe_state(s):
-    return not ((s['farmer'] != s['hen']) and
-        (s['fox'] == s['hen'] or s['hen'] == s['corn']))
+INITIAL_STATE = ('home', 'home', 'home', 'home')
+GOAL_STATE = ('market', 'market', 'market', 'market')
 
-assert not is_safe_state(dict(fox='home', hen='home', corn='market', farmer='market'))
-assert not is_safe_state(dict(fox='home', hen='market', corn='market', farmer='home'))
-assert is_safe_state(dict(fox='home', hen='market', corn='market', farmer='market'))
+def hen_eats_corn(_, hen, corn, farmer):
+    return hen == corn and not hen == farmer
 
-def move(s, other):
-    nxt = 'market' if s['farmer'] == 'home' else 'home'
-    s2 = dict(s, **{'farmer': nxt, other: nxt} )
-    assert is_safe_state(s2)
-    return s2
+def fox_eats_hen(fox, hen, _, farmer):
+    return fox == hen and not hen == farmer
 
-assert move(INITIAL_STATE, 'farmer') == dict(fox='home', hen='home', corn='home', farmer='market')
-assert move(INITIAL_STATE, 'hen') == dict(fox='home', hen='market', corn='home', farmer='market')
+def valid_state(fox, hen, corn, farmer):
+    return (not hen_eats_corn(fox, hen, corn, farmer)
+            and not fox_eats_hen(fox, hen, corn, farmer))
 
-def legal_moves(s):
-    # farmer can move by himself, or with any one other item in the same place as him:
-    return [next_state for other in ['fox', 'hen', 'corn', 'farmer']
-        if s['farmer'] == s[other] and
-            is_safe_state(next_state := move(s,other))]
+assert not valid_state('home', 'home', 'market', 'market')
+assert not valid_state('home', 'market', 'market', 'home')
+assert valid_state('home', 'market', 'market', 'market')
+
+def move(state, who):
+    fox, hen, corn, farmer = state
+    where = 'market' if farmer == 'home' else 'home'
+    match who:
+        case 'fox': return (where, hen, corn, where)
+        case 'hen': return (fox, where, corn, where)
+        case 'corn': return (fox, hen, where, where)
+        case 'farmer': return (fox, hen, corn, where)
+    assert False
+
+
+assert move(INITIAL_STATE, 'farmer') == ('home', 'home', 'home', 'market')
+assert move(INITIAL_STATE, 'hen') == ('home', 'market', 'home', 'market')
+
+def all_moves(state):
+    return [move(state, whom) for whom in ['fox', 'hen', 'corn', 'farmer']]
 
 def solve(path):
     if path[-1] == GOAL_STATE:
         return path
-    for next_state in legal_moves(path[-1]):
-        return solve(moves + (next_state))
+    for next_state in all_moves(path[-1]):
+        if valid_state(*next_state):
+            return solve(path + (next_state,))
+    assert False
 
 result = solve((INITIAL_STATE,))
 print(result)
