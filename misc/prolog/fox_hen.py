@@ -1,51 +1,73 @@
-import sys
-sys.setrecursionlimit(10000)
+from enum import Enum
+import dataclasses as dc
+from dataclasses import dataclass
 
-INITIAL_STATE = ('home', 'home', 'home', 'home')
-GOAL_STATE = ('market', 'market', 'market', 'market')
+class Loc(Enum):
+    HOME = 1
+    MARKET = 2
 
-def hen_eats_corn(_, hen, corn, farmer):
-    return hen == corn and not hen == farmer
+@dataclass
+class State:
+    fox: Loc
+    hen: Loc
+    corn: Loc
+    farmer: Loc
 
-def fox_eats_hen(fox, hen, _, farmer):
-    return fox == hen and not hen == farmer
+HOME = Loc.HOME
+MARKET = Loc.MARKET
 
-def valid_state(fox, hen, corn, farmer):
-    return (not hen_eats_corn(fox, hen, corn, farmer)
-            and not fox_eats_hen(fox, hen, corn, farmer))
+INITIAL_STATE = State(HOME, HOME, HOME, HOME)
+GOAL_STATE = State(MARKET, MARKET, MARKET, MARKET)
 
-assert not valid_state('home', 'home', 'market', 'market')
-assert not valid_state('home', 'market', 'market', 'home')
-assert valid_state('home', 'market', 'market', 'market')
+def hen_eats_corn(s: State) -> bool:
+    return s.hen == s.corn and not s.hen == s.farmer
 
-def move(state, who):
-    fox, hen, corn, farmer = state
-    where = 'market' if farmer == 'home' else 'home'
+def fox_eats_hen(s: State) -> bool:
+    return s.fox == s.hen and not s.hen == s.farmer
+
+def valid_state(s: State) -> bool:
+    return (not hen_eats_corn(s)
+            and not fox_eats_hen(s))
+
+assert not valid_state(State(HOME, HOME, MARKET, MARKET))
+assert not valid_state(State(HOME, MARKET, MARKET, HOME))
+assert valid_state(State(HOME, MARKET, MARKET, MARKET))
+
+def move(s: State, who: str) -> State:
+    where = MARKET if s.farmer == HOME else HOME
     match who:
-        case 'fox': return (where, hen, corn, where)
-        case 'hen': return (fox, where, corn, where)
-        case 'corn': return (fox, hen, where, where)
-        case 'farmer': return (fox, hen, corn, where)
+        case 'fox': return dc.replace(s, fox=where, farmer=where)
+        case 'hen': return dc.replace(s, hen=where, farmer=where)
+        case 'corn': return dc.replace(s, corn=where, farmer=where)
+        case 'farmer': return dc.replace(s, farmer=where)
     assert False
 
 
-assert move(INITIAL_STATE, 'farmer') == ('home', 'home', 'home', 'market')
-assert move(INITIAL_STATE, 'hen') == ('home', 'market', 'home', 'market')
+assert move(INITIAL_STATE, 'farmer') == (HOME, HOME, HOME, MARKET)
+assert move(INITIAL_STATE, 'hen') == (HOME, MARKET, HOME, MARKET)
 
 def all_moves(state):
     return [move(state, whom) for whom in ['fox', 'hen', 'corn', 'farmer']]
 
 def solve_bfs():
+    mxlen = 1
     paths = ((INITIAL_STATE,))
     while paths:
         *paths, path = paths
         paths = tuple(paths)
         for nxt in all_moves(path[-1]):
-            new_path = path + (nxt,)
-            if nxt == GOAL_STATE:
-                return new_path
-            else:
-                paths = paths + (new_path,)
+            if valid_state(*nxt):
+                new_path = path + (nxt,)
+                print(new_path)
+                if len(new_path) > mxlen:
+                    print("mxlen:", mxlen)
+                    mxlen = len(new_path)
+                    if mxlen > 5:
+                        return None
+                if nxt == GOAL_STATE:
+                    return new_path
+                else:
+                    paths = paths + (new_path,)
  
 
 print(solve_bfs())
