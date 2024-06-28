@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import StrEnum
 import dataclasses as dc
 from dataclasses import dataclass
 
-class Loc(Enum):
-    HOME = 1
-    MARKET = 2
+class Loc(StrEnum):
+    HOME = 'H'
+    MARKET = 'M'
 
 @dataclass
 class State:
@@ -12,6 +12,9 @@ class State:
     hen: Loc
     corn: Loc
     farmer: Loc
+
+    def __repr__(self):
+        return str(self.fox) + str(self.hen) + str(self.corn) + str(self.farmer)
 
 HOME = Loc.HOME
 MARKET = Loc.MARKET
@@ -43,31 +46,25 @@ def move(s: State, who: str) -> State:
     assert False
 
 
-assert move(INITIAL_STATE, 'farmer') == (HOME, HOME, HOME, MARKET)
-assert move(INITIAL_STATE, 'hen') == (HOME, MARKET, HOME, MARKET)
+assert move(INITIAL_STATE, 'farmer') == State(HOME, HOME, HOME, MARKET)
+assert move(INITIAL_STATE, 'hen') == State(HOME, MARKET, HOME, MARKET)
 
-def all_moves(state):
-    return [move(state, whom) for whom in ['fox', 'hen', 'corn', 'farmer']]
+def all_moves(s:State) -> list[State]:
+    return [move(s, whom) for whom in ['fox', 'hen', 'corn', 'farmer']]
 
-def solve_bfs():
+def solve_bfs() -> list[State] | None:
     mxlen = 1
-    paths = ((INITIAL_STATE,))
-    while paths:
-        *paths, path = paths
-        paths = tuple(paths)
+    paths: list[list[State]] = [[INITIAL_STATE]]
+    while len(paths) > 0:
+        path, *paths = paths
         for nxt in all_moves(path[-1]):
-            if valid_state(*nxt):
-                new_path = path + (nxt,)
-                print(new_path)
-                if len(new_path) > mxlen:
-                    print("mxlen:", mxlen)
-                    mxlen = len(new_path)
-                    if mxlen > 5:
-                        return None
+            if valid_state(nxt):
+                new_path = path + [nxt]
                 if nxt == GOAL_STATE:
                     return new_path
                 else:
-                    paths = paths + (new_path,)
+                    paths = paths + [new_path]
+    assert False
  
 
 print(solve_bfs())
