@@ -1,6 +1,7 @@
 :- use_module(library(clpz)).
 % :- use_module(library(debug)).
 % this correctly shows tail recursion -- no memory increase
+% wasn't able to get it to work where C0 was on the right -- why?
 
 count(1,1,1).
 count(N,N,N).
