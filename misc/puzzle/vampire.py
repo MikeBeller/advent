@@ -14,12 +14,11 @@ def vampire(n: int) -> tuple[int, int, int] | None:
     if len(ds) % 2 != 0:
         return False
     l2 = len(ds) // 2
-    for p in permutations(ds):
-        lf = p[:l2]
-        rt = p[l2:]
-        pr = num(lf) * num(rt)
-        if list(sorted(dig(pr))) == list(sorted(lf + rt)) and not (lf[0] == 0 and rt[0] == 0):
-            return pr, num(lf), num(rt)
+    lf = ds[:l2]
+    rt = ds[l2:]
+    pr = num(lf) * num(rt)
+    if list(sorted(dig(pr))) == list(sorted(lf + rt)) and not (lf[0] == 0 and rt[0] == 0):
+        return pr, num(lf), num(rt)
     return None
 
 
@@ -35,4 +34,5 @@ def vampires(ndig: int) -> list[tuple[int, int, int]]:
 
 
 vs = vampires(6)
-print(len(vs), vs)
+# print(len(vs), vs)
+print(len(set(vn for vn, _, _ in vs)))
