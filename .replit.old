@@ -1,10 +1,10 @@
 
-run = "cd 2023/07; goal 202307.goal"
-entrypoint = "2023/07/202307.goal"
+run = "cd 2024/01; janet 202401.janet"
+entrypoint = "2024/01/202401.janet"
 
 [env]
-PYTHONPATH="/home/runner/advent/2023/lib"
-PATH="/home/runner/advent/bin"
+PYTHONPATH = "/home/runner/advent/2023/lib"
+PATH = "/home/runner/advent/bin"
 
 
 [nix]
