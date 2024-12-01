@@ -1,6 +1,6 @@
 
-run = "cd 2023/09; python 202309.py"
-entrypoint = "2023/09/202309.py"
+run = "cd 2024/01; janet 202401.janet"
+entrypoint = "2024/01/202401.janet"
 
 [env]
 PYTHONPATH = "/home/runner/advent/2023/lib"
