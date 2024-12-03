@@ -1,5 +1,6 @@
 { pkgs }: {
     deps = [
+      pkgs.neovim
       pkgs.unzip
       pkgs.wget
       pkgs.rlwrap
