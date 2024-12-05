@@ -1,21 +1,22 @@
-m = [list(l.strip()) for l in open("input.txt").read().splitlines()]
+from numpy import *
+from scipy.signal import convolve2d
 
-def xmas(m, r, c, dr, dc):
-  if m[r][c] != "X":
-    return 0
-  rs = []
-  for i in range(4):
-    rs.append(m[r][c])
-    r += dr
-    c += dc
-    if r < 0 or r >= len(m) or c < 0 or c >= len(m[0]):
-      break 
-  word = "".join(rs)
-  return 1 if word == "XMAS" else 0
+m = vstack([
+    frombuffer(bytes(l, encoding='utf8'), int8)
+    for l in open("input.txt").read().splitlines()
+])
+xm = array([ord(c) for c in "XMAS"], ndmin=2)
+mx = flip(xm)
+ps = [xm, xm.T, diagflat(xm), flip(diagflat(xm), axis=1),
+      mx, mx.T, diagflat(mx), flip(diagflat(mx), axis=1)]
+#for p in ps: print(p)
+magic = sum(xm * xm)
+print(sum([sum(convolve2d(m, p, mode='valid') == magic) for p in ps]))
 
-p1 = sum(xmas(m, r, c, dr, dc)
-  for r in range(len(m))
-    for c in range(len(m[0]))
-      for dr in range(-1,2)
-        for dc in range(-1,2))
-print(p1)
+ms = array([ord(c) for c in "MAS"])
+sm = flip(ms)
+pp = bitwise_or(diag(ms), flip(diag(sm), axis=1))
+ps = [rot90(pp, k=n) for n in range(4)]
+#for p in ps: print(p)
+magic = sum(pp * pp)
+print(sum([sum(convolve2d(m, p, mode='valid') == magic) for p in ps]))

@@ -1,5 +1,9 @@
 { pkgs }: {
     deps = [
+      pkgs.python311Packages.scipy
+      pkgs.xsimd
+      pkgs.pkg-config
+      pkgs.libxcrypt
       pkgs.neovim
       pkgs.unzip
       pkgs.wget
