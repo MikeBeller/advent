@@ -37,6 +37,8 @@ def turn(d):
 
 def part1(m):
   p,d = find_guard(m)
+  r,c = p
+  m[r][c] = 'X'
   while True:
     p2,ch = nxt(m,p,d)
     if ch == '':
