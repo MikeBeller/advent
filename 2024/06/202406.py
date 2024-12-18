@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 def parse(inp):
   return [
     [c for c in line]
@@ -36,6 +38,7 @@ def turn(d):
   return (d + 1) % 4
 
 def part1(m):
+  m = deepcopy(m)
   p,d = find_guard(m)
   r,c = p
   m[r][c] = 'X'
@@ -56,3 +59,38 @@ def part1(m):
 
 assert part1(tinput) == 41
 print(part1(input))
+
+def it_loops(m, rr, cc):
+  m = deepcopy(m)
+  m[rr][cc] = '#'
+  visited = [[set() for rrr in m ] for ccc in m[0]]
+  p,d = find_guard(m)
+  r,c = p
+  m[r][c] = 'X'
+  visited[r][c] = {d}
+  while True:
+    p2,ch = nxt(m,p,d)
+    if ch == '':
+      return False
+    elif ch == '#':
+      d = turn(d)
+      continue
+    p = p2
+    r,c = p
+    if d in visited[r][c]:
+      return True
+    m[r][c] = 'X'
+    visited[r][c].add(d)
+
+def part2(m):
+  nr,nc = len(m), len(m[0])
+  count = 0
+  for r in range(nr):
+    for c in range(nc):
+      if m[r][c] == '.':
+        if it_loops(m, r, c):
+          count += 1
+  return count
+
+assert part2(tinput) == 6
+print(part2(input))
