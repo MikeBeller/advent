@@ -11,11 +11,11 @@ def parse(s):
   return dict(nr=len(lines), nc=len(lines[0]), txs=txs)
 
 tinput = parse(open("tinput.txt").read())
-print(tinput)
+input = parse(open("input.txt").read())
 
 def anti(p1, p2):
-  dr, dc = 1, 1
-  return dr,dc
+  dr, dc = p2[0] - p1[0], p2[1] - p1[1]
+  return p2[0] + dr, p2[1] + dc
   
 def part1(d):
   antis = {}
@@ -24,8 +24,10 @@ def part1(d):
       antis[anti(p1, p2)] = '#'
       antis[anti(p2, p1)] = '#'
   return sum(1 for (r,c) in antis.keys()
-            if 0 <= r < d['nr'] and 0 <= c <= d['nc'])
+            if 0 <= r < d['nr'] and 0 <= c < d['nc'])
 
-print(part1(tinput))
+
+assert part1(tinput) == 14
+print(part1(input))
     
   
