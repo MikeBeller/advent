@@ -29,5 +29,24 @@ def part1(d):
 
 assert part1(tinput) == 14
 print(part1(input))
-    
-  
+
+def in_line(r, c, ln):
+  (r0, c0, dr, dc) = ln
+  return (r - r0)*dr - (c - c0)*dc == 0
+
+def part2(d):
+  lines = set()
+  for ch,ps in d['txs'].items():
+    for p1,p2 in combinations(ps, 2):
+      dr, dc = p2[0] - p1[0], p2[1] - p1[1]
+      lines.add((p1[0], p1[1], dr, dc))
+
+  count = 0
+  for r in range(d['nr']):
+    for c in range(d['nc']):
+      if any(in_line(r, c, ln) for ln in lines):
+        count += 1
+
+  return count
+
+print(part2(tinput))
