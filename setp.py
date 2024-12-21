@@ -2,7 +2,11 @@
 import sys
 import shutil
 
-year, num, prog, ext = sys.argv[1:]
+args = sys.argv
+year = args[1]
+num = args[2]
+prog = args[3] if len(args) > 3 else "python"
+ext = args[4] if len(args) > 4 else ".py"
 num = f"{int(num):02d}"
 if "." not in ext:
   ext = "." + ext
