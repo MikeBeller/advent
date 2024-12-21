@@ -32,7 +32,7 @@ print(part1(input))
 
 def in_line(r, c, ln):
   (r0, c0, dr, dc) = ln
-  return (r - r0)*dr - (c - c0)*dc == 0
+  return ((r - r0)*dc - (c - c0)*dr) == 0
 
 def part2(d):
   lines = set()
@@ -49,4 +49,5 @@ def part2(d):
 
   return count
 
-print(part2(tinput))
+assert part2(tinput) == 34
+print(part2(input))
