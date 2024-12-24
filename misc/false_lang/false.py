@@ -1,4 +1,5 @@
 import sys
+import io
 
 digits = "0123456789"
 lcase = "abcdefghijklmnopqrstuvwxyz"
@@ -9,6 +10,7 @@ class FalseMachine:
         self.code = code
         self.debug = debug
 
+        self.input = None
         self.ip = 0
         self.mem = [0] * 65536
         self.sp = 26
@@ -33,12 +35,20 @@ class FalseMachine:
     def get_output(self):
         return "".join(self.outputs)
 
+    def getc(self):
+        return self.input.read(1)
+
     def dump(self):
         print(self.ip-1, self.code[self.ip-1], self.mem[26:self.sp], " ".join([
             f"{lcase[i]}:{self.mem[i]}" for i in range(26) if self.mem[i] != 0
         ]))
 
-    def run(self):
+    def run(self, input=None):
+        if input is None:
+            self.input = sys.stdin
+        else:
+            self.input = io.StringIO(input)
+            
         entry_level = len(self.return_stack)
 
         while self.ip < len(self.code):
@@ -46,6 +56,12 @@ class FalseMachine:
             self.ip += 1
             if c.isspace():
                 continue
+            if c == '{':
+                while self.code[self.ip] != '}':
+                    self.ip += 1
+                self.ip += 1
+                continue
+                    
             if self.debug:
                 self.dump()
 
@@ -128,6 +144,10 @@ class FalseMachine:
             # IO
             elif c == '.':
                 self.out(self.pop())
+            elif c == ',':
+                self.out(chr(self.pop()))
+            elif c == '^':
+                self.push(ord(self.getc()))
 
             # arithmetic / logic
             elif c == '_':
@@ -162,9 +182,9 @@ class FalseMachine:
                 continue
 
 
-def false(code, debug=False):
+def false(code, debug=False, input=None):
     machine = FalseMachine(code, debug=debug)
-    machine.run()
+    machine.run(input=input)
     return machine.get_output()
 
 
@@ -185,17 +205,23 @@ def test():
     assert false(''' 5 1\\ [ $ 1=~ ] [ $ @ * \\ 1- ] # % . ''') == "120"
     # random memory access peek / poke
     assert false("10000 p:   33p;: 10000 ; .") == "33"
+    # test character output
+    assert false("48,") == "0"
+    # test character input
+    assert false("^.", input="0") == "48"
+    # skips comments
+    assert false("33 {floogle } .") == "33"
 
 
 if __name__ == "__main__":
     test()
-    print("All tests passed")
+    #print("All tests passed")
     # if there is an argument, treat it as a filename and run the code in it
     # else start a repl to read code from, running each line as it is entered
     if len(sys.argv) > 1:
         with open(sys.argv[1]) as f:
             code = f.read()
-            print(false(code))
+            print(false(code, debug=True))
     else:
         # use a repl with history support
         import readline
