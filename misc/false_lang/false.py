@@ -1,4 +1,4 @@
-from sys import stdin
+import sys
 
 digits = "0123456789"
 lcase = "abcdefghijklmnopqrstuvwxyz"
@@ -10,35 +10,44 @@ class FalseMachine:
         self.debug = debug
 
         self.ip = 0
-        self.stack = [None] * 26
+        self.mem = [0] * 65536
+        self.sp = 26
         self.outputs = []
         self.return_stack = []
 
     def push(self, x):
-        self.stack.append(x)
+        self.mem[self.sp] = x
+        self.sp += 1
 
     def pop(self, n=1):
         if n == 1:
-            return self.stack.pop()
-        return tuple([self.stack.pop() for _ in range(n)])
+            self.sp -= 1
+            return self.mem[self.sp]
+        sp = self.sp
+        self.sp -= n
+        return tuple(self.mem[sp - i - 1] for i in range(n))
 
     def out(self, v):
         self.outputs.append(str(v))
 
-    def dump(self, code, lcase):
-        print(self.ip, code[self.ip], self.stack[26:], " ".join([
-            f"{lcase[i]}:{self.stack[i]}" for i in range(26) if self.stack[i] is not None
+    def get_output(self):
+        return "".join(self.outputs)
+
+    def dump(self):
+        print(self.ip-1, self.code[self.ip-1], self.mem[26:self.sp], " ".join([
+            f"{lcase[i]}:{self.mem[i]}" for i in range(26) if self.mem[i] != 0
         ]))
 
     def run(self):
-        digits = "0123456789"
-        lcase = "abcdefghijklmnopqrstuvwxyz"
+        entry_level = len(self.return_stack)
 
         while self.ip < len(self.code):
             c = self.code[self.ip]
             self.ip += 1
-            if self.debug and not c.isspace():
-                self.dump(self.code, lcase)
+            if c.isspace():
+                continue
+            if self.debug:
+                self.dump()
 
             # parse numbers
             if c in digits:
@@ -67,31 +76,65 @@ class FalseMachine:
                 self.return_stack.append(self.ip)
                 self.ip = self.pop()
             elif c == '?':
-                self.return_stack.append(self.ip)
-                self.ip = self.pop() if self.pop() == 0 else self.ip
-            elif c == '#':
-                # while.  x is addr of condition lambda, y is addr of body lambda
-                # &&&
-                cond, body = self.pop(2)
+                body, cond = self.pop(2)
                 self.return_stack.append(self.ip)
                 self.ip = cond
-                self.ip = self.pop() if self.pop() == 0 else self.ip
-            elif c == ']':
+                self.run()
+                if self.pop() != 0:
+                    self.ip = body
+                    self.run()
                 self.ip = self.return_stack.pop()
+            elif c == '#':
+                # while.  x is addr of condition lambda, y is addr of body lambda
+                body, cond = self.pop(2)
+                # while True:
+                self.return_stack.append(self.ip)
+                for i in range(6):
+                    self.ip = cond
+                    self.run()
+                    if self.pop() == 0:
+                        break
+                    self.ip = body
+                    self.run()
+                self.ip = self.return_stack.pop()
+            elif c == ']':
+                if len(self.return_stack) == entry_level:
+                    return
+                self.ip = self.return_stack.pop()
+
+            # variable access and stack manipulation
             elif c in lcase:
                 self.push(lcase.index(c))
             elif c == ':':
                 ad, vl = self.pop(2)
-                self.stack[ad] = vl
+                self.mem[ad] = vl
             elif c == ';':
-                self.push(self.stack[self.pop()])
+                self.push(self.mem[self.pop()])
+            elif c == '$':
+                self.push(self.mem[self.sp-1])
+            elif c == '%':
+                self.pop()
+            elif c == '\\':
+                self.mem[self.sp-1], self.mem[self.sp -
+                                              2] = self.mem[self.sp-2], self.mem[self.sp-1]
+            elif c == '@':  # rot
+                z, y, x = self.pop(3)
+                self.push(y)
+                self.push(z)
+                self.push(x)
+            elif c == 'P':
+                self.push(self.mem[self.sp - self.pop()])
+
+            # IO
             elif c == '.':
                 self.out(self.pop())
+
+            # arithmetic / logic
             elif c == '_':
                 self.push(-self.pop())
             elif c == '~':
                 self.push(~self.pop())
-            elif c in "+-*/&|":
+            elif c in "+-*/&|?>=":
                 y, x = self.pop(2)
                 if c == '+':
                     r = x + y
@@ -106,58 +149,62 @@ class FalseMachine:
                 elif c == '|':
                     r = x | y
                 elif c == '>':
-                    r = x > y
+                    r = -1 if x > y else 0
                 elif c == '=':
-                    r = x == y
+                    r = -1 if x == y else 0
                 self.push(r)
+
             elif c == '"':
                 while (c := self.code[self.ip]) != '"':
                     self.out(c)
                     self.ip += 1
                 self.ip += 1  # Skip the closing quote
                 continue
-            elif c == '$':
-                self.push(self.stack[-1])
-            elif c == '%':
-                self.pop()
-            elif c == '\\':
-                self.stack[-1], self.stack[-2] = self.stack[-2], self.stack[-1]
-            elif c == '@':  # rot
-                z, y, x = self.pop(3)
-                self.push(y)
-                self.push(z)
-                self.push(x)
-            elif c == 'P':
-                self.push(self.stack[-self.pop()])
-
-        r = "".join(self.outputs)
-        if self.debug:
-            print("result", r)
-        return r
 
 
 def false(code, debug=False):
     machine = FalseMachine(code, debug=debug)
-    return machine.run()
+    machine.run()
+    return machine.get_output()
 
 
 def test():
+    # variable access
     assert false("3a: 9b: b; a; - .") == "6"
+    # integer division
     assert false("37 2 / .") == "18"
+    # lambdas
     assert false("3 [ 2 * ] ! .") == "6"
     assert false("7 [3 [2*] ! ] ! * .") == "42"
-
-    # assert false('''
-    # 5
-    # 1\\
-    #   [ $ 1=~ ]
-    #     [ $ @ * \\ 1- ]
-    #   # % .
-
-    # ''', debug=True) == "120"
+    # if
+    assert false('[3 4 >] ["should not print"] ?') == ""
+    assert false('[4 3 >] ["should print"] ?') == "should print"
+    # while loop
+    assert false("3 a: [ a; ] [a; $. 1- a:] #") == "321"
+    # factorial
+    assert false(''' 5 1\\ [ $ 1=~ ] [ $ @ * \\ 1- ] # % . ''') == "120"
+    # random memory access peek / poke
+    assert false("10000 p:   33p;: 10000 ; .") == "33"
 
 
 if __name__ == "__main__":
     test()
-    # code = stdin.read()
-    # print(false(code))
+    print("All tests passed")
+    # if there is an argument, treat it as a filename and run the code in it
+    # else start a repl to read code from, running each line as it is entered
+    if len(sys.argv) > 1:
+        with open(sys.argv[1]) as f:
+            code = f.read()
+            print(false(code))
+    else:
+        # use a repl with history support
+        import readline
+        machine = FalseMachine("")
+        while True:
+            code = input("false> ")
+            machine.code = code
+            machine.ip = 0
+            machine.run()
+            print(machine.get_output())
+            machine.dump()
+            machine.outputs = []
