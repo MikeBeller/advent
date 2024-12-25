@@ -6,11 +6,11 @@ lcase = "abcdefghijklmnopqrstuvwxyz"
 
 
 class FalseMachine:
-    def __init__(self, code, debug=False):
+    def __init__(self, code, debug=False, input=""):
         self.code = code
         self.debug = debug
 
-        self.input = None
+        self.input = io.StringIO(input)
         self.ip = 0
         self.mem = [0] * 65536
         self.sp = 26
@@ -43,11 +43,8 @@ class FalseMachine:
             f"{lcase[i]}:{self.mem[i]}" for i in range(26) if self.mem[i] != 0
         ]))
 
-    def run(self, input=None):
-        if input is None:
-            self.input = sys.stdin
-        else:
-            self.input = io.StringIO(input)
+    def run(self):
+        
             
         entry_level = len(self.return_stack)
 
@@ -147,7 +144,9 @@ class FalseMachine:
             elif c == ',':
                 self.out(chr(self.pop()))
             elif c == '^':
-                self.push(ord(self.getc()))
+                ch = self.getc()
+                cc = ord(ch) if ch else 0
+                self.push(cc)
 
             # arithmetic / logic
             elif c == '_':
@@ -183,8 +182,8 @@ class FalseMachine:
 
 
 def false(code, debug=False, input=None):
-    machine = FalseMachine(code, debug=debug)
-    machine.run(input=input)
+    machine = FalseMachine(code, debug=debug, input=input)
+    machine.run()
     return machine.get_output()
 
 
@@ -209,8 +208,10 @@ def test():
     assert false("48,") == "0"
     # test character input
     assert false("^.", input="0") == "48"
+    assert false("^.", input="") == "0"
     # skips comments
     assert false("33 {floogle } .") == "33"
+    
 
 
 if __name__ == "__main__":

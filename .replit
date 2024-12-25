@@ -1,5 +1,5 @@
 
-run = "cd 2024/09; python 202409.py"
+run = "cd 2024/01; python 202401.false.py"
 entrypoint = "2024/09/202409.py"
 
 [env]

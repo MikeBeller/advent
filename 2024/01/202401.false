@@ -1,8 +1,0 @@
-{input a number}
-[
-  0
-  [ ^ $ 47 - $ 1_ > 10 \> &]  {num dig isdig?}
-    [ \ 10 * + ]
-] d:
-
-d;! .
