@@ -3,18 +3,22 @@ sys.path.append('../../misc/false_lang')
 
 from false import FalseMachine
 
-code = '''
-{input a number}
+code = r'''
+{ -- chr num -- input a number}
 [
   0
-  [ ^ $ 47 - $ 1_ > \\ 10 \\> &]  {num dig isdig?}
-    [ 48 - \\ 10 * + ] #
-\\ ] d:
+  [ ^ $$ '9 > \ '0 \> | ~]  {num dig isdig?}
+    [ '0 - \ 10 * + ] #
+\ ] d:
 
 d;! .
+
+
 '''
 
-m = FalseMachine(code, input="321 ")
-#m = FalseMachine(code, debug=True, input="321 ")
+debug=True
+input="321"
+
+m = FalseMachine(code, debug=debug, input=input)
 m.run()
 print(m.get_output())
