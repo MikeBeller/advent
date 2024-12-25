@@ -11,18 +11,24 @@ code = r'''
 [ ^ $ c: ] g:
 
 { -- num -- input a number}
-[ 0 [ g;! d;!] [ c; '0 - \ 10 * + ] # ] n:
+[ 0 [ g;! d;!]
+  [c; '0 - \ 10 * + ] #
+] n:
+ 
+[
+  10000 a: 0 i:
+  1_ c:
+  [ c; ] [
+    n;!
+    i;1+i: a;i;+ : ] #
+] r:
 
-n;!
-
-{ read numbers into array at address
-  pointed to by a, with len stored
-  in first cell }
+r;!
 
 '''
 
 debug=True
-input="321"
+input="23 54 79"
 
 m = FalseMachine(code, debug=debug, input=input)
 m.run()
