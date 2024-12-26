@@ -10,15 +10,23 @@ code = r'''
 { -- c | get a char and also copy it to c:}
 [ ^ $ c: ] g:
 
-{ -- num -- input a number}
+{ -- num | input a number}
 [ 0 [ g;! d;!]
   [c; '0 - \ 10 * + ] #
 ] n:
- 
+
+{ n -- bool | char code is whitespace }
+[ $$$ 32= \ 10= | \9= | \13= |] w:
+
+{ -- | skip whitespace }
+[ [ c; w;! ] [ g;! ] # % ] k:
+
+{ read a list of numbers til eof }
 [
+  k;!
   10000 a: 0 i:
-  1_ c:
   [ c; ] [
+    k;!
     n;!
     i;1+i: a;i;+ : ] #
 ] r:
