@@ -7,24 +7,21 @@ code = r'''
 { c -- ? | is c a digit }
 [ $ '9 > \ '0 \> | ~]  d:
 
-{ -- c | get a char and also copy it to c:}
-[ ^ $ c: ] g:
-
 { -- num | input a number}
-[ 0 [ g;! d;!]
-  [c; '0 - \ 10 * + ] #
+[ 0 [ c; d;!]
+  [c; '0 - \ 10 * + ^c: ] #
 ] n:
 
 { n -- bool | char code is whitespace }
 [ $$$ 32= \ 10= | \9= | \13= |] w:
 
 { -- | skip whitespace }
-[ [ c; w;! ] [ g;! ] # % ] k:
+[ [ c; w;! ] [ ^c: ] # ] k:
 
 { read a list of numbers til eof }
 [
-  k;!
   10000 a: 0 i:
+  ^c:
   [ c; ] [
     k;!
     n;!
