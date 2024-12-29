@@ -9,8 +9,7 @@ code = r'''
 
 { -- num | input a number}
 [ 0 [ c; d;!]
-  [c; '0 - \ 10 * + ^c: ] #
-] n:
+  [c; '0 - \ 10 * + ^c: ] # ] n:
 
 { n -- bool | char code is whitespace }
 [ $$$ 32= \ 10= | \9= | \13= |] w:
@@ -18,7 +17,7 @@ code = r'''
 { -- | skip whitespace }
 [ [ c; w;! ] [ ^c: ] # ] k:
 
-{ read two columns of numbers into 2 arrays }
+{ read two columns of numbers into arrays a and b }
 [
   1000 a: 3000 b: 0 i:
   ^c:
@@ -30,25 +29,32 @@ code = r'''
 
 r;!
 
-{arr ln --  | bubble sort}
+{arr ln --  | bubble sort array arr of length ln}
 [
  l: x: 1y:
  [ y; ] [
    0y: 0j:
    [ j; l;1- \> ] [
-     x;j;+ $ ; \ 1+; > [
+     x;j;+; x;j;+1+; >  [
        x;j;+; x;j;+1+;
        x;j;+: x;j;+1+:
-       y;1+: j;1+:
+       y;1+y:
      ] ?
+     j;1+j:
    ] #
  ] #
- 
-]
+] s:
+
+D
+a; i; s; !
+b; i; s; !
+D
 
 '''
 
 debug=True
+debug=False
+
 input=open("tinput.txt").read()
 
 m = FalseMachine(code, debug=debug, input=input)

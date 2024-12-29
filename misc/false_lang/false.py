@@ -39,14 +39,14 @@ class FalseMachine:
     return self.input.read(1)
 
   def dump(self):
-    print(self.ip-1, self.code[self.ip-1], self.mem[26:self.sp], " ".join([
+    vars = " ".join([
       f"{lcase[i]}:{self.mem[i]}" for i in range(26) if self.mem[i] != 0
-    ]), end=" -- ")
-    print(" ".join([f"{i}:{self.mem[i]}" for i in range(1000,9000) if self.mem[i] != 0]))
+    ])
+    mem = " ".join([f"{i}:{self.mem[i]}" for i in range(1000,9000) if self.mem[i] != 0])
+    out = f"{self.ip-1} {self.code[self.ip-1]} {vars} -- {mem}"
+    return out
 
   def run(self):
-    
-      
     entry_level = len(self.return_stack)
 
     while self.ip < len(self.code):
@@ -66,7 +66,7 @@ class FalseMachine:
         continue
           
       if self.debug:
-        self.dump()
+        print(self.dump())
 
       # parse numbers
       if c in digits:
@@ -95,25 +95,23 @@ class FalseMachine:
         self.return_stack.append(self.ip)
         self.ip = self.pop()
       elif c == '?':
-        body, cond = self.pop(2)
-        self.return_stack.append(self.ip)
-        self.ip = cond
-        self.run()
-        if self.pop() != 0:
-          self.ip = body
+        body_lambda, cond = self.pop(2)
+        if cond != 0:
+          self.return_stack.append(self.ip)
+          self.ip = body_lambda
           self.run()
-        self.ip = self.return_stack.pop()
+          self.ip = self.return_stack.pop()
       elif c == '#':
         # while.  x is addr of condition lambda, y is addr of body lambda
-        body, cond = self.pop(2)
+        body_lambda, cond_lambda = self.pop(2)
         # while True:
         self.return_stack.append(self.ip)
-        for i in range(6):
-          self.ip = cond
+        while True:
+          self.ip = cond_lambda
           self.run()
           if self.pop() == 0:
             break
-          self.ip = body
+          self.ip = body_lambda
           self.run()
         self.ip = self.return_stack.pop()
       elif c == ']':
@@ -145,6 +143,8 @@ class FalseMachine:
         self.push(self.mem[self.sp - self.pop()])
 
       # IO
+      elif c == 'D':
+        self.out(self.dump())   # added -- not in original FALSE
       elif c == '.':
         self.out(self.pop())
       elif c == ',':
@@ -202,8 +202,8 @@ def test():
   assert false("3 [ 2 * ] ! .") == "6"
   assert false("7 [3 [2*] ! ] ! * .") == "42"
   # if
-  assert false('[3 4 >] ["should not print"] ?') == ""
-  assert false('[4 3 >] ["should print"] ?') == "should print"
+  assert false('3 4 > ["should not print"] ?') == ""
+  assert false('4 3 > ["should print"] ?') == "should print"
   # while loop
   assert false("3 a: [ a; ] [a; $. 1- a:] #") == "321"
   # factorial
