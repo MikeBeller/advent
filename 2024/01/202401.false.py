@@ -30,6 +30,22 @@ code = r'''
 
 r;!
 
+{arr ln --  | bubble sort}
+[
+ l: x: 1y:
+ [ y; ] [
+   0y: 0j:
+   [ j; l;1- \> ] [
+     x;j;+ $ ; \ 1+; > [
+       x;j;+; x;j;+1+;
+       x;j;+: x;j;+1+:
+       y;1+: j;1+:
+     ] ?
+   ] #
+ ] #
+ 
+]
+
 '''
 
 debug=True
