@@ -4,9 +4,8 @@ import io
 digits = "0123456789"
 lcase = "abcdefghijklmnopqrstuvwxyz"
 
-
 class FalseMachine:
-  def __init__(self, code, debug=False, input=""):
+  def __init__(self, code, debug=False, input="", live_output=False):
     self.code = code
     self.debug = debug
 
@@ -16,6 +15,8 @@ class FalseMachine:
     self.sp = 26
     self.outputs = []
     self.return_stack = []
+    self.instruction_count = 0
+    self.live_output = live_output
 
   def push(self, x):
     self.mem[self.sp] = x
@@ -31,6 +32,8 @@ class FalseMachine:
 
   def out(self, v):
     self.outputs.append(str(v))
+    if self.live_output:
+      print(v, end="")
 
   def get_output(self):
     return "".join(self.outputs)
@@ -43,10 +46,10 @@ class FalseMachine:
       f"{lcase[i]}:{self.mem[i]}" for i in range(26) if self.mem[i] != 0
     ])
     mem = " ".join([f"{i}:{self.mem[i]}" for i in range(1000,9000) if self.mem[i] != 0])
-    out = f"{self.ip-1} {self.code[self.ip-1]} {vars} -- {mem}"
+    out = f"{self.ip-1} {self.instruction_count}: {self.code[self.ip-1]} {vars} -- {mem}"
     return out
 
-  def run(self):
+  def run(self, max_instructions=None):
     entry_level = len(self.return_stack)
 
     while self.ip < len(self.code):
@@ -54,19 +57,26 @@ class FalseMachine:
       self.ip += 1
       if c.isspace():
         continue
-      if c == "'":
-        cc = ord(self.code[self.ip])
-        self.push(cc)
-        self.ip += 1
-        continue
+
       if c == '{':
         while self.code[self.ip] != '}':
           self.ip += 1
         self.ip += 1
         continue
-          
+        
       if self.debug:
         print(self.dump())
+        
+      self.instruction_count += 1
+      if max_instructions is not None and self.instruction_count > max_instructions:
+        print("Hit max instructions")
+        break
+      
+      if c == "'":
+        cc = ord(self.code[self.ip])
+        self.push(cc)
+        self.ip += 1
+        continue
 
       # parse numbers
       if c in digits:
@@ -121,7 +131,8 @@ class FalseMachine:
 
       # variable access and stack manipulation
       elif c in lcase:
-        self.push(lcase.index(c))
+        i = lcase.index(c)
+        self.push(i)
       elif c == ':':
         ad, vl = self.pop(2)
         self.mem[ad] = vl
@@ -131,20 +142,21 @@ class FalseMachine:
         self.push(self.mem[self.sp-1])
       elif c == '%':
         self.pop()
-      elif c == '\\':
-        self.mem[self.sp-1], self.mem[self.sp -
-                        2] = self.mem[self.sp-2], self.mem[self.sp-1]
+      elif c == "\\":
+        (self.mem[self.sp-1],
+         self.mem[self.sp-2]) = self.mem[self.sp-2], self.mem[self.sp-1]
       elif c == '@':  # rot
         z, y, x = self.pop(3)
         self.push(y)
         self.push(z)
         self.push(x)
       elif c == 'P':
+        # pick (phi in false)
         self.push(self.mem[self.sp - self.pop()])
 
       # IO
-      elif c == 'D':
-        self.out(self.dump())   # added -- not in original FALSE
+      elif c == 'D': # debug dump
+        self.out(self.dump() + "\n")
       elif c == '.':
         self.out(self.pop())
       elif c == ',':
@@ -159,7 +171,7 @@ class FalseMachine:
         self.push(-self.pop())
       elif c == '~':
         self.push(~self.pop())
-      elif c in "+-*/&|?>=":
+      elif c in "+-*/&|?><=":
         y, x = self.pop(2)
         if c == '+':
           r = x + y
@@ -175,6 +187,8 @@ class FalseMachine:
           r = x | y
         elif c == '>':
           r = -1 if x > y else 0
+        elif c == '<':
+          r = -1 if x < y else 0
         elif c == '=':
           r = -1 if x == y else 0
         self.push(r)
@@ -204,6 +218,7 @@ def test():
   # if
   assert false('3 4 > ["should not print"] ?') == ""
   assert false('4 3 > ["should print"] ?') == "should print"
+  assert false('3 5 < ["true"]?') == "true"
   # while loop
   assert false("3 a: [ a; ] [a; $. 1- a:] #") == "321"
   # factorial
