@@ -42,7 +42,7 @@ class FalseMachine:
     print(self.ip-1, self.code[self.ip-1], self.mem[26:self.sp], " ".join([
       f"{lcase[i]}:{self.mem[i]}" for i in range(26) if self.mem[i] != 0
     ]), end=" -- ")
-    print(" ".join([f"{i}:{self.mem[i]}" for i in range(10000,65536) if self.mem[i] != 0]))
+    print(" ".join([f"{i}:{self.mem[i]}" for i in range(1000,9000) if self.mem[i] != 0]))
 
   def run(self):
     

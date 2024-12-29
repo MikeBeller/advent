@@ -18,14 +18,14 @@ code = r'''
 { -- | skip whitespace }
 [ [ c; w;! ] [ ^c: ] # ] k:
 
-{ read a list of numbers til eof }
+{ read two columns of numbers into 2 arrays }
 [
-  10000 a: 0 i:
+  1000 a: 3000 b: 0 i:
   ^c:
   [ c; ] [
-    k;!
-    n;!
-    i;1+i: a;i;+ : ] #
+    k;! n;! a;i;+ :
+    k;! n;! b;i;+ :
+    i;1+i: ] #
 ] r:
 
 r;!
@@ -33,7 +33,7 @@ r;!
 '''
 
 debug=True
-input="23 54 79"
+input=open("tinput.txt").read()
 
 m = FalseMachine(code, debug=debug, input=input)
 m.run()
