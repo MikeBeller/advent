@@ -1,10 +1,9 @@
 
-run = "cd 2024/01; python 202401.false.py"
-entrypoint = "2024/09/202409.py"
+run = "cd 2024/01; k < 202401.k"
 
 [env]
-PYTHONPATH="/home/runner/advent/2024/lib"
-PATH="/home/runner/advent/bin"
+PYTHONPATH = "/home/runner/advent/2024/lib"
+PATH = "/home/runner/advent/bin"
 
 
 [nix]
