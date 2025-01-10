@@ -1,5 +1,5 @@
 
-run = "cd 2024/01; k 202401.k"
+run = "cd 2024/01; lilt 202401.lil"
 
 [env]
 PYTHONPATH = "/home/runner/workspace/2024/lib"

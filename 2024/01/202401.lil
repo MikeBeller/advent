@@ -1,0 +1,16 @@
+on chomp s do
+  if (-1 take s) = "\n" (-1 drop s) else s end
+end
+on sort vec do
+  extract value orderby value asc from vec
+end
+
+d:flip "%i   %i" parse "\n" split chomp[read["input.txt"]]
+
+# part 1
+show[sum each x in (sort[d[0]] - sort[d[1]]) (mag x) end]
+
+# part 2
+cc:extract g:first(value) n:(1 + max gindex) by value from d[1]
+c:cc.g dict cc.n
+show[sum each x in d[0] x * c[x] end]
