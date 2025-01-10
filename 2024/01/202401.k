@@ -1,31 +1,13 @@
-(a;b): + `I$' "   "\'0:"input.txt"
+d: ("I  I";" ") 0:"input.txt"
+a:d[0]
+b:d[1]
 
 /part 1
 abs:{x|-x}
 +/ abs a[<a] - b[<b]
 
 /part 2
-c: #'=b
-+/  a * c[a]
-
-/verbose version:
-abs:{x|-x}
-lines:{0:x}
-split:{x\y}
-each:{x'y}
-int:{`I$x}
-sort:{x[<x]}
-sum:{+/x}
-flip:(+)
-count:{#'=x}
-
-/part1
-/ (a;b): flip each[int] each[split["   "]] lines["input.txt"]
-(a;b): + int' split["   "]' lines["input.txt"]
-sum abs sort[a] - sort[b]
-
-/part2
-c:count b
-sum a * c[a]
+bc: #:'=b,0
+bu:?b
++/  a * bc[(bu?)'a]
 \\
-

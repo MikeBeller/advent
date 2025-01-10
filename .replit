@@ -2,8 +2,8 @@
 run = "cd 2024/01; k 202401.k"
 
 [env]
-PYTHONPATH = "/home/runner/advent/2024/lib"
-PATH = "/home/runner/advent/bin"
+PYTHONPATH = "/home/runner/workspace/2024/lib"
+PATH = "/home/runner/workspace/bin"
 
 
 [nix]
