@@ -1,4 +1,6 @@
-in: 0:`tinput.txt
-in
-in _ss "mul([0-9],[0-9])"
+in: * 0:`tinput.txt
+si:4+ in _ss "mul("
+ss:si _\: in
+ncn:{(")"\x)[0]}' ss
+ncn
 \\
