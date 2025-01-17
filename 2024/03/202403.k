@@ -1,17 +1,15 @@
-in: "\n"/0:`tinput2.txt
+in: "\n"/0:`input.txt
 si:4+ in _ss "mul("
 ss:si _\: in
-ncn:{(")"\x)[0]}' ss
-nums:{0$' ","\x}
-safenums:{ns:@[nums;x;:]; :[ns[0]; (); 1; ns[1]] }
-sns:safenums' ncn
-+/ */' sns@ &2=#:'sns /part1
+nns:","\' {(")"\x)[0]}' ss
+isdec:{~ |/ 10="0123456789"?/:x}
+safenum:{:[((0<#x)&(4>#x)&isdec[x]); 0$x ; 0]}
+mul:{:[~2=#x; 0; safenum[x[0]] * safenum[x[1]]]}
+muls: mul' nns
++/ muls     /part1
 
-isns: si ,' `mul ,' sns
-dds: ,/ (,(0;`do) ; ((in _ss "do()") ,' `do) ; ((in _ss "don't()") ,' `dont))
-all:(isns,dds)
-all:all[<all@'0]
-0 {:[`do=y[1];d:1;
-     `dont=y[1];d:0;
-     1; x+y[2]*y[3]]}' all
+onoff:(,(0;1)), ((in _ss "don't()"),\: 0), ((in _ss "do()"),\: 1)
+dd:+ onoff[<onoff@'0]
+bs:-1 + dd[0] _binl si
++/ dd[1][bs] * muls   / part2
 \\
