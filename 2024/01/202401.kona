@@ -1,5 +1,3 @@
-0:"input.txt"
-\\
 d: ("I  I";" ") 0:"input.txt"
 a:d[0]
 b:d[1]
