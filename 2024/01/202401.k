@@ -1,10 +1,4 @@
-0:"input.txt"
-\\
-d: ("I  I";" ") 0:"input.txt"
-a:d[0]
-b:d[1]
-
-/part 1
+(a;b):+ `I$' "   "\' 0:"input.txt"
 abs:{x|-x}
 +/ abs a[<a] - b[<b]
 
