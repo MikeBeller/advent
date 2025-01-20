@@ -1,16 +1,12 @@
-/ prelude
 znan:{x*~^x}
-int:(`I$)
-split:{[sep;s] sep\s}
 filter:{[f;xs] xs@& f' xs}
 pp:{`0: `k[x]; x}
 suffixes:{(!#x)_\: x}
 isprefix:{[n;h] n~(#n)#h}
 
 in: 1:"input.txt"
-nums:{znan int split[","; split[")"; x][0]]}
+nums:{znan `I$ ","\ * ")"\x}
 +/ */' nums' 1_"mul("\in  / part1
-
 
 ops:("mul("; "don't()"; "do()")
 anyprefix:{[ps;ss] (ps @& ps isprefix\: ss; ss)}
