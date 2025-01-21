@@ -1,5 +1,6 @@
 { pkgs }: {
     deps = [
+      pkgs.quickjs
       pkgs.python311Packages.more-itertools
       pkgs.python311Packages.scipy
       pkgs.xsimd

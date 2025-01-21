@@ -1,18 +1,15 @@
 znan:{x*~^x}
-filter:{[f;xs] xs@& f' xs}
 pp:{`0: `k[x]; x}
-suffixes:{(!#x)_\: x}
-isprefix:{[n;h] n~(#n)#h}
+starts:{[n;h] n~(#n)#h}
 
 in: 1:"input.txt"
 nums:{znan `I$ ","\ * ")"\x}
 +/ */' nums' 1_"mul("\in  / part1
 
-ops:("mul("; "don't()"; "do()")
-anyprefix:{[ps;ss] (ps @& ps isprefix\: ss; ss)}
-cmds:filter[{1=#x[0]}; anyprefix[ops;]' suffixes[in]]
-muls:{[on;sm;s] n:nums[4_s]; :[2~=#n; (on;sm); (on; sm + on*n[0]*n[1])]}
-doit:{[x;y] (on;sm):x; (cl;s):y;
-    :[cl[0]~"don't()"; (0;sm);  cl[0]~"do()"; (1;sm); muls[on;sm;s]]}
-
-*1_ (1;0) doit/ cmds    / part2
+ss:in; on:0; sm:0
+update:{[s] n:nums[4_s]; sm::sm + (2=#n)*on* */n}
+(#ss) {
+  ${starts["don't()";ss]; on::0;
+   starts["do()";ss]; on::1;
+   starts["mul(";ss]; update[ss]} ss::1_ss}/0
+sm
