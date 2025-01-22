@@ -8,5 +8,37 @@ valid:{d:1_-':x; mn:&/d; mx:|/d;
 / part2
 anyvalid:{[a] |/ {valid[x _ y]}[a;]'!#a}
 +/ anyvalid'in
-\\
 
+/ verbose version
+
+readlines:(0::)
+split:{x\ y}
+int:{`I$x}
+first:(*:)
+each:{x'y}
+sum:(+/)
+max:(|/)
+min:(&/)
+sort:{x[<x]}
+flip:(+:)
+group:(=:)
+count:(#:)
+filter:{[f;t] f#t}
+keys:(!:)
+vals:(.:)
+pp:{`0:`k@x}
+znan:{(~^x) * x}
+diff:{1_-':x}
+del:{y_x}
+
+in: each[{int split[" "] x}] readlines "input.txt"
+
+/part1
+valid:{[x] d:diff[x]; mn:min[d]; mx: max[d]
+   ((mn>0)&(mx<4)) | ((mx<0)&(mn>-4))}
+sum each[valid] in
+
+/part2
+a:in[0]
+a
+del[2] a
