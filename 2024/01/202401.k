@@ -6,8 +6,8 @@ abs:{x|-x}
 c: #'=b
 +/ a * c[a] * ~0N=c[a]
 
-
-read0:(0::)
+/ verbose version -- here is a prelude
+readlines:(0::)
 split:{x\ y}
 int:{`I$x}
 first:(*:)
@@ -15,6 +15,18 @@ each:{x'y}
 sum:(+/)
 sort:{x[<x]}
 flip:(+:)
+group:(=:)
+count:(#:)
+filter:{[f;t] f#t}
+keys:(!:)
+vals:(.:)
+pp:(`k@)
+znan:{(~^x) * x}
 
-(a;b): flip int each[split["   "]]  read0 "tinput.txt"
+/ and here is the code -- seriously more readable
+(a;b): flip int each[split["   "]]  readlines "input.txt"
 sum abs (sort a) - (sort b)
+
+c:each[count] group b
+sum znan a * c[a]
+
