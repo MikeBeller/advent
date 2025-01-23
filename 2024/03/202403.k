@@ -16,7 +16,7 @@ r: {[ss] 3<#ss}{[ss]
 sm
 
 / verbose version
-
+find:{[needle;haystack] & (#needle) (needle~)': haystack}
 readlines:(0::)
 read:(1::)
 split:{x\ y}
@@ -44,10 +44,19 @@ til:(!:)
 len:(#:)
 any:(|/)
 drop:{x_y}
+while:{[t;b;x] t b/x}
 
 in: read "input.txt"
 nums:{znan int split[","] first split[")"] x}
-
 sum each[prod] each[nums] drop[1] split["mul("] in
 
+on:1; sm:0
+r: while[{[ss] 3<#ss}; {[ss]
+     $[starts["don't()";ss]; on::0
+      starts["do()";ss];     on::1
+      starts["mul(";ss];     [
+        n:nums[4_ss]
+        sm::sm + (2=#n)*on*n[0]*n[1]]]
+     1_ ss}] in
+sm
 
