@@ -18,6 +18,7 @@ sm
 / verbose version
 
 readlines:(0::)
+read:(1::)
 split:{x\ y}
 int:{`I$x}
 first:(*:)
@@ -25,6 +26,7 @@ each:{x'y}
 eachleft:{[x;f;y] x f\: y}
 eachright:{[x;f;y] x f/: y}
 sum:(+/)
+prod:(*/)
 max:(|/)
 min:(&/)
 sort:{x[<x]}
@@ -41,3 +43,11 @@ del:{y_x} /remove xth item from y
 til:(!:)
 len:(#:)
 any:(|/)
+drop:{x_y}
+
+in: read "input.txt"
+nums:{znan int split[","] first split[")"] x}
+
+sum each[prod] each[nums] drop[1] split["mul("] in
+
+
