@@ -16,6 +16,8 @@ split:{x\ y}
 int:{`I$x}
 first:(*:)
 each:{x'y}
+eachleft:{[x;f;y] x f\: y}
+eachright:{[x;f;y] x f/: y}
 sum:(+/)
 max:(|/)
 min:(&/)
@@ -29,7 +31,10 @@ vals:(.:)
 pp:{`0:`k@x}
 znan:{(~^x) * x}
 diff:{1_-':x}
-del:{y_x}
+del:{y_x} /remove xth item from y
+til:(!:)
+len:(#:)
+any:(|/)
 
 in: each[{int split[" "] x}] readlines "input.txt"
 
@@ -39,6 +44,6 @@ valid:{[x] d:diff[x]; mn:min[d]; mx: max[d]
 sum each[valid] in
 
 /part2
-a:in[0]
-a
-del[2] a
+drops:{[a] eachleft[(til len a); {del[x; y]}; a]}
+anyvalid:{any each[valid] drops x}
+sum each[anyvalid] in
