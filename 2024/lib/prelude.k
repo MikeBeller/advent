@@ -30,3 +30,5 @@ drop:{x_y}
 while:{[t;b;x] t b/x}
 repeat:{[n;b;x] n b/x}
 repeats:{[n;b;x] n b\x}
+raze:(,/)
+cross:{raze x,/:\:y}
