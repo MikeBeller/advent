@@ -32,3 +32,4 @@ repeat:{[n;b;x] n b/x}
 repeats:{[n;b;x] n b\x}
 raze:(,/)
 cross:{raze x,/:\:y}
+contains:{any eachleft[x;(~);y]}
