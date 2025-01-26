@@ -26,6 +26,7 @@ del:{y_x} /remove xth item from y
 til:(!:)
 len:(#:)
 any:(|/)
+all:(&/)
 drop:{x_y}
 while:{[t;b;x] t b/x}
 repeat:{[n;b;x] n b/x}
@@ -33,3 +34,4 @@ repeats:{[n;b;x] n b\x}
 raze:(,/)
 cross:{raze x,/:\:y}
 contains:{any eachleft[x;(~);y]}
+range:{x + !(y-x)}
