@@ -3,3 +3,4 @@
 *.beam
 venv/
 *.pyc
+tmp/*
