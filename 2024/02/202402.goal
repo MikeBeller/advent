@@ -1,0 +1,2 @@
+inp: "i"$ " "\ =-read "tinput.txt"
+say inp
