@@ -1,0 +1,3 @@
+inp: read "input.txt"
+say +/ */' "i"$ 1_' rx/mul[(](\d+),(\d+)[)]/[inp;-1]
+

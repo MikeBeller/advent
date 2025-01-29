@@ -1,4 +1,4 @@
-(a;b): "i"$ csv sub["   ",","] read["input.txt"]
+(a;b): + "i"$ ! =-read["input.txt"]
 say +/ abs (^a) - (^b)
 
 c: (?b)!(=%b)  / dict of uniq b's to their respective count

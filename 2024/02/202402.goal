@@ -1,2 +1,11 @@
-inp: "i"$ " "\ =-read "tinput.txt"
-say inp
+inp: "i"$ " "\ =-read "input.txt"
+diff:{(1_x) - (-1_x)}
+all:(&/)
+valid:{d:diff x; ((all 0>d) | (all 0<d)) & (all 4 > abs[d])}
+say +/ valid'inp
+
+any:(|/)
+del:{(x#y), (x-(#y)-1)#y}
+drops:{(!#x) del` x}
+anyvalid:{any (valid') drops x}
+say +/ anyvalid' inp

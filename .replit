@@ -1,5 +1,5 @@
 
-run = "cd 2024/02; goal 202402.goal"
+run = "cd 2024/03; goal 202403.goal"
 
 [env]
 PYTHONPATH = "/home/runner/workspace/2024/lib"
