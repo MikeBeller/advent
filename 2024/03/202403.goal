@@ -1,3 +1,14 @@
 inp: read "input.txt"
 say +/ */' "i"$ 1_' rx/mul[(](\d+),(\d+)[)]/[inp;-1]
 
+mul:{[c] */ "i"$ 1_ rx/mul[(](\d+),(\d+)[)]/c}
+cmds: *' rx/(mul[(]\d+,\d+[)]|do\(\)|don't\(\))/[inp;-1]
+
+r:(1;0) {[s;c]
+  (do;sm):s;
+  ?[
+    c="do()"; (1;sm)
+    c="don't()"; (0;sm)
+    (do;sm+do*mul[c])
+  ]}/ cmds
+say r[1]
