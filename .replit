@@ -1,5 +1,6 @@
 
 run = "k misc/euler/e14p.k"
+modules = ["python-3.11"]
 
 [env]
 PYTHONPATH = "/home/runner/workspace/2024/lib"
