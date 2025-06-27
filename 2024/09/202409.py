@@ -4,11 +4,11 @@ input = open("input.txt").read().strip()
 
 def expand(s: str) -> list[int]:
     r = []
-    for i in range(len(s)):
+    for i, si in enumerate(s):
         if i % 2 == 0:
-            r.extend([i//2] * int(s[i]))
+            r.extend([i//2] * int(si))
         else:
-            r.extend([-1] * int(s[i]))
+            r.extend([-1] * int(si))
     return r
 
 
@@ -35,3 +35,12 @@ def part1(inp: str) -> int:
 
 assert part1(tinput) == 1928
 print(part1(input))
+
+def fill_full(inp: list[int]) -> list[int]:
+    r = inp[:]
+    return r
+
+def part2(inp: str) -> int:
+    return checksum(fill_full(expand(inp)))
+
+print(part2(tinput))
