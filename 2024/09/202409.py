@@ -3,11 +3,12 @@ from itertools import groupby
 tinput = open("tinput.txt").read().strip()
 input = open("input.txt").read().strip()
 
+
 def expand(s: str) -> list[int]:
     r = []
     for i, si in enumerate(s):
         if i % 2 == 0:
-            r.extend([i//2] * int(si))
+            r.extend([i // 2] * int(si))
         else:
             r.extend([-1] * int(si))
     return r
@@ -16,7 +17,7 @@ def expand(s: str) -> list[int]:
 def fill(inp: list[int]) -> list[int]:
     r = inp[:]
     i = 0
-    e = len(r)-1
+    e = len(r) - 1
     while i < e:
         if r[i] != -1:
             i += 1
@@ -24,43 +25,47 @@ def fill(inp: list[int]) -> list[int]:
         if r[e] == -1:
             e -= 1
             continue
-        r[i],r[e] = r[e],r[i]
+        r[i], r[e] = r[e], r[i]
         i += 1
     return r
+
 
 def checksum(xs):
     return sum(i * xs[i] for i in range(len(xs)) if xs[i] != -1)
 
+
 def part1(inp: str) -> int:
     return checksum(fill(expand(inp)))
+
 
 assert part1(tinput) == 1928
 print(part1(input))
 
+def blockit(xs):
+    blocks = []
+    i = 0
+    for v,g in groupby(xs):
+        l = len(list(g))
+        blocks.append((i,v,l))
+        i += l
+    return blocks
+
 def fill_full(inp: list[int]) -> list[int]:
-    blocks = [list(g) for v,g in groupby(inp)]
-    print(blocks)
-    bi = len(blocks) - 1
-    while bi > 0:
-        b = blocks[bi]
-        l = len(b)
-        for si,fb in enumerate(blocks[:bi]):
-            if fb[0] != -1:
-                continue
-            if l > len(fb):
-                continue
-            blocks[si] = b
-            blocks.pop()
-            if l < len(fb):
-                blocks.insert(si, [-1]*(len(fb) - l))
-            break
-        bi -= 1
+    r = inp[:]
+    blocks = [b for b in blockit(r) if b[1] != -1]
+    for (bi,bn,bln) in reversed(blocks):
+        spaces = [b for b in blockit(r) if b[1] == -1]
+        for (si,_,sln) in spaces:
+            if si >= bi:
+                break
+            if sln >= bln:
+                r[si:si+bln] = r[bi:bi+bln]
+                r[bi:bi+bln] = [-1]*bln
+    return r
 
-
-    return inp
 
 def part2(inp: str) -> int:
     return checksum(fill_full(expand(inp)))
 
-print(part2(tinput))
-
+assert part2(tinput) == 2858
+print(part2(input))

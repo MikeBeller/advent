@@ -1,5 +1,6 @@
 { pkgs }: {
     deps = [
+      pkgs.fltk
       pkgs.quickjs
       pkgs.python311Packages.more-itertools
       pkgs.python311Packages.scipy

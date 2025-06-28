@@ -1,5 +1,5 @@
 
-run = "k misc/euler/e14p.k"
+run = "cd 2024/09; python 202409.py"
 modules = ["python-3.11"]
 
 [env]
