@@ -1,5 +1,5 @@
 
-run = "cd 2024/09; python 202409.py"
+run = "cd 2024/09; luajit 202409.lua"
 modules = ["python-3.11"]
 
 [env]

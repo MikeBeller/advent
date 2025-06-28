@@ -26,5 +26,6 @@
       pkgs.xxd
       pkgs.cowsay
       pkgs.go
+      pkgs.luajit
     ];
 }
