@@ -53,11 +53,35 @@ local function blocks(xs)
   return r
 end
 
-local function part1(inp)
+local function fill(inp)
   local r = expand(inp)
-  local bs = blocks(r)
-  
+  local bcks = blocks(r)
+  for bi = #bcks,2,-1 do
+    local b = bcks[bi]
+    if b.v ~= -1 then
+      for bj = b.be,b.bs,-1 do
+        for i = 0, b.bs-1 do
+          if r[i] == -1 then
+            r[i] = r[bj]
+            r[bj] = -1
+            break
+          end
+        end
+      end
+    end
+  end
   --dump(r)
+  return r
 end
 
-part1(tinput)
+local function checksum(r)
+  local s = 0
+  for i = 1, #r do
+    if r[i] ~= -1 then
+      s = s + r[i] * (i-1)
+    end
+  end
+  return s
+end
+  
+print(checksum(fill(tinput)))
