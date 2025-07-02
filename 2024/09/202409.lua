@@ -26,7 +26,7 @@ local function expand(s)
     local n = tonumber(c)
     local x = -1
     if i % 2 == 1 then
-      x = (i - 1)/2
+      x = math.floor((i - 1)/2)
     end
     for j = 1,n do
       r[#r+1] = x
