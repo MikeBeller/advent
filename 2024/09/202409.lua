@@ -56,21 +56,25 @@ end
 local function fill(inp)
   local r = expand(inp)
   local bcks = blocks(r)
+  local fi = 1
   for bi = #bcks,2,-1 do
     local b = bcks[bi]
     if b.v ~= -1 then
       for bj = b.be,b.bs,-1 do
-        for i = 0, b.bs-1 do
-          if r[i] == -1 then
-            r[i] = r[bj]
+        while fi <= b.bs-1 do
+          if r[fi] == -1 then
+            r[fi] = r[bj]
+            fi = fi + 1
             r[bj] = -1
             break
+          else
+            fi = fi + 1
           end
         end
       end
     end
   end
-  --dump(r)
+  -- dump(r)
   return r
 end
 
@@ -83,5 +87,34 @@ local function checksum(r)
   end
   return s
 end
-  
-print(checksum(fill(tinput)))
+
+assert(checksum(fill(tinput)) == 1928)
+print(checksum(fill(input)))
+
+
+local function fill_blocks(inp)
+  local r = expand(inp)
+  local bcks = blocks(r)
+  for bi = #bcks,2,-1 do
+    local b = bcks[bi]
+    if b.v ~= -1 then
+      local sbcks = blocks(r)
+      local si = 1
+      while sbcks[si].be < b.bs do
+        local sb = sbcks[si]
+        if sb.v == -1 and sb.be - sb.bs >= b.be - b.bs then
+          for i = 0,(b.be - b.bs) do
+            r[sb.bs + i] = r[b.bs + i]
+            r[b.bs + i] = -1
+          end
+        end
+        si = si + 1
+      end
+    end
+  end
+  --dump(r)
+  return r
+end
+
+assert(checksum(fill_blocks(tinput)) == 2858)
+print(checksum(fill_blocks(input)))

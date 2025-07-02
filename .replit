@@ -8,6 +8,4 @@ PATH = "/home/runner/workspace/bin"
 
 
 [nix]
-#channel = "stable-22_11"
-#channel = "stable-23_05"
 channel = "stable-24_05"
