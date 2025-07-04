@@ -1,5 +1,9 @@
 from dataclasses import dataclass
 
+def p(x):
+  print(x)
+  return x
+
 Point = tuple[int,int]
 U,R,D,L = 0,1,2,3
 
@@ -34,15 +38,24 @@ def move(p: Point, d: int):
   else: # L
     return (c-1,r)
     
-def paths(mp: Map, st: Point, v: set(Point)=set()) -> int:
-  if v in st:
-    return 0
+def find_paths(mp: Map, st: Point, path: set(Point)=frozenset(), paths: set(set(Point))=frozenset()) -> frozenset:
   if mp[st] == 9:
-    return 1
-  v.add(st)
+    return paths | frozenset([path])
   moves = [(c,r) for (c,r) in [move(st,d) for d in [U,R,D,L]]
-           if mp.valid((c,r)) ]
-  return sum(paths(mp, mv, v) for mv in moves
-             if mp[mv] - mp[st] == 1)
+           if mp.valid((c,r)) and (c,r) not in path]
+  return paths.union(
+    *[find_paths(mp, mv, (path | frozenset([st])), paths)
+             for mv in moves
+             if mp[mv] - mp[st] == 1])
 
-paths(tinput, (0,0))
+def part1(mp: Map) -> int:
+  return sum(
+    p(len(find_paths(mp,(c,r))))
+      for c in range(mp.nc)
+        for r in range(mp.nr)
+          if mp[(c,r)] == 0)
+
+
+# #assert part1(tinput) == 36
+print(part1(tinput))
+
