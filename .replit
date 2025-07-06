@@ -1,4 +1,4 @@
-run = "cd 2024/10; python 202410.py"
+run = "cd 2024/10; python 202410_nx.py"
 modules = ["python-3.11"]
 
 [env]
