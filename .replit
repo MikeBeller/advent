@@ -2,6 +2,7 @@ run = "cd 2024/10; python 202410.py"
 modules = ["python-3.11"]
 
 [env]
+UV_PYTHON_DOWNLOADS = "manual"
 PYTHONPATH = "/home/runner/workspace/2024/lib"
 PATH = "/home/runner/workspace/bin"
 
