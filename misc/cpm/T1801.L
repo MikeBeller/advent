@@ -26,35 +26,43 @@
   )
 )
 
-(de part1 (  sm n)
-    (open '(T1801 TXT) 0)
+(setq nums nil)
+(open '(T1801 TXT) 0)
+(while (setq n (readnum 0))
+   (push n nums))
+(setq nums (reverse nums))
+(close 0)
+
+(de part1 (nums [loc:]  sm n)
     (setq sm 0)
-    (while (setq n (readnum 0))
-           (print n)
+    (while (setq n (pop nums))
            (setq sm (+ sm n)))
-    (print sm)
-    (close 0))
+    sm)
 
-(part1)
+(setq delta (part1 nums))
 
-[ this blows out all memory on 64k z80 -- need better algorithm? ]
-(de part2 (   n sm nums ns sums)
-    (open '(T1801 TXT) 0)
-    (while (setq n (readnum 0))
-           (setq nums (cons n nums)))
-    (setq nums (reverse nums))
-    
+(de part2 (nums delta [loc:]   sm sums xs ys diff)
     (setq sm 0)
     (setq sums (list))
-    (setq ns nums)
-    (while (not (member sm sums))
-      (push sm sums)
-      (when (not ns) (print (mfree)) (setq ns nums))
-      (setq n (pop ns))
-      (setq sm (+ sm n)))
-    (print sm)
-)
+    (while nums
+      (setq sm (+ sm (pop nums)))
+      (push sm sums))
+    (setq sums (reverse sums))
+    (print sums)
 
-(part2)
+    (setq xs sums)
+    (while xs
+      (setq x (car xs))
+      (setq ys sums)
+      (while ys
+        (setq y (car ys))
+        (setq diff (- x y))
+        (when (and (lessp 0 diff) (zerop (% diff delta)))
+          (print (list x y diff delta))
+          (return (+ x (+ diff y))))
+        (pop ys))
+      (pop xs)))
+
+(part2 nums delta)
 t
 
