@@ -41,28 +41,33 @@
 
 (setq delta (part1 nums))
 
-(de part2 (nums delta [loc:]   sm sums xs ys diff)
+(de part2 (nums delta [loc:]   sm sums xs ys m diff zs)
     (setq sm 0)
     (setq sums (list))
     (while nums
       (setq sm (+ sm (pop nums)))
       (push sm sums))
     (setq sums (reverse sums))
-    (print sums)
 
+    (setq zs nil)
     (setq xs sums)
     (while xs
-      (setq x (car xs))
-      (setq ys sums)
+      (setq x (pop xs))
+      (setq ys xs)
       (while ys
-        (setq y (car ys))
+        (setq y (pop ys))
         (setq diff (- x y))
-        (when (and (lessp 0 diff) (zerop (% diff delta)))
-          (print (list x y diff delta))
-          (return (+ x (+ diff y))))
-        (pop ys))
-      (pop xs)))
+        (setq m (% (abs diff) delta))
+        (cond
+          ((and (zerop m) (lessp 0 diff)) (push (list x y diff (+ x diff)) zs))
+          ((and (zerop m) (lessp diff 0)) (push (list y x (abs diff) (+ y (abs diff))) zs)))))
+    zs)
 
-(part2 nums delta)
+(setq zs (part2 nums delta))
+(length zs)
+(setq mn 9999999)
+(while zs
+  (setq mn (min mn (caddr (cdr (pop zs))))))
+mn
 t
 
