@@ -26,12 +26,14 @@
   )
 )
 
-(setq nums nil)
-(open '(T1801 TXT) 0)
-(while (setq n (readnum 0))
-   (push n nums))
-(setq nums (reverse nums))
-(close 0)
+(setq **nums** nil)
+(de read-nums (  n)
+  (open '(T1801 TXT) 0)
+  (while (setq n (readnum 0))
+    (push n **nums**))
+  (setq **nums** (reverse **nums**))
+  (close 0))
+(read-nums)
 
 (de part1 (nums [loc:]  sm n)
     (setq sm 0)
@@ -39,9 +41,9 @@
            (setq sm (+ sm n)))
     sm)
 
-(setq delta (part1 nums))
+(setq delta (part1 **nums**))
 
-(de part2 (nums delta [loc:]   sm sums xs ys m diff zs)
+(de part2 (nums delta [loc:]   sm sums xs ys ndelta)
     (setq sm 0)
     (setq sums (list))
     (while nums
@@ -49,25 +51,17 @@
       (push sm sums))
     (setq sums (reverse sums))
 
-    (setq zs nil)
-    (setq xs sums)
-    (while xs
-      (setq x (pop xs))
-      (setq ys xs)
-      (while ys
-        (setq y (pop ys))
-        (setq diff (- x y))
-        (setq m (% (abs diff) delta))
-        (cond
-          ((and (zerop m) (lessp 0 diff)) (push (list x y diff (+ x diff)) zs))
-          ((and (zerop m) (lessp diff 0)) (push (list y x (abs diff) (+ y (abs diff))) zs)))))
-    zs)
+    (setq ndelta delta)
+    (while t
+      (print (list 'trying ndelta))
+      (setq xs sums)
+      (while xs
+        (setq x (+ ndelta (pop xs)))
+        (when (member x sums)
+          (return x)
+        ))
+      (setq ndelta (+ ndelta delta))))
 
-(setq zs (part2 nums delta))
-(length zs)
-(setq mn 9999999)
-(while zs
-  (setq mn (min mn (caddr (cdr (pop zs))))))
-mn
-t
+(part2 **nums** delta)
 
+t 
