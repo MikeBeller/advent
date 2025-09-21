@@ -20,6 +20,9 @@
 
 (length (setq **lines** (readlines '(T1802 TXT))))
 
+(de chars (sym)
+  (mapcar (unpack sym) 'ascii))
+
 [ returns an alist with count of each character in a symbol ]
 (de count (xs    x counts p)
   (setq counts nil)
@@ -31,6 +34,25 @@
     (rplacd p (1+ (cdr p))))
    counts)
 
-(count (unpack (cadr **lines**)))
-t 
+[ (count (chars (cadr **lines**))) ]
+
+(de hasval (n alist)
+    (while (setq p (pop alist))
+           (when (equal n (cdr p)) (return t)))
+    nil)
+
+(de part1 (lines    twos threes line counts)
+    (setq twos 0)
+    (setq threes 0)
+    (while (setq line (pop lines))
+           (setq counts (count (chars line)))
+           (when (hasval 2 counts) (inc twos))
+           (when (hasval 3 counts) (inc threes)))
+    (list twos threes (* twos threes)))
+
+(part1 **lines**)
+
+
+
+t
 
