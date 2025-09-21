@@ -1,5 +1,11 @@
 (alloc 1)
 
+(de sym-to-codes (sym)
+  (mapcar (unpack sym) 'ascii))
+
+(de codes-to-sym (codes)
+  (pack (mapcar codes 'char)))
+
 (de readline (chan   cs c)
   (setq cs nil)
   (while t
@@ -7,10 +13,7 @@
     (when (or (equal c 26) (equal c 10) (equal c 13))
       (return
         (if (not cs) nil
-          (pack (mapcar cs 'char))
-        )
-      )
-      (return (reverse cs)))
+          (codes-to-sym (reverse cs)) ) ))
     (push c cs)))
 
 (de readlines (f    sym lines)
@@ -27,8 +30,6 @@
 (gc)
 (print (mfree))
 
-(de codes (sym)
-  (mapcar (unpack sym) 'ascii))
 
 [ returns an alist with count of each character in a symbol ]
 (de count (xs    x counts p)
@@ -41,7 +42,7 @@
     (rplacd p (1+ (cdr p))))
    counts)
 
-[ (count (codes (cadr **lines**))) ]
+[ (count (sym-to-codes (cadr **lines**))) ]
 
 (de hasval (n alist)
     (while (setq p (pop alist))
@@ -52,7 +53,7 @@
     (setq twos 0)
     (setq threes 0)
     (while (setq line (pop lines))
-           (setq counts (count (codes line)))
+           (setq counts (count (sym-to-codes line)))
            (when (hasval 2 counts) (inc twos))
            (when (hasval 3 counts) (inc threes)))
     (* twos threes))
@@ -76,16 +77,26 @@
   (if (equal diffcount 1) dindex nil)
 )
 
-(stop (not (equal 3 (diff1 (codes 'abcde) (codes 'abxde)))))
-(stop (diff1 (codes 'abcde) (codes 'abxye)))
+(stop (not (equal 3 (diff1 (sym-to-codes 'abcde) (sym-to-codes 'abxde)))))
+(stop (diff1 (sym-to-codes 'abcde) (sym-to-codes 'abxye)))
+
+[ return a copy of xs with nth (0-based) item removed ]
+(de rem-nth (n xs   ys)
+  (setq ys nil)
+  (reptn n
+    (push (pop xs) ys))
+  (append (reverse ys) (cdr xs)))
+
+(stop (not (equal (list 2 3 4 6) (rem-nth 3 (list 2 3 4 5 6)))))
 
 (de part2 (lines   lx ly x y d)
   (setq lx lines)
-  (while (setq x (pop lx))
+  (while (and lx (setq x (sym-to-codes (pop lx))))
+    (print x)
     (setq ly lx)
-    (while (setq y (pop ly))
+    (while (and ly (setq y (sym-to-codes (pop ly))))
       (when (setq d (diff1 x y))
-        (return (list x y d))))))
+        (return (codes-to-sym (rem-nth d y)))))))
 
 (part2 **lines**)
 
