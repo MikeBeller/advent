@@ -21,9 +21,16 @@
 (length (setq **lines** (readlines '(T1802 TXT))))
 
 [ returns an alist with count of each character in a symbol ]
-(de (count ))
-(de part1 (lines  counts)
-  
-)
+(de count (xs    x counts p)
+  (setq counts nil)
+  (while (setq x (pop xs))
+    (setq p (assoc x counts))
+    (unless p 
+      (setq p (cons x 0))
+      (push p counts))
+    (rplacd p (1+ (cdr p))))
+   counts)
 
+(count (unpack (cadr **lines**)))
 t 
+
