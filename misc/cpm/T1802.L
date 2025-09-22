@@ -6,6 +6,9 @@
 (de codes-to-sym (codes)
   (pack (mapcar codes 'char)))
 
+(print (codes-to-sym (sym-to-codes 'abcdef)))
+(stop (not (equal (sym-to-codes (codes-to-sym (sym-to-codes 'abcdef))) (sym-to-codes 'abcdef))))
+
 (de readline (chan   cs c)
   (setq cs nil)
   (while t
@@ -24,12 +27,8 @@
     (close 0)
     (reverse lines))
 
-(gc)
-(print (mfree))
 (length (setq **lines** (readlines '(T1802 TXT))))
 (gc)
-(print (mfree))
-
 
 [ returns an alist with count of each character in a symbol ]
 (de count (xs    x counts p)
@@ -58,7 +57,7 @@
            (when (hasval 3 counts) (inc threes)))
     (* twos threes))
 
-(part1 **lines**)
+(print (list 'PART1: (part1 **lines**)))
 
 [ return differing character index if two strings differ by exactly 1 character, else return nil ]
 (de diff1 (xs ys   cc diffcount x y dindex)
@@ -67,17 +66,16 @@
   (while xs  [same length]
     (setq x (pop xs))
     (setq y (pop ys))
-    (inc cc)
     (when (not (equal x y))
       (setq dindex cc)
       (inc diffcount)
-      (unless (lessp diffcount 2)  (return nil))
-    )
-  )
+      (unless (lessp diffcount 2)  (return nil)) )
+    (inc cc) )
   (if (equal diffcount 1) dindex nil)
 )
 
-(stop (not (equal 3 (diff1 (sym-to-codes 'abcde) (sym-to-codes 'abxde)))))
+
+(stop (not (equal 2 (diff1 (sym-to-codes 'abcde) (sym-to-codes 'abxde)))))
 (stop (diff1 (sym-to-codes 'abcde) (sym-to-codes 'abxye)))
 
 [ return a copy of xs with nth (0-based) item removed ]
@@ -92,13 +90,12 @@
 (de part2 (lines   lx ly x y d)
   (setq lx lines)
   (while (and lx (setq x (sym-to-codes (pop lx))))
-    (print x)
     (setq ly lx)
     (while (and ly (setq y (sym-to-codes (pop ly))))
       (when (setq d (diff1 x y))
         (return (codes-to-sym (rem-nth d y)))))))
 
-(part2 **lines**)
+(print (list 'PART2: (part2 **lines**)))
 
 t
 
