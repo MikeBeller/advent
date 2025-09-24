@@ -3,15 +3,17 @@
 (de assert exprs 
   (unless (eval (car exprs))
     (print (or (eval (cdr exprs)) 'assert))
-    (stop t)))
+    (stop t))
+  'assert-ok
+  )
 
 (assert t 'noprinty)
 [ (assert nil 'printy) ]
 
-(de sym-to-codes (sym)
+(de sym-to-str (sym)
   (mapcar (unpack sym) 'ascii))
 
-(de codes-to-sym (codes)
+(de str-to-sym (codes)
   (pack (mapcar codes 'char)))
 
 (de is-whitespace (c)
@@ -36,7 +38,7 @@
 
 [ convert string to num -- stop at first non-decimal digit 
   -- return  nil if no digits found ]
-(de to-num (tok   c n d)
+(de str-to-num (tok   c n d)
   (setq n nil)
   (while (setq c (pop tok))
     (unless (setq d (digit c))
@@ -44,8 +46,8 @@
     (setq n (if n (+ (* n 10) d) d)))
    n)
 
-(assert (equal 123 (to-num '(49 50 51))) 'to-num)
-(assert (equal 123 (to-num '(49 50 51 65))) 'to-num)
+(assert (equal 123 (str-to-num '(49 50 51))) 'str-to-num)
+(assert (equal 123 (str-to-num '(49 50 51 65))) 'str-to-num)
 
 (de split-by (pred cs  c items item)
   (setq items nil)
@@ -59,17 +61,50 @@
   (when item (push (reverse item) items))
   (reverse items))
 
-(setq str (sym-to-codes 'ABCXEF))
-(print (split-by '((c) (equal c (ascii 'X))) str))
+
+(setq str (sym-to-str 'ABCXEF))
+(assert (equal (split-by '((c) (equal c (ascii 'X))) str) '((65 66 67) (69 70))))
+
+(de split (sym str   sep c)
+  (setq sep (ascii sym))
+  (split-by (list (list 'c) (list 'equal 'c sep )) str))
+
+(assert (equal (split 'X str) (list (sym-to-str 'ABC) (sym-to-str 'EF))) 'split )
+
+(de print-str (str)
+  (mapc str 'putc)
+  (cr))
 
 (de read-item (chan   item line)
   (setq line (read-line chan))
+  (unless line (return nil))
   (setq item nil)
   (setq toks (split-by 'is-whitespace line))
-  (print toks))
+  (setq toks (cddr toks))  [ drop 2 ]
+  (setq p (split ', (car toks)))
+  (push (str-to-num (car p)) item)
+  (push (str-to-num (cadr p)) item)
+  (setq p (split 'x (cadr toks)))
+  (push (str-to-num (car p)) item)
+  (push (str-to-num (cadr p)) item)
+  (reverse item)
+)
 
-(open '(T1803 TXT) 0)
-(read-item 0)
-(close 0)
+(de read-data  (   items i)
+  (open '(T1803 TXT) 0)
+  (setq items nil)
+  (setq i 0)
+  (while (setq item (read-item 0))
+    (push item items)
+    (inc i)
+    (when (zerop (% i 100)) (gc) (print (list i (mfree))))
+  )
+  (reverse items)
+  (close 0))
 
+(gc)
+(mfree)
+(setq **items** (read-data))
+(gc)
+(mfree)
 t 
