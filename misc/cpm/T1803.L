@@ -75,19 +75,41 @@
   (mapc str 'putc)
   (cr))
 
-(de read-item (chan   item line)
+(setq **mod** 1024)
+
+(de poly-pack (x y h w   xs cookie)
+  (setq cookie 0)
+  (setq xs (list x y h w))
+  (while (setq x (pop xs))
+    (setq cookie (+ x (* cookie **mod**))))
+  cookie)
+
+(de poly-unpack (cookie  ls)
+  (setq ls nil)
+  (reptn 4
+    (push (% cookie **mod**) ls)
+    (setq cookie (/ cookie **mod**))
+  )
+  ls
+)
+
+(de poly-x (poly) (car poly) )
+(de poly-y (poly) (cadr poly) )
+(de poly-w (poly) (caddr poly) )
+(de poly-h (poly) (cadddr poly) )
+
+(de read-item (chan   x y w h line)
   (setq line (read-line chan))
   (unless line (return nil))
-  (setq item nil)
   (setq toks (split-by 'is-whitespace line))
   (setq toks (cddr toks))  [ drop 2 ]
   (setq p (split ', (car toks)))
-  (push (str-to-num (car p)) item)
-  (push (str-to-num (cadr p)) item)
+  (setq x (str-to-num (car p)))
+  (setq y (str-to-num (cadr p)))
   (setq p (split 'x (cadr toks)))
-  (push (str-to-num (car p)) item)
-  (push (str-to-num (cadr p)) item)
-  (reverse item)
+  (setq w (str-to-num (car p)))
+  (setq h (str-to-num (cadr p)))
+  (poly-pack x y w h)
 )
 
 (de read-data  (   items i)
@@ -99,8 +121,8 @@
     (inc i)
     (when (zerop (% i 100)) (gc) (print (list i (mfree))))
   )
-  (reverse items)
-  (close 0))
+  (close 0)
+  (reverse items))
 
 (gc)
 (mfree)
