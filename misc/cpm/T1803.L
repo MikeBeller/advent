@@ -135,6 +135,8 @@
    - requires adding poly-x2 and poly-y2
  - define blit-grid to blit a poly onto the grid (adjusting for xmin)
    - 'blit' by incrementing the byte -- ignore possibility of numeric overflow
+ - Optimization -- can sort the items by x1 and by x2, and for each band,
+     only work with polygons that intersect that band
 ]
 (de get-overlap (a b   ox1 ox2 oy1 oy2)
   
