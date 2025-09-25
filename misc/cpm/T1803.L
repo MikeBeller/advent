@@ -1,4 +1,4 @@
-(alloc 1)
+(alloc 1 10000)
 
 (de assert exprs 
   (unless (eval (car exprs))
@@ -96,7 +96,7 @@
 (de poly-x (poly) (car poly) )
 (de poly-y (poly) (cadr poly) )
 (de poly-w (poly) (caddr poly) )
-(de poly-h (poly) (cadddr poly) )
+(de poly-h (poly) (caddr (cdr poly) ))
 
 (de read-item (chan   x y w h line)
   (setq line (read-line chan))
@@ -126,7 +126,51 @@
 
 (gc)
 (mfree)
-(setq **items** (read-data))
+(length (setq **items** (read-data)))
 (gc)
 (mfree)
-t 
+
+[ what's left: 
+ - define get-overlap to return the overlap poly 
+   - requires adding poly-x2 and poly-y2
+ - define blit-grid to blit a poly onto the grid (adjusting for xmin)
+   - 'blit' by incrementing the byte -- ignore possibility of numeric overflow
+]
+(de get-overlap (a b   ox1 ox2 oy1 oy2)
+  
+)
+
+(de zero-grid (   p)
+  (setq p alloc)
+  (reptn 10000 
+    (@ p 0)
+    (inc p) ) )
+  
+(de count-grid-overlap ( p n)
+  (setq n 0)
+  (setq p alloc)
+  (reptn 10000 
+    (when (lessp 1 (@ p))  (inc n) ))
+    n )
+
+(de n-overlap (xmin items     item poly overlap)
+  (zero-grid)
+  (setq grid-poly (list xmin 0 1000 10))
+  (while (setq item (pop items))
+    (setq poly (poly-unpack item))
+    (when (setq overlap (get-overlap item grid-poly))
+      (blit-grid xmin overlap) ) )
+  (count-grid-overlap))
+
+(de part1 (items   xmin total-overlap)
+  (setq total-overlap 0)
+  (setq xmin 0)
+  (reptn 100
+    (setq total-overlap
+      (+ total-overlap (n-overlap xmin items)))
+    (setq xmin (+ xmin 10)))
+  total-overlap)
+
+
+t
+
