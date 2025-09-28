@@ -1,4 +1,4 @@
-(alloc 1 15000)
+(alloc 1 10000)
 
 (de assert exprs 
   (unless (eval (car exprs))
@@ -6,6 +6,10 @@
     (stop t))
   'assert-ok
   )
+
+(de le (a b) (not (lessp b a)))
+(de gt (a b) (lessp b a))
+(de ge (a b) (not (lessp a b)))
 
 (de sym-to-str (sym)
   (mapcar (unpack sym) 'ascii))
@@ -145,9 +149,9 @@
   (setq ox2 (min (poly-x2 a) (poly-x2 b)))
   (setq oy1 (max (poly-y1 a) (poly-y1 b)))
   (setq oy2 (min (poly-y2 a) (poly-y2 b)))
-  (if (or (le (- ox2 ox1) 0) (le (- oy2 oy1) 0))
+  (if (or (ge ox1 ox2) (ge oy1 oy2))
     nil
-    (new-poly ox1 ox2 oy1 oy2)))
+    (new-poly ox1 oy1 ox2 oy2)))
 
 (de zero-grid (   p)
   (setq p alloc)
@@ -155,33 +159,21 @@
     (@ p 0)
     (inc p) ) )
 
-(de le (a b) (not (lessp b a)))
-(de gt (a b) (lessp b a))
-(de ge (a b) (not (lessp a b)))
-
-(de safe-@ (p n) 
-  (when (and (lessp p 1000) (lessp n 256)) (@ p n))
-)
 
 (de blit-grid (ymin a   x1 x2 y1 y2 x y p mxp)
-  (setq p alloc)
+  (setq p 0)
   (setq x1 (poly-x1 a))
   (setq x2 (poly-x2 a))
   (setq y1 (- (poly-y1 a) ymin))
   (setq y2 (- (poly-y2 a) ymin))
   (setq x x1)
-  (setq mxp 0)
   (while (lessp x x2)
     (setq y y1)
     (while (lessp y y2)
-      (setq p (+ (* y 1000) x))
-      (when (gt p mxp)
-        (setq mxp p)
-      )
-      (safe-@ p (1+ (@ p)))
+      (setq p (+ alloc (+ (* y 1000) x)))
+      (@ p (1+ (@ p)))
       (inc y))
     (inc x))
-  (when (not (zerop mxp)) (print mxp))
 )
   
 (de count-grid-overlap ( p n)
