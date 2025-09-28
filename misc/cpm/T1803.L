@@ -1,4 +1,4 @@
-(alloc 1 10000)
+(alloc 1 15000)
 
 (de assert exprs 
   (unless (eval (car exprs))
@@ -72,14 +72,14 @@
   (cr))
 
 (setq **mod** 1024)
-(setq **xdiv** **mod**)
+(setq **xdiv** 1)
 (setq **ydiv** (* **mod** **xdiv**))
 (setq **x2div** (* **mod** **ydiv**))
 (setq **y2div** (* **mod** **x2div**))
 
 (de new-poly (x1 y1 x2 y2   poly ns n)
   (setq poly 0)
-  (setq xs (list y2 x2 y1 x1))
+  (setq ns (list y2 x2 y1 x1))
   (while (setq n (pop ns))
     (setq poly (+ n (* poly **mod**))))
   poly)
@@ -89,6 +89,15 @@
 (de poly-x2 (poly) (% (/ poly **x2div**) **mod**))
 (de poly-y2 (poly) (% (/ poly **y2div**) **mod**))
 
+(assert
+  (progn 
+    (setq *p* (new-poly 1 2 3 4))
+    (and 
+      (equal 1 (poly-x1 *p*))
+      (equal 2 (poly-y1 *p*))
+      (equal 3 (poly-x2 *p*))
+      (equal 4 (poly-y2 *p*))
+    ) ) )
 
 (de read-item (chan   x y w h line)
   (setq line (read-line chan))
@@ -136,10 +145,9 @@
   (setq ox2 (min (poly-x2 a) (poly-x2 b)))
   (setq oy1 (max (poly-y1 a) (poly-y1 b)))
   (setq oy2 (min (poly-y2 a) (poly-y2 b)))
-  (if (or (zerop (- ox2 ox1)) (zerop (- oy2 oy1)))
+  (if (or (le (- ox2 ox1) 0) (le (- oy2 oy1) 0))
     nil
     (new-poly ox1 ox2 oy1 oy2)))
-
 
 (de zero-grid (   p)
   (setq p alloc)
@@ -147,26 +155,41 @@
     (@ p 0)
     (inc p) ) )
 
-(de blit-grid (ymin a   x1 x2 y1 y2 x y p)
+(de le (a b) (not (lessp b a)))
+(de gt (a b) (lessp b a))
+(de ge (a b) (not (lessp a b)))
+
+(de safe-@ (p n) 
+  (when (and (lessp p 1000) (lessp n 256)) (@ p n))
+)
+
+(de blit-grid (ymin a   x1 x2 y1 y2 x y p mxp)
   (setq p alloc)
   (setq x1 (poly-x1 a))
   (setq x2 (poly-x2 a))
   (setq y1 (- (poly-y1 a) ymin))
   (setq y2 (- (poly-y2 a) ymin))
   (setq x x1)
-  (while (lessp x (+ x2 1))
+  (setq mxp 0)
+  (while (lessp x x2)
     (setq y y1)
-    (while (lessp y (+ y2 1))
+    (while (lessp y y2)
       (setq p (+ (* y 1000) x))
-      (@ p (1+ (@ p))))
-  )
+      (when (gt p mxp)
+        (setq mxp p)
+      )
+      (safe-@ p (1+ (@ p)))
+      (inc y))
+    (inc x))
+  (when (not (zerop mxp)) (print mxp))
 )
   
 (de count-grid-overlap ( p n)
   (setq n 0)
   (setq p alloc)
   (reptn 10000 
-    (when (lessp 1 (@ p))  (inc n) ))
+    (when (gt (@ p) 1)  (inc n) )
+    (inc p))
     n )
 
 (de n-overlap (ymin polys     item poly overlap)
@@ -181,7 +204,8 @@
   (setq total-overlap 0)
   (setq ymin 0)
   (reptn 100
-    (print (list ymin total-overlap))
+    (gc)
+    (print (list ymin total-overlap (mfree)))
     (setq total-overlap
       (+ total-overlap (n-overlap ymin items)))
     (setq ymin (+ ymin 10)))
