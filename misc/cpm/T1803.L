@@ -7,9 +7,6 @@
   'assert-ok
   )
 
-(assert t 'noprinty)
-[ (assert nil 'printy) ]
-
 (de sym-to-str (sym)
   (mapcar (unpack sym) 'ascii))
 
@@ -61,7 +58,6 @@
   (when item (push (reverse item) items))
   (reverse items))
 
-
 (setq str (sym-to-str 'ABCXEF))
 (assert (equal (split-by '((c) (equal c (ascii 'X))) str) '((65 66 67) (69 70))))
 
@@ -76,27 +72,23 @@
   (cr))
 
 (setq **mod** 1024)
+(setq **xdiv** **mod**)
+(setq **ydiv** (* **mod** **xdiv**))
+(setq **x2div** (* **mod** **ydiv**))
+(setq **y2div** (* **mod** **x2div**))
 
-(de poly-pack (x y h w   xs cookie)
-  (setq cookie 0)
-  (setq xs (list x y h w))
-  (while (setq x (pop xs))
-    (setq cookie (+ x (* cookie **mod**))))
-  cookie)
+(de new-poly (x1 y1 x2 y2   poly ns n)
+  (setq poly 0)
+  (setq xs (list y2 x2 y1 x1))
+  (while (setq n (pop ns))
+    (setq poly (+ n (* poly **mod**))))
+  poly)
 
-(de poly-unpack (cookie  ls)
-  (setq ls nil)
-  (reptn 4
-    (push (% cookie **mod**) ls)
-    (setq cookie (/ cookie **mod**))
-  )
-  ls
-)
+(de poly-x1 (poly) (% (/ poly **xdiv**) **mod**))
+(de poly-y1 (poly) (% (/ poly **ydiv**) **mod**))
+(de poly-x2 (poly) (% (/ poly **x2div**) **mod**))
+(de poly-y2 (poly) (% (/ poly **y2div**) **mod**))
 
-(de poly-x (poly) (car poly) )
-(de poly-y (poly) (cadr poly) )
-(de poly-w (poly) (caddr poly) )
-(de poly-h (poly) (caddr (cdr poly) ))
 
 (de read-item (chan   x y w h line)
   (setq line (read-line chan))
@@ -109,8 +101,9 @@
   (setq p (split 'x (cadr toks)))
   (setq w (str-to-num (car p)))
   (setq h (str-to-num (cadr p)))
-  (poly-pack x y w h)
+  (new-poly x y (+ x w) (+ y h))
 )
+
 
 (de read-data  (   items i)
   (open '(T1803 TXT) 0)
@@ -139,14 +132,35 @@
      only work with polygons that intersect that band
 ]
 (de get-overlap (a b   ox1 ox2 oy1 oy2)
-  
-)
+  (setq ox1 (max (poly-x1 a) (poly-x1 b)))
+  (setq ox2 (min (poly-x2 a) (poly-x2 b)))
+  (setq oy1 (max (poly-y1 a) (poly-y1 b)))
+  (setq oy2 (min (poly-y2 a) (poly-y2 b)))
+  (if (or (zerop (- ox2 ox1)) (zerop (- oy2 oy1)))
+    nil
+    (new-poly ox1 ox2 oy1 oy2)))
+
 
 (de zero-grid (   p)
   (setq p alloc)
   (reptn 10000 
     (@ p 0)
     (inc p) ) )
+
+(de blit-grid (ymin a   x1 x2 y1 y2 x y p)
+  (setq p alloc)
+  (setq x1 (poly-x1 a))
+  (setq x2 (poly-x2 a))
+  (setq y1 (- (poly-y1 a) ymin))
+  (setq y2 (- (poly-y2 a) ymin))
+  (setq x x1)
+  (while (lessp x (+ x2 1))
+    (setq y y1)
+    (while (lessp y (+ y2 1))
+      (setq p (+ (* y 1000) x))
+      (@ p (1+ (@ p))))
+  )
+)
   
 (de count-grid-overlap ( p n)
   (setq n 0)
@@ -155,24 +169,25 @@
     (when (lessp 1 (@ p))  (inc n) ))
     n )
 
-(de n-overlap (xmin items     item poly overlap)
+(de n-overlap (ymin polys     item poly overlap)
   (zero-grid)
-  (setq grid-poly (list xmin 0 1000 10))
-  (while (setq item (pop items))
-    (setq poly (poly-unpack item))
-    (when (setq overlap (get-overlap item grid-poly))
-      (blit-grid xmin overlap) ) )
+  (setq grid-poly (new-poly 0 ymin 1000 (+ ymin 10)))
+  (while (setq poly (pop polys))
+    (when (setq overlap (get-overlap poly grid-poly))
+      (blit-grid ymin overlap) ) )
   (count-grid-overlap))
 
-(de part1 (items   xmin total-overlap)
+(de part1 (items   ymin total-overlap)
   (setq total-overlap 0)
-  (setq xmin 0)
+  (setq ymin 0)
   (reptn 100
+    (print (list ymin total-overlap))
     (setq total-overlap
-      (+ total-overlap (n-overlap xmin items)))
-    (setq xmin (+ xmin 10)))
+      (+ total-overlap (n-overlap ymin items)))
+    (setq ymin (+ ymin 10)))
   total-overlap)
 
+(part1 **items**)
 
 t
 
