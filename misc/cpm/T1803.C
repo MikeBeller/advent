@@ -1,7 +1,5 @@
 #include "stdio.h"
 
-char buf[128];
-
 struct poly {
     short x1;
     short y1;
