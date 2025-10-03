@@ -1,7 +1,6 @@
 system
 
-include "locals.f"
-include "ttester.f"
+include ttester.f
 
 1300 constant max-polys
 4 cells constant poly-size
@@ -9,38 +8,54 @@ include "ttester.f"
 
 create polys max-polys poly-size * allot
 
+application
+
 create linebuf bufsize allot
 0 value filehandle
 0 value npolys
-: poly ( n -- addr ) poly-size * polys + ;
+: poly ( n -- addr ) poly-size * polys + ;  \ address of nth poly in array
 
 : px1 ;
-: py1 1 cell+ ;
+: py1 cell+ ;
 : px2 2 cells + ;
 : py2 3 cells + ;
 
+0 value x1 
+0 value y1 
+0 value x2 
+0 value y2
+
 \ #nn @ x1,x2 WxH
-: scan-poly ( addr n -- x1 y1 x2 y2 )
+: scan-poly ( addr n  -- x1 y1 x2 y2 )
   [char] @ scan
   2 /string /number d>s to x1
   1 /string /number d>s to y1
   1 /string /number d>s x1 + to x2
   1 /string /number d>s y1 + to y2
   2drop
-  x1 x2 y1 y2
+  x1 y1 x2 y2
   ;
 
 T{  s" #12 @ 345,678 77,88"  scan-poly -> 345 678 422 766 }T
 
-: save-poly { x1 y1 x2 y2 addr -- }
-  x1 addr px1 !
-  y1 addr py1 !
-  x2 addr px2 !
-  y2 addr py2 !
+: save-poly ( x1 y1 x2 y2 addr -- )
+  >r 
+  r@ py2 !
+  r@ px2 !
+  r@ py1 !
+  r> px1 !
 ;
 
-T{ 345 678 422 766 polys save-poly polys px1 @  polys py1 @ polys px2 @ polys py2 @ -> 345 678 422 766 }T
-bye
+: get-poly ( addr - x1 y1 x2 y2 )
+  >r
+  r@ px1 @
+  r@ py1 @
+  r@ px2 @
+  r> py2 @
+  ;
+
+T{ 345 678 422 766 polys save-poly polys get-poly -> 345 678 422 766 }T
+
 
 : read-data ( -- )
   s" T1803.TXT" R/O open-file abort" open-file"
@@ -51,13 +66,14 @@ bye
   while
     linebuf swap 2dup type cr 
     scan-poly   \ x1 y1 x2 y2
-    npolys save-poly
+    npolys poly save-poly
     npolys 1+ to npolys
   repeat ;
     
 read-data 
 npolys . cr
 
+bye
 
 fyi cr
 application
@@ -73,7 +89,6 @@ x2 cell+ constant y2
 : blit ;
 : count-overlap 1 ;
 
-." HERE" cr
 
 fyi
 
