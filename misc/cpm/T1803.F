@@ -5,7 +5,6 @@ include ttester.f
 1300 constant max-polys
 4 cells constant poly-size
 100 constant bufsize
-
 create polys max-polys poly-size * allot
 
 application
@@ -54,7 +53,7 @@ T{  s" #12 @ 345,678 77,88"  scan-poly -> 345 678 422 766 }T
   r> py2 @
   ;
 
-T{ 345 678 422 766 polys save-poly polys get-poly -> 345 678 422 766 }T
+T{ 345 678 422 766 0 poly save-poly 0 poly get-poly -> 345 678 422 766 }T
 
 
 : read-data ( -- )
@@ -64,60 +63,68 @@ T{ 345 678 422 766 polys save-poly polys get-poly -> 345 678 422 766 }T
   begin
     linebuf bufsize filehandle read-line abort" read-line"   \ nread eof(0)
   while
-    linebuf swap 2dup type cr 
+    linebuf swap \ 2dup type cr 
     scan-poly   \ x1 y1 x2 y2
     npolys poly save-poly
     npolys 1+ to npolys
-  repeat ;
-    
+  repeat drop ;
+
 read-data 
-npolys . cr
-
-bye
-
-fyi cr
-application
+cr ." READ " npolys . ." polygons" cr
 
 create grid 10000 allot
 2variable total
 create pbuf poly-size allot
-pbuf constant x1
-x1 cell+ constant y1
-y1 cell+ constant x2
-x2 cell+ constant y2
 
-: blit ;
-: count-overlap 1 ;
+: blit ( x1 y1 x2 y2 -- )
+  to y2 to x2 to y1 to x1
+  y2 y1 ?do  \ j is y 
+    x2 x1 ?do \ i is x
+      j 1000 * i + grid +   \ addr of byte to increment
+      dup c@ 1+ swap c!     \ increment it
+    loop
+  loop
+ ;
+
+: count-overlap ( -- n )
+  0
+  10000 0 do
+    grid i + c@ 1 > if
+      1+
+    then
+  loop
+  ;
 
 
-fyi
-
-pbuf . x1 . y2 . cr
-
+fyi cr
+.s cr
 
 : part1 ( -- d )
-  0. total 2@
-\  1000 0 do
-  1 0 do
+  0. total 2!
+  1000 0 do
     grid 10000 erase
     npolys 0 do
-      i poly pbuf poly-size move
-      x1 @ . y1 @ . x2 @ . y2 @ . cr
-\      y2 @ j <
-\      y1 @ j 10 + >
-\      or not if
-\        y1 @ j max y1 !
-\        y2 @ j 10 + min y2 !
-\        blit
-\      then
+      i poly get-poly to y2 to x2 to y1 to x1
+      \ if y2 > j and y1 < j+10
+      y2 j > y1 j 10 + < and if
+        \ blit x1 (max(j,y1)-j) x2 (min(j+10, y2)-j)
+        x1
+        j y1 max j -
+        x2
+        j 10 + y2 min j -
+        blit
+      then
     loop
-    count-overlap 
-    s>d total 2@ d+ total 2!
+    ." LOOP " i 
+    total 2@ count-overlap dup .
+    m+ total 2!
+      total 2@ d. cr
   10 +loop
-
+  total 2@
   ;
   
-  part1
+part1
+." PART1: " d. cr
 
 bye
 
