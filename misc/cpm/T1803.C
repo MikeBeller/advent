@@ -1,5 +1,7 @@
 #include "stdio.h"
 
+/* This runs 4,765,174,225 clock cycles (around 20 minutes) vs 12 minutes for dxforth! */
+
 struct poly {
     short x1;
     short y1;
@@ -32,13 +34,13 @@ void zero_grid() {
     }
 }
 
-void blit_grid(ymin, x1, y1, x2, y2)
-  unsigned int ymin, x1, y1, x2, y2;
+void blit_grid(x1, y1, x2, y2)
+  unsigned int x1, y1, x2, y2;
  {
     unsigned int x, y;
     for (y = y1; y < y2; y++) {
         for (x = x1; x < x2; x++) {
-            grid[y-ymin][x] = grid[y-ymin][x] + 1;
+            grid[y][x] = grid[y][x] + 1;
         }
     }     
 }
@@ -57,14 +59,14 @@ unsigned count_overlap(ymin)
         oy1 = max(ymin, polys[i].y1);
         oy2 = min(ymax, polys[i].y2);
         if (oy2 > oy1) {
-            blit_grid(ymin, ox1, oy1, ox2, oy2);
+            blit_grid(ox1, oy1-ymin, ox2, oy2-ymin);
         }
     }
 
     count = 0;
     for (y = 0; y < 10; y++) {
         for (x = 0; x < 1000; x++) {
-            if ((grid[y][x] > 1) ? 1 : 0) {
+            if (grid[y][x] > 1) {
                 count++;
             }
         }
