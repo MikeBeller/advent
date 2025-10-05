@@ -1,6 +1,7 @@
 system
 
 include ttester.f
+include locals.f
 
 1300 constant max-polys
 4 cells constant poly-size
@@ -19,13 +20,9 @@ create linebuf bufsize allot
 : px2 2 cells + ;
 : py2 3 cells + ;
 
-0 value x1 
-0 value y1 
-0 value x2 
-0 value y2
-
 \ #nn @ x1,x2 WxH
 : scan-poly ( addr n  -- x1 y1 x2 y2 )
+  0 0 0 0 locals| y2 x2 y1 x1 |
   [char] @ scan
   2 /string /number d>s to x1
   1 /string /number d>s to y1
@@ -63,8 +60,7 @@ T{ 345 678 422 766 0 poly save-poly 0 poly get-poly -> 345 678 422 766 }T
   begin
     linebuf bufsize filehandle read-line abort" read-line"   \ nread eof(0)
   while
-    linebuf swap \ 2dup type cr 
-    scan-poly   \ x1 y1 x2 y2
+    linebuf swap scan-poly   \ x1 y1 x2 y2
     npolys poly save-poly
     npolys 1+ to npolys
   repeat drop ;
@@ -77,7 +73,7 @@ create grid 10000 allot
 create pbuf poly-size allot
 
 : blit ( x1 y1 x2 y2 -- )
-  to y2 to x2 to y1 to x1
+  locals| y2 x2 y1 x1 |
   y2 y1 ?do  \ j is y 
     x2 x1 ?do \ i is x
       j 1000 * i + grid +   \ addr of byte to increment
@@ -95,19 +91,17 @@ create pbuf poly-size allot
   loop
   ;
 
-
-fyi cr
+\ fyi cr
 
 : part1 ( -- d )
+  0 0 0 0 locals| y2 x2 y1 x1 |
   0. total 2!
   1000 0 do
     grid 10000 erase
     npolys 0 do
       i poly get-poly to y2 to x2 to y1 to x1
-      \ if y2 > j and y1 < j+10
-      y2 j > y1 j 10 + < and if
-        \ blit x1 (max(j,y1)-j) x2 (min(j+10, y2)-j)
-        x1
+      y2 j > y1 j 10 + < and if                         \ if y2 > j and y1 < j+10
+        x1                                                \ blit x1 (max(j,y1)-j) x2 (min(j+10, y2)-j)
         j y1 max j -
         x2
         j 10 + y2 min j -
@@ -120,7 +114,42 @@ fyi cr
   ;
   
 part1
-." PART1: " d. cr
+cr ." PART1: " d. cr
+
+create has-overlaps? npolys allot 
+
+: poly-overlap? ( a b -- t/f )
+  locals| a b |
+  a poly px1 @ b poly px1 @ max
+  a poly px2 @ b poly px2 @ min
+  <
+  a poly py1 @ b poly py1 @ max
+  a poly py2 @ b poly py2 @ min
+  <
+  and
+;
+
+0 value ov
+
+: part2 ( -- d)
+  npolys 0 do 
+    \ ." LOOP " i . cr
+    0 to ov
+    npolys 0 do
+      i j <> if
+        i j poly-overlap? if
+          1 to ov
+          leave
+        then
+      then
+    loop
+    ov not if
+      i 1+
+      leave
+    then
+  loop ;
+
+cr ." PART2: " part2 . cr
 
 bye
 
