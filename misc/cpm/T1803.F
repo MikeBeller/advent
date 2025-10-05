@@ -29,13 +29,13 @@ create linebuf bufsize allot
   [char] @ scan
   2 /string /number d>s to x1
   1 /string /number d>s to y1
-  1 /string /number d>s x1 + to x2
+  2 /string /number d>s x1 + to x2
   1 /string /number d>s y1 + to y2
   2drop
   x1 y1 x2 y2
   ;
 
-T{  s" #12 @ 345,678 77,88"  scan-poly -> 345 678 422 766 }T
+T{  s" #12 @ 345,678: 77,88"  scan-poly -> 345 678 422 766 }T
 
 : save-poly ( x1 y1 x2 y2 addr -- )
   >r 
@@ -97,7 +97,6 @@ create pbuf poly-size allot
 
 
 fyi cr
-.s cr
 
 : part1 ( -- d )
   0. total 2!
@@ -115,10 +114,7 @@ fyi cr
         blit
       then
     loop
-    ." LOOP " i 
-    total 2@ count-overlap dup .
-    m+ total 2!
-      total 2@ d. cr
+    total 2@ count-overlap m+ total 2!
   10 +loop
   total 2@
   ;
