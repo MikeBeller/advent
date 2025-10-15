@@ -10,6 +10,8 @@ avg:{(+/x)%#x}
 med:{(x@<x)@_(#x)%2}    / simple median; refine later if you need even-count mean
 var:{(+/(_sqr x-avg x))%#x}
 std:{_sqrt var x}
+max:(|/)
+min:(&/)
 
 / ---- selectors & shape
 len:{#x}
