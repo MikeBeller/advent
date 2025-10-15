@@ -25,6 +25,7 @@ uniq:{?x}
 where:{&x}
 grp:{=x}
 count:{#'=x}
+takewhere:{x#y}
 
 / ---- take/drop/reshape
 take:{x#y}
@@ -42,6 +43,7 @@ abs:{x|-x}
 
 / general adverbs
 each:{x'y}
+eachprior:{x':y}
 
 / conversion
 int:{`I$x}
