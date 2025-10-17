@@ -34,6 +34,7 @@ flip:{+x}
 dict:{x!y}
 asc:{x@<x}
 desc:{x@>x}
+shape:{(# x),$[0=count x;();99h=type first x;:x shape each x;()]}
 
 / ---- arithmetic helpers
 dot:{+/x*y}
@@ -43,6 +44,8 @@ abs:{x|-x}
 / general adverbs
 each:{x'y}
 eachprior:{x':y}
+eachright:{y x/: z}
+eachleft:{y x\: z}
 
 / conversion
 int:{`I$x}
@@ -64,8 +67,8 @@ enc:{x/y}           / dyad: base-encode (left is radix vector or base)
 dec:{x\y}           / dyad: base-decode
 
 / ---- string helpers (idioms)
-ltrim:{x@&|\~x=" "}                         / delete leading blanks
-rtrim:{|ltrim@|x}                             / delete trailing blanks
+ltrim:{x@&|\~x=" "}          / delete leading blanks
+rtrim:{|ltrim@|x}            / delete trailing blanks
 trim:{ltrim rtrim x}
 lower:{_x}
 
