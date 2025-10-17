@@ -25,7 +25,6 @@ uniq:{?x}
 where:{&x}
 grp:{=x}
 count:{#'=x}
-takewhere:{x#y}
 
 / ---- take/drop/reshape
 take:{x#y}
