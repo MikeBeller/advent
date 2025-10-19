@@ -1,9 +1,9 @@
 / ---- basic
-til:{!x}
+til:{!x}   / iota or 'odometer'
 
 / ---- aggregations
 sum:(+/)
-prd:(*/)
+prod:(*/)
 all:(&/)
 any:(|/)
 avg:{(+/x)%#x}
@@ -18,7 +18,7 @@ len:{#x}
 first:{*x}
 rest:{1_x}
 rev:{|x}
-flatten:{,/x}
+raze:{,/x}
 
 / ---- set & membership
 uniq:{?x}
