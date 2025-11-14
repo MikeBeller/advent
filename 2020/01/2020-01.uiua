@@ -1,0 +1,5 @@
+I ← ⊜⋕⊸≠ @\n &fras "input.txt"
+P ← ⧅> 2 I # all combinations of 2
+/× ⊢ ▽ ⊸(= 2020 ≡(/+)) P
+P ← ⧅> 3 I # all combinations of 3
+/× ⊢ ▽ ⊸(= 2020 ≡(/+)) P
