@@ -1,7 +1,6 @@
 def main():
     stones = [int(s) for s in open("input.txt").read().split()]
     allstones = set()
-    #stones = [0]
     for i in range(25):
         print(i,len(stones))
         new = []
@@ -19,7 +18,6 @@ def main():
                     new.append(2024*s)
         stones = new
         allstones |= set(stones)
-    #print(len(stones),stones)
     print(len(stones))
     print(len(allstones), len(set(stones)))
 

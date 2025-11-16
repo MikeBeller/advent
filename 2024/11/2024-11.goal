@@ -1,0 +1,20 @@
+i: "i"$' " "\ read "input.txt"
+
+blink: {
+    nd: 1+ "i"$ 10 log x
+    / mask for each transformation
+    m1: x=0; m2: 0= 2!nd; m3: 1 - (m1 + m2)
+    / zeros become one
+    a: (+/m1)#1 
+    / even number of digits split
+    where:&m2 
+    md:"i"$ 10 exp -2!(nd@where)
+    b: "i"$ (x@where) % md
+    c: md!' x@where
+    / remaining stones are multiplied by 2024
+    d: 2024 * x@&m3
+    a,b,c,d
+}
+
+say # 25 blink/ i
+
