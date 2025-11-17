@@ -1,4 +1,4 @@
-i: "i"$' " "\ read "input.txt"
+i: "i"$' =-read "input.txt"
 
 blink: {
     nd: 1+ "i"$ 10 log x
