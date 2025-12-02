@@ -1,0 +1,5 @@
+lss: ("i"$)' =' "\n\n"\ read "input.txt"
+totes: +/' lss
+say |/ totes
+say +/ 3 # totes @ >totes
+
