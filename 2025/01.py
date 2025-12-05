@@ -12,7 +12,15 @@ print(part1(inp))
 def part2(inp):
     tot = 50; c = 0
     for (sn,nm) in inp:
-        diff = (-1 if sn == "L" else 1) * nm
-        new = (tot + diff) % 100
-        c += abs(diff // 100)
+        dr = (-1 if sn == "L" else 1)
+        diff = dr * nm
+        print(tot, diff)
+        for i in range(abs(diff)):
+            tot += dr
+            if tot % 100 == 0:
+                c += 1
+            tot = tot % 100
+        print(tot)
     return c
+
+print(part2(inp))
