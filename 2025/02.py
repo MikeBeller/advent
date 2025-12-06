@@ -1,22 +1,13 @@
-inp = [[int(s) for s in p.split("-")]
-       for p in open("02.txt").read().split(",")]
+from a import *
+inp = [range(*[int(s) for s in p.split("-")])
+       for p in Rd("02.txt").split(",")]
 
-def fake(n):
-    s = str(n)
-    if len(s) % 2 == 1: return False
-    h = len(s)//2
-    return s[:h] == s[h:]
+fake = lambda n: Match(r"^(.+)\1$", str(n))
 
 assert not fake(101)
 assert fake(6464)
 
-def part1(inp):
-    c = 0
-    for b,e in inp:
-        assert b < e
-        for i in range(b,e+1):
-            if fake(i):
-                c += i
-    return c
+print(sum(filter(fake, chain(*inp))))
 
-print(part1(inp))
+fake = lambda n: Match(r"^(.+)(\1)+$", str(n))
+print(sum(filter(fake, chain(*inp))))

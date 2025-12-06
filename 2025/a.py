@@ -1,16 +1,27 @@
 def Rd(fn): return open(fn).read().strip()
-def Ln(s): return s.strip().splitlines()
-def M(f,xs): return [f(x) for x in xs]
+def Lines(s): return s.strip().splitlines()
+def Map(f,xs): return [f(x) for x in xs]
+
 from functools import reduce
-R = reduce
-from itertools import accumulate
-A = accumulate
+Reduce = reduce
+Count = lambda f,xs: sum(bool(f(x)) for x in xs )
+Filter = lambda f,xs: [x for x in xs if f(x)]
+
+from itertools import accumulate, chain
+Chain = chain
+def Acc(func, items, start=None):
+  if start:
+    return list(accumulate([start]+items, func))
+  else:
+    return list(accumulate(items, func))
+
 Eq = lambda a,b: a == b
 Ne = lambda a,b: a != b 
 Zero = lambda a: a == 0 
 
 
 from re import match
+Match = match
 def Parse(fmt, line, sep=None, rx=None):
   if rx:
     fields = match(rx,line).groups()

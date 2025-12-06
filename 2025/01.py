@@ -1,26 +1,18 @@
-inp = [(s[0],int(s[1:])) for s in open("01.txt").read().splitlines()]
+from a import *
 
-def part1(inp):
-    tot = 50; c = 0
-    for (sn,nm) in inp:
-        tot = (tot + (-1 if sn == "L" else 1)*nm) % 100
-        if tot == 0: c += 1
-    return c
+inp = [ {'R': 1, 'L': -1}[s[0]]*int(s[1:]) for s in Lines(Rd("01.txt"))]
 
-print(part1(inp))
+print(Count(Zero, Acc(lambda a,b: (a + b) % 100, inp, 50)))
 
 def part2(inp):
     tot = 50; c = 0
-    for (sn,nm) in inp:
-        dr = (-1 if sn == "L" else 1)
-        diff = dr * nm
-        print(tot, diff)
-        for i in range(abs(diff)):
+    for nm in inp:
+        dr = -1 if nm < 0 else 1
+        for i in range(abs(nm)):
             tot += dr
             if tot % 100 == 0:
                 c += 1
             tot = tot % 100
-        print(tot)
     return c
 
 print(part2(inp))
