@@ -26,7 +26,7 @@ def Parse(fmt, line, sep=None, rx=None):
   if rx:
     fields = match(rx,line).groups()
   else:
-    fields = line.split(sep)
+    fields = line.strip().split(sep)
   row = []
   for i,fmt in enumerate(fmt):
     fld = fields[i]
@@ -46,3 +46,7 @@ def Parse(fmt, line, sep=None, rx=None):
       case 'F':
         row.extend(float(f) for f in fields[i:])
   return(tuple(row))
+
+def fParse(fname, fmt, sep=None, rx=None):
+  return [Parse(fmt, line, sep, rx) for line in Lines(Rd(fname))]
+  
