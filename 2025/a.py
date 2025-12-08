@@ -7,8 +7,10 @@ Reduce = reduce
 Count = lambda f,xs: sum(bool(f(x)) for x in xs )
 Filter = lambda f,xs: [x for x in xs if f(x)]
 
-from itertools import accumulate, chain
+from itertools import accumulate, chain, combinations, permutations
 Chain = chain
+Combinations = combinations
+Permutations = permutations
 def Acc(func, items, start=None):
   if start:
     return list(accumulate([start]+items, func))
