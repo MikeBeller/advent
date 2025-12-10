@@ -1,3 +1,5 @@
+from collections import defaultdict as Ddict
+
 def Rd(fn): return open(fn).read().strip()
 def Lines(s): return s.strip().splitlines()
 def Map(f,xs): return [f(x) for x in xs]
@@ -6,7 +8,8 @@ from functools import reduce
 Reduce = reduce
 Count = lambda f,xs: sum(bool(f(x)) for x in xs )
 Filter = lambda f,xs: [x for x in xs if f(x)]
-
+import math
+Prod = math.prod
 from itertools import accumulate, chain, combinations, permutations
 Chain = chain
 Combinations = combinations
@@ -24,6 +27,7 @@ Zero = lambda a: a == 0
 
 from re import match
 Match = match
+
 def Parse(fmt, line, sep=None, rx=None):
   if rx:
     fields = match(rx,line).groups()
@@ -51,4 +55,4 @@ def Parse(fmt, line, sep=None, rx=None):
 
 def fParse(fname, fmt, sep=None, rx=None):
   return [Parse(fmt, line, sep, rx) for line in Lines(Rd(fname))]
-  
+
