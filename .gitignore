@@ -6,3 +6,4 @@ venv/
 tmp/*
 k/*
 .venv
+.DS_Store
