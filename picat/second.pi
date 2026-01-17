@@ -1,0 +1,11 @@
+import cp.
+
+main => 
+    Weights = [2, 3, 4, 5, 9, 7],
+    Values  = [3, 4, 5, 8, 10, 6],
+    Capacity = 15,
+    N :: 0..1,
+    println(Capacity).
+
+
+% need some way of describing a "Take" variable whose 6 elements can only be zero or 1, as a constraint

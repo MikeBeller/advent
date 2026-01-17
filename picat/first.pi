@@ -1,0 +1,12 @@
+% maximize a deterministic function under constraints
+import cp.
+main =>
+    X :: 0..10,
+    Y :: 0..10,
+    value(X,Y,V),
+    solve([$max(V)], [X,Y,V]),
+    println([X,Y,V]).
+
+value(X,Y,V) => 
+    X + Y #=< 10,
+    V #= 3 * X + 2 * Y.
