@@ -1,15 +1,15 @@
 import cp.
 
 main => 
-    Weights = [2, 3, 4, 5, 9, 7],
-    Values  = [3, 4, 5, 8, 10, 6],
+    Weights = {2, 3, 4, 5, 9, 7},
+    Values  = {3, 4, 5, 8, 10, 6},
     Capacity = 15,
-    Take = new_list(6),
+    Take = new_array(6),
     Take :: 0..1,
-    TotalWeight #= sum([T*W : [T,W] in zip(Take, Weights)]),
-    TotalValue #= sum([T*V : [T,V] in zip(Take, Values)]),
+    TotalWeight #= sum([Take[I] * Weights[I] : I in 1..6]),
+    TotalValue #= sum([Take[I] * Values[I] : I in 1..6]),
     TotalWeight #=< Capacity,
+    sum(Take) #= 3,
     solve([$max(TotalValue)], [Take]),
     println([TotalValue, Take]).
-
 
