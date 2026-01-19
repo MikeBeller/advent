@@ -1,0 +1,19 @@
+import cp.
+
+table(+,-)
+collatz_len(1,C) => C = 1.
+collatz_len(N, C), N mod 2 == 0 =>
+    collatz_len(N div 2, C1),
+    C = C1 + 1.
+collatz_len(N,C), N mod 2 == 1 =>
+    collatz_len(N * 3 + 1, C1),
+    C = C1 + 1.
+
+table(-,max)
+collatz_max(N,C) =>
+    between(1,1000000,N),
+    collatz_len(N,C).
+
+main =>
+    collatz_max(N,C),
+    println(C).
