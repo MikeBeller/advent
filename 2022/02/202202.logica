@@ -1,0 +1,28 @@
+@Engine("duckdb");
+
+@Ground(Inp);
+Inp(ca:, cb:) :-
+  `(read_csv('input.txt',
+             delim=' ',
+             header=false,
+             columns={'ca':'VARCHAR','cb':'VARCHAR'}))`(ca:, cb:);
+
+TxA("A","rock");     TxA("B","paper");    TxA("C","scissors");
+TxB("X","rock");     TxB("Y","paper");    TxB("Z","scissors");
+
+Beats("rock","scissors");
+Beats("scissors","paper");
+Beats("paper","rock");
+
+TScore("rock",1);    TScore("paper",2);   TScore("scissors",3);
+RScore("lose",0);    RScore("draw",3);    RScore("win",6);
+
+Matchup(ta:, tb:) :- Inp(ca:, cb:), TxA(ca, ta), TxB(cb, tb);
+
+Result(o:, tb:) :- Matchup(ta:, tb:), ta = tb,        o="draw";
+Result(o:, tb:) :- Matchup(ta:, tb:), Beats(tb, ta),  o="win";
+Result(o:, tb:) :- Matchup(ta:, tb:), Beats(ta, tb),  o="lose";
+
+Score(n:) :- Result(o:, tb:), TScore(tb, ts), RScore(o, rs), n = ts + rs;
+
+Total(total:) :- total = Sum{n :- Score(n:)};

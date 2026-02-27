@@ -1,17 +1,38 @@
 .type Throw   = symbol
 .type Outcome = symbol
+.type Code = symbol
 
-.decl beats(a: Throw, b: Throw)
-.decl matchup(c1: Throw, c2: Throw) 
-.input matchup
+.decl inp(g: number, ca:Code, cb:Code)
+.input inp(IO=file, filename="inp.facts", delimiter=" ")
 
-.decl result(o: Outcome)
-.output result
+.decl txa(ca: Code, ta:Throw)
+txa("A","rock"). txa("B","paper"). txa("C","scissors").
+.decl txb(cb:Code, tb:Throw)
+txb("X","rock"). txb("Y","paper"). txb("Z","scissors").
 
+.decl matchup(g: number, ta: Throw, tb:Throw)
+matchup(g, ta,tb) :- inp(g, ca,cb), txa(ca,ta), txb(cb,tb).
+// .output matchup
+
+.decl beats(ta: Throw, tb: Throw)
 beats("rock",     "scissors").
 beats("scissors", "paper").
 beats("paper",    "rock").
 
-result("win")  :- matchup(t1,t2), beats(t1,t2).
-result("lose") :- matchup(t1,t2), beats(t2,t1).
-result("draw") :- matchup(t1,t2), t1 = t2.
+.decl result(g: number, o: Outcome)
+result(g,"win")  :- matchup(g,ta,tb), beats(tb,ta).
+result(g,"lose") :- matchup(g,ta,tb), beats(ta,tb).
+result(g,"draw") :- matchup(g,ta,tb), tb = ta.
+// .output result
+
+.decl tscore(tb: symbol,ts: number)
+tscore("rock",1). tscore("paper",2). tscore("scissors",3).
+.decl rscore(r: symbol,rs: number)
+rscore("lose",0). rscore("draw",3). rscore("win", 6).
+.decl score(g: number, n: number)
+score(g,n) :- result(g,r), matchup(g,_,tb), tscore(tb,ts), rscore(r,rs), n = ts + rs. 
+// .output score
+
+.decl total(x:number)
+total(ns) :- ns = sum n : score(_,n).
+.output total
