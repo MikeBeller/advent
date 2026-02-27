@@ -1,0 +1,17 @@
+.type Throw   = symbol
+.type Outcome = symbol
+
+.decl beats(a: Throw, b: Throw)
+.decl matchup(c1: Throw, c2: Throw) 
+.input matchup
+
+.decl result(o: Outcome)
+.output result
+
+beats("rock",     "scissors").
+beats("scissors", "paper").
+beats("paper",    "rock").
+
+result("win")  :- matchup(t1,t2), beats(t1,t2).
+result("lose") :- matchup(t1,t2), beats(t2,t1).
+result("draw") :- matchup(t1,t2), t1 = t2.
