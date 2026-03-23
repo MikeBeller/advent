@@ -1,8 +1,7 @@
 i:"i"$' ","\' =read "08.txt"
 (ai;bi):{w:&x[1]>x[0]; x[;w]}@! (#i;#i)
-sq:{x*x}
 as:i[ai]; bs:i[bi]
-d:sqrt' +/{sq[(+as)[x]-(+bs)[x]]}'!3
+d:sqrt' +/{{x*x}[(+as)[x]-(+bs)[x]]}'!3
 di:<d
 
 f:{[x]
@@ -14,5 +13,8 @@ f:{[x]
     1]}
 
 cs:!#i; f' 1000#di; say */ 3# {x@>x}[=cs] / part1
+
+cs:!#i;j: {[x];~&/0=cs} {f[di[x]]; x+1}/ 1
+say as[di[j-1]][0] * bs[di[j-1]][0]
 
 
