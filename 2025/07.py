@@ -4,6 +4,7 @@ nc = len(m[0])
 sc = m[0].index("S")
 beams = {sc}
 nsplits = 0
+worlds = []
 for r in range(1,nr):
     new_beams = set()
     for c in beams:
@@ -15,3 +16,4 @@ for r in range(1,nr):
     beams = new_beams
 
 print(nsplits)
+print(len(beams))
