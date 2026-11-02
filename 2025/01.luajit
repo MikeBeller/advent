@@ -1,0 +1,7 @@
+require 'pl'
+local inp = List(io.lines("01.txt"))
+    :map(x -> tonumber(x:sub(2)) * (x:sub(1,1) == "R" ? 1 : -1))
+local s,c = 50,0
+for i = 1, #inp do s = (s + inp[i]) % 100; c += (s == 0 ? 1 : 0) end
+print(c)
+
